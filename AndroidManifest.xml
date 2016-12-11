@@ -44,10 +44,10 @@
                   android:launchMode="singleTask"
                   android:theme="@style/Theme.QuickSearchBox.Search">
             <!-- Show app icon in Launcher. -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
             <!-- Handle global search. -->
             <intent-filter>
                 <action android:name="android.search.action.GLOBAL_SEARCH" />
