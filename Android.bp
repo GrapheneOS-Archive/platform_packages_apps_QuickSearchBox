@@ -26,6 +26,7 @@ android_app {
         "src/**/*.logtags",
     ],
     certificate: "shared",
+    product_specific: true,
     resource_dirs: ["res"],
     optimize: {
         proguard_flags_files: ["proguard.flags"],
