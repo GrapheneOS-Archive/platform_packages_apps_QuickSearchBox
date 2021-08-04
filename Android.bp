@@ -33,7 +33,7 @@ license {
 
 android_app {
     name: "QuickSearchBox",
-    sdk_version: "14",
+    sdk_version: "current",
     static_libs: [
         "guava",
         "android-common",
@@ -42,7 +42,6 @@ android_app {
         "src/**/*.java",
         "src/**/*.logtags",
     ],
-    optional_uses_libs: ["org.apache.http.legacy"],
     certificate: "shared",
     product_specific: true,
     resource_dirs: ["res"],
