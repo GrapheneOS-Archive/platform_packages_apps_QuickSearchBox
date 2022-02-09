@@ -17,7 +17,7 @@ android_binary(
     resource_files = glob(["res/**"]),
     deps = [
         ":genlogtags",
-        "//external/guava:guava-android-host",
+        "//external/guava",
         "//frameworks/ex/common:android-common",
     ],
 )
