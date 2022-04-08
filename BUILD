@@ -8,7 +8,9 @@ event_log_tags(
 
 android_binary(
     name = "QuickSearchBox",
-    srcs = glob(["src/**/*.java"]),
+    srcs = glob(["src/**/*.java"]) + [
+        ":genlogtags",
+    ],
     custom_package = "com.android.quicksearchbox",
     javacopts = ["-Xep:ArrayToString:OFF"],
     manifest = "AndroidManifest.xml",
@@ -16,7 +18,6 @@ android_binary(
     # proguard_specs = ["proguard.flags"],
     resource_files = glob(["res/**"]),
     deps = [
-        ":genlogtags",
         "//external/guava",
         "//frameworks/ex/common:android-common",
     ],
