@@ -22,6 +22,30 @@ package {
 android_app {
     name: "QuickSearchBox",
     sdk_version: "current",
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+        "src/**/*.logtags",
+    ],
+    exclude_srcs: [
+      "src/**/quicksearchbox/AbstractSource.java",
+    ],
+    static_libs: [
+            "guava",
+            "android-common",
+    ],
+    certificate: "shared",
+    product_specific: true,
+    resource_dirs: ["res"],
+    optimize: {
+        proguard_flags_files: ["proguard.flags"],
+    },
+    kotlincflags: ["-Werror"],
+}
+
+android_app {
+    name: "QuickSearchBoxJava",
+    sdk_version: "current",
     static_libs: [
         "guava",
         "android-common",
