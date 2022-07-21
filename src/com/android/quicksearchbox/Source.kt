@@ -13,109 +13,103 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import com.android.quicksearchbox.util.NowOrLater;
-
-import android.content.ComponentName;
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Bundle;
+import android.content.ComponentName
+import android.content.Intent
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Bundle
+import com.android.quicksearchbox.util.NowOrLater
 
 /**
  * Interface for suggestion sources.
  *
  */
-public interface Source extends SuggestionCursorProvider<SourceResult> {
-
+interface Source : SuggestionCursorProvider<com.android.quicksearchbox.SourceResult?> {
     /**
      * Gets the name activity that intents from this source are sent to.
      */
-    ComponentName getIntentComponent();
+    val intentComponent: ComponentName?
 
     /**
      * Gets the suggestion URI for getting suggestions from this Source.
      */
-    String getSuggestUri();
+    val suggestUri: String?
 
     /**
      * Gets the localized, human-readable label for this source.
      */
-    CharSequence getLabel();
+    val label: CharSequence?
 
     /**
      * Gets the icon for this suggestion source.
      */
-    Drawable getSourceIcon();
+    val sourceIcon: Drawable?
 
     /**
      * Gets the icon URI for this suggestion source.
      */
-    Uri getSourceIconUri();
+    val sourceIconUri: Uri?
 
     /**
      * Gets an icon from this suggestion source.
      *
      * @param drawableId Resource ID or URI.
      */
-    NowOrLater<Drawable> getIcon(String drawableId);
+    fun getIcon(drawableId: String?): NowOrLater<Drawable?>?
 
     /**
      * Gets the URI for an icon form this suggestion source.
      *
      * @param drawableId Resource ID or URI.
      */
-    Uri getIconUri(String drawableId);
+    fun getIconUri(drawableId: String?): Uri?
 
     /**
      * Gets the search hint text for this suggestion source.
      */
-    CharSequence getHint();
+    val hint: CharSequence?
 
     /**
      * Gets the description to use for this source in system search settings.
      */
-    CharSequence getSettingsDescription();
+    val settingsDescription: CharSequence?
 
     /**
      *
-     *  Note: this does not guarantee that this source will be queried for queries of
-     *  this length or longer, only that it will not be queried for anything shorter.
+     * Note: this does not guarantee that this source will be queried for queries of
+     * this length or longer, only that it will not be queried for anything shorter.
      *
      * @return The minimum number of characters needed to trigger this source.
      */
-    int getQueryThreshold();
+    val queryThreshold: Int
 
     /**
      * Indicates whether a source should be invoked for supersets of queries it has returned zero
      * results for in the past.  For example, if a source returned zero results for "bo", it would
      * be ignored for "bob".
      *
-     * If set to <code>false</code>, this source will only be ignored for a single session; the next
+     * If set to `false`, this source will only be ignored for a single session; the next
      * time the search dialog is brought up, all sources will be queried.
      *
-     * @return <code>true</code> if this source should be queried after returning no results.
+     * @return `true` if this source should be queried after returning no results.
      */
-    boolean queryAfterZeroResults();
-
-    boolean voiceSearchEnabled();
+    fun queryAfterZeroResults(): Boolean
+    fun voiceSearchEnabled(): Boolean
 
     /**
      * Whether this source should be included in the blended All mode. The source must
      * also be enabled to be included in All.
      */
-    boolean includeInAll();
-
-    Intent createSearchIntent(String query, Bundle appData);
-
-    Intent createVoiceSearchIntent(Bundle appData);
+    fun includeInAll(): Boolean
+    fun createSearchIntent(query: String?, appData: Bundle?): Intent?
+    fun createVoiceSearchIntent(appData: Bundle?): Intent?
 
     /**
      * Checks if the current process can read the suggestions from this source.
      */
-    boolean canRead();
+    fun canRead(): Boolean
 
     /**
      * Gets suggestions from this source.
@@ -124,26 +118,25 @@ public interface Source extends SuggestionCursorProvider<SourceResult> {
      * @return The suggestion results.
      */
     @Override
-    SourceResult getSuggestions(String query, int queryLimit);
+    override fun getSuggestions(query: String?, queryLimit: Int): SourceResult?
 
     /**
      * Gets the default intent action for suggestions from this source.
      *
-     * @return The default intent action, or {@code null}.
+     * @return The default intent action, or `null`.
      */
-    String getDefaultIntentAction();
+    val defaultIntentAction: String?
 
     /**
      * Gets the default intent data for suggestions from this source.
      *
-     * @return The default intent data, or {@code null}.
+     * @return The default intent data, or `null`.
      */
-    String getDefaultIntentData();
+    val defaultIntentData: String?
 
     /**
      * Gets the root source, if this source is a wrapper around another. Otherwise, returns this
      * source.
      */
-    Source getRoot();
-
+    fun getRoot(): Source
 }

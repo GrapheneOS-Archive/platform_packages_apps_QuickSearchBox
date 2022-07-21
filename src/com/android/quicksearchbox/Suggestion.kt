@@ -13,117 +13,115 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import android.content.ComponentName;
+import android.content.ComponentName
 
 /**
  * Interface for individual suggestions.
  */
-public interface Suggestion {
-
+interface Suggestion {
     /**
      * Gets the source that produced the current suggestion.
      */
-    Source getSuggestionSource();
+    val suggestionSource: com.android.quicksearchbox.Source?
 
     /**
      * Gets the shortcut ID of the current suggestion.
      */
-    String getShortcutId();
+    val shortcutId: String?
 
     /**
      * Whether to show a spinner while refreshing this shortcut.
      */
-    boolean isSpinnerWhileRefreshing();
+    val isSpinnerWhileRefreshing: Boolean
 
     /**
-     * Gets the format of the text returned by {@link #getSuggestionText1()}
-     * and {@link #getSuggestionText2()}.
+     * Gets the format of the text returned by [.getSuggestionText1]
+     * and [.getSuggestionText2].
      *
-     * @return {@code null} or "html"
+     * @return `null` or "html"
      */
-    String getSuggestionFormat();
+    val suggestionFormat: String?
 
     /**
      * Gets the first text line for the current suggestion.
      */
-    String getSuggestionText1();
+    val suggestionText1: String?
 
     /**
      * Gets the second text line for the current suggestion.
      */
-    String getSuggestionText2();
+    val suggestionText2: String?
 
     /**
      * Gets the second text line URL for the current suggestion.
      */
-    String getSuggestionText2Url();
+    val suggestionText2Url: String?
 
     /**
      * Gets the left-hand-side icon for the current suggestion.
      *
-     * @return A string that can be passed to {@link Source#getIcon(String)}.
+     * @return A string that can be passed to [Source.getIcon].
      */
-    String getSuggestionIcon1();
+    val suggestionIcon1: String?
 
     /**
      * Gets the right-hand-side icon for the current suggestion.
      *
-     * @return A string that can be passed to {@link Source#getIcon(String)}.
+     * @return A string that can be passed to [Source.getIcon].
      */
-    String getSuggestionIcon2();
+    val suggestionIcon2: String?
 
     /**
      * Gets the intent action for the current suggestion.
      */
-    String getSuggestionIntentAction();
+    val suggestionIntentAction: String?
 
     /**
      * Gets the name of the activity that the intent for the current suggestion will be sent to.
      */
-    ComponentName getSuggestionIntentComponent();
+    val suggestionIntentComponent: ComponentName?
 
     /**
      * Gets the extra data associated with this suggestion's intent.
      */
-    String getSuggestionIntentExtraData();
+    val suggestionIntentExtraData: String?
 
     /**
      * Gets the data associated with this suggestion's intent.
      */
-    String getSuggestionIntentDataString();
+    val suggestionIntentDataString: String?
 
     /**
      * Gets the query associated with this suggestion's intent.
      */
-    String getSuggestionQuery();
+    val suggestionQuery: String?
 
     /**
      * Gets the suggestion log type for the current suggestion. This is logged together
-     * with the value returned from {@link Source#getName()}.
-     * The value is source-specific. Most sources return {@code null}.
+     * with the value returned from [Source.getName].
+     * The value is source-specific. Most sources return `null`.
      */
-    String getSuggestionLogType();
+    val suggestionLogType: String?
 
     /**
      * Checks if this suggestion is a shortcut.
      */
-    boolean isSuggestionShortcut();
+    val isSuggestionShortcut: Boolean
 
     /**
      * Checks if this is a web search suggestion.
      */
-    boolean isWebSearchSuggestion();
+    val isWebSearchSuggestion: Boolean
 
     /**
      * Checks whether this suggestion comes from the user's search history.
      */
-    boolean isHistorySuggestion();
+    val isHistorySuggestion: Boolean
 
     /**
-     * Returns any extras associated with this suggestion, or {@code null} if there are none.
+     * Returns any extras associated with this suggestion, or `null` if there are none.
      */
-    SuggestionExtras getExtras();
-
+    val extras: com.android.quicksearchbox.SuggestionExtras?
 }

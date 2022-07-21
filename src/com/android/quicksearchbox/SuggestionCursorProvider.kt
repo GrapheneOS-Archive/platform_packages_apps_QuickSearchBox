@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox;
-
+package com.android.quicksearchbox
 
 /**
  * Interface for objects that can produce a SuggestionCursor given a query.
  */
-public interface SuggestionCursorProvider<C extends SuggestionCursor> {
-
+interface SuggestionCursorProvider<C : SuggestionCursor?> {
     /**
      * Gets the name of the provider. This is used for logging and
      * to execute tasks on the queue for the provider.
      */
-    String getName();
+    fun getName() : String
 
     /**
      * Gets suggestions from the provider.
      *
      * @param query The user query.
      * @param queryLimit An advisory maximum number of results that the source should return.
-     * @return The suggestion results. Must not be {@code null}.
+     * @return The suggestion results. Must not be `null`.
      */
-    C getSuggestions(String query, int queryLimit);
+    fun getSuggestions(query: String?, queryLimit: Int): C
 }

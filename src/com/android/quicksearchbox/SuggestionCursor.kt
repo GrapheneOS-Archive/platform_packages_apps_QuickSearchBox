@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,74 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import com.android.quicksearchbox.util.QuietlyCloseable;
-
-import android.database.DataSetObserver;
-
-import java.util.Collection;
+import com.android.quicksearchbox.util.QuietlyCloseable
+import android.database.DataSetObserver
+import kotlin.collections.Collection
 
 /**
  * A sequence of suggestions, with a current position.
  */
-public interface SuggestionCursor extends Suggestion, QuietlyCloseable {
-
+interface SuggestionCursor : Suggestion, QuietlyCloseable {
     /**
      * Gets the query that the user typed to get this suggestion.
      */
-    String getUserQuery();
+    val userQuery: String?
 
     /**
      * Gets the number of suggestions in this result.
      *
-     * @return The number of suggestions, or {@code 0} if this result represents a failed query.
+     * @return The number of suggestions, or `0` if this result represents a failed query.
      */
-    int getCount();
+    val count: Int
 
     /**
      * Moves to a given suggestion.
      *
      * @param pos The position to move to.
-     * @throws IndexOutOfBoundsException if {@code pos < 0} or {@code pos >= getCount()}.
+     * @throws IndexOutOfBoundsException if `pos < 0` or `pos >= getCount()`.
      */
-    void moveTo(int pos);
+    fun moveTo(pos: Int)
 
     /**
      * Moves to the next suggestion, if there is one.
      *
-     * @return {@code false} if there is no next suggestion.
+     * @return `false` if there is no next suggestion.
      */
-    boolean moveToNext();
+    fun moveToNext(): Boolean
 
     /**
      * Gets the current position within the cursor.
      */
-    int getPosition();
+    val position: Int
 
     /**
      * Frees any resources used by this cursor.
      */
     @Override
-    void close();
+    override fun close()
 
     /**
      * Register an observer that is called when changes happen to this data set.
      *
      * @param observer gets notified when the data set changes.
      */
-    void registerDataSetObserver(DataSetObserver observer);
+    fun registerDataSetObserver(observer: DataSetObserver?)
 
     /**
-     * Unregister an observer that has previously been registered with 
-     * {@link #registerDataSetObserver(DataSetObserver)}
+     * Unregister an observer that has previously been registered with
+     * [.registerDataSetObserver]
      *
      * @param observer the observer to unregister.
      */
-    void unregisterDataSetObserver(DataSetObserver observer);
+    fun unregisterDataSetObserver(observer: DataSetObserver?)
 
     /**
      * Return the extra columns present in this cursor, or null if none exist.
      */
-    Collection<String> getExtraColumns();
+    val extraColumns: Collection<String?>?
 }
