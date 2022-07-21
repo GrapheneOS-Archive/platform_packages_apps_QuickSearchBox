@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,112 +13,93 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox.google;
+package com.android.quicksearchbox.google
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-
-import com.android.quicksearchbox.AbstractInternalSource;
-import com.android.quicksearchbox.CursorBackedSourceResult;
-import com.android.quicksearchbox.R;
-import com.android.quicksearchbox.SourceResult;
-import com.android.quicksearchbox.SuggestionCursor;
-import com.android.quicksearchbox.util.NamedTaskExecutor;
+import android.content.ComponentName
 
 /**
  * Special source implementation for Google suggestions.
  */
-public abstract class AbstractGoogleSource extends AbstractInternalSource implements GoogleSource {
-
-    /*
-     * This name corresponds to what was used in previous version of quick search box. We use the
-     * same name so that shortcuts continue to work after an upgrade. (It also makes logging more
-     * consistent).
-     */
-    private static final String GOOGLE_SOURCE_NAME =
-        "com.android.quicksearchbox/.google.GoogleSearch";
-
-    public AbstractGoogleSource(Context context, Handler uiThread, NamedTaskExecutor iconLoader) {
-        super(context, uiThread, iconLoader);
-    }
-
+abstract class AbstractGoogleSource(
+    context: Context?,
+    uiThread: Handler?,
+    iconLoader: NamedTaskExecutor?
+) : AbstractInternalSource(context, uiThread, iconLoader),
+    com.android.quicksearchbox.google.GoogleSource {
+    @get:Override
+    abstract val intentComponent: ComponentName?
     @Override
-    public abstract ComponentName getIntentComponent();
-
-    @Override
-    public abstract SuggestionCursor refreshShortcut(String shortcutId, String extraData);
+    abstract fun refreshShortcut(shortcutId: String, extraData: String): SuggestionCursor
 
     /**
      * Called by QSB to get web suggestions for a query.
      */
     @Override
-    public abstract SourceResult queryInternal(String query);
+    abstract fun queryInternal(query: String): SourceResult
 
     /**
      * Called by external apps to get web suggestions for a query.
      */
     @Override
-    public abstract SourceResult queryExternal(String query);
+    abstract fun queryExternal(query: String): SourceResult
+    @Override
+    fun createVoiceSearchIntent(appData: Bundle?): Intent? {
+        return createVoiceWebSearchIntent(appData)
+    }
+
+    @get:Override
+    val defaultIntentAction: String
+        get() = Intent.ACTION_WEB_SEARCH
+
+    @get:Override
+    val hint: CharSequence
+        get() = context.getString(R.string.google_search_hint)
+
+    @get:Override
+    val label: CharSequence
+        get() = context.getString(R.string.google_search_label)
+
+    @get:Override
+    val name: String
+        get() = AbstractGoogleSource.Companion.GOOGLE_SOURCE_NAME
+
+    @get:Override
+    val settingsDescription: CharSequence
+        get() = context.getString(R.string.google_search_description)
+
+    @get:Override
+    protected val sourceIconResource: Int
+        protected get() = R.mipmap.google_icon
 
     @Override
-    public Intent createVoiceSearchIntent(Bundle appData) {
-        return createVoiceWebSearchIntent(appData);
+    override fun getSuggestions(query: String, queryLimit: Int): SourceResult {
+        return emptyIfNull(queryInternal(query), query)
     }
 
-    @Override
-    public String getDefaultIntentAction() {
-        return Intent.ACTION_WEB_SEARCH;
+    fun getSuggestionsExternal(query: String): SourceResult {
+        return emptyIfNull(queryExternal(query), query)
     }
 
-    @Override
-    public CharSequence getHint() {
-        return getContext().getString(R.string.google_search_hint);
-    }
-
-    @Override
-    public CharSequence getLabel() {
-        return getContext().getString(R.string.google_search_label);
-    }
-
-    @Override
-    public String getName() {
-        return GOOGLE_SOURCE_NAME;
-    }
-
-    @Override
-    public CharSequence getSettingsDescription() {
-        return getContext().getString(R.string.google_search_description);
-    }
-
-    @Override
-    protected int getSourceIconResource() {
-        return R.mipmap.google_icon;
-    }
-
-    @Override
-    public SourceResult getSuggestions(String query, int queryLimit) {
-        return emptyIfNull(queryInternal(query), query);
-    }
-
-    public SourceResult getSuggestionsExternal(String query) {
-        return emptyIfNull(queryExternal(query), query);
-    }
-
-    private SourceResult emptyIfNull(SourceResult result, String query) {
-        return result == null ? new CursorBackedSourceResult(this, query) : result;
+    private fun emptyIfNull(result: SourceResult?, query: String): SourceResult {
+        return if (result == null) CursorBackedSourceResult(this, query) else result
     }
 
     @Override
-    public boolean voiceSearchEnabled() {
-        return true;
+    override fun voiceSearchEnabled(): Boolean {
+        return true
     }
 
     @Override
-    public boolean includeInAll() {
-        return true;
+    override fun includeInAll(): Boolean {
+        return true
     }
 
+    companion object {
+        /*
+         * This name corresponds to what was used in previous version of quick search box. We use the
+         * same name so that shortcuts continue to work after an upgrade. (It also makes logging more
+         * consistent).
+         */
+        private const val GOOGLE_SOURCE_NAME = "com.android.quicksearchbox/.google.GoogleSearch"
+    }
 }
