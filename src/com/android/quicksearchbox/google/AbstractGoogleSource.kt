@@ -16,71 +16,86 @@
 package com.android.quicksearchbox.google
 
 import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+
+import com.android.quicksearchbox.AbstractInternalSource
+import com.android.quicksearchbox.CursorBackedSourceResult
+import com.android.quicksearchbox.R
+import com.android.quicksearchbox.SourceResult
+import com.android.quicksearchbox.SuggestionCursor
+import com.android.quicksearchbox.util.NamedTaskExecutor
+
 
 /**
  * Special source implementation for Google suggestions.
  */
 abstract class AbstractGoogleSource(
-    context: Context?,
-    uiThread: Handler?,
-    iconLoader: NamedTaskExecutor?
+    context: Context,
+    uiThread: Handler,
+    iconLoader: NamedTaskExecutor
 ) : AbstractInternalSource(context, uiThread, iconLoader),
     com.android.quicksearchbox.google.GoogleSource {
     @get:Override
-    abstract val intentComponent: ComponentName?
+    abstract override val intentComponent: ComponentName?
+
     @Override
-    abstract fun refreshShortcut(shortcutId: String, extraData: String): SuggestionCursor
+    abstract override fun refreshShortcut(shortcutId: String, extraData: String): SuggestionCursor
 
     /**
      * Called by QSB to get web suggestions for a query.
      */
     @Override
-    abstract fun queryInternal(query: String): SourceResult
+    abstract override fun queryInternal(query: String?): SourceResult
 
     /**
      * Called by external apps to get web suggestions for a query.
      */
     @Override
-    abstract fun queryExternal(query: String): SourceResult
+    abstract override fun queryExternal(query: String?): SourceResult
+
     @Override
-    fun createVoiceSearchIntent(appData: Bundle?): Intent? {
+    override fun createVoiceSearchIntent(appData: Bundle?): Intent? {
         return createVoiceWebSearchIntent(appData)
     }
 
     @get:Override
-    val defaultIntentAction: String
+    override val defaultIntentAction: String
         get() = Intent.ACTION_WEB_SEARCH
 
     @get:Override
-    val hint: CharSequence
+    override val hint: CharSequence
         get() = context.getString(R.string.google_search_hint)
 
     @get:Override
-    val label: CharSequence
+    override val label: CharSequence
         get() = context.getString(R.string.google_search_label)
 
     @get:Override
-    val name: String
+    override val name: String
         get() = AbstractGoogleSource.Companion.GOOGLE_SOURCE_NAME
 
     @get:Override
-    val settingsDescription: CharSequence
+    override val settingsDescription: CharSequence
         get() = context.getString(R.string.google_search_description)
 
-    @get:Override
-    protected val sourceIconResource: Int
-        protected get() = R.mipmap.google_icon
+    @Override
+    protected override fun getSourceIconResource(): Int {
+        return R.mipmap.google_icon
+    }
 
     @Override
-    override fun getSuggestions(query: String, queryLimit: Int): SourceResult {
+    override fun getSuggestions(query: String?, queryLimit: Int): SourceResult? {
         return emptyIfNull(queryInternal(query), query)
     }
 
-    fun getSuggestionsExternal(query: String): SourceResult {
+    fun getSuggestionsExternal(query: String?): SourceResult {
         return emptyIfNull(queryExternal(query), query)
     }
 
-    private fun emptyIfNull(result: SourceResult?, query: String): SourceResult {
+    private fun emptyIfNull(result: SourceResult?, query: String?): SourceResult {
         return if (result == null) CursorBackedSourceResult(this, query) else result
     }
 
