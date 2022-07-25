@@ -27,6 +27,7 @@ android_app {
     ],
     exclude_srcs: [
       "src/**/quicksearchbox/google/AbstractGoogleSource.java",
+      "src/**/quicksearchbox/google/AbstractGoogleSourceResult.java",
       "src/**/quicksearchbox/Suggestion.java",
       "src/**/quicksearchbox/SuggestionCursor.java",
       "src/**/quicksearchbox/SuggestionCursorProvider.java",
