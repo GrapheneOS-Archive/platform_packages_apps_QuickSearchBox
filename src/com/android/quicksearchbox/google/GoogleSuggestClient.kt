@@ -13,206 +13,182 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.google
 
-package com.android.quicksearchbox.google;
-
-import android.content.ComponentName;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Build;
-import android.os.Handler;
-import android.text.TextUtils;
-import android.util.Log;
-
-import com.android.quicksearchbox.Config;
-import com.android.quicksearchbox.R;
-import com.android.quicksearchbox.Source;
-import com.android.quicksearchbox.SourceResult;
-import com.android.quicksearchbox.SuggestionCursor;
-import com.android.quicksearchbox.util.NamedTaskExecutor;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Locale;
+import android.content.ComponentName
+import com.android.quicksearchbox.SuggestionCursor
 
 /**
  * Use network-based Google Suggests to provide search suggestions.
  */
-public class GoogleSuggestClient extends AbstractGoogleSource {
+class GoogleSuggestClient(
+    context: Context?, uiThread: Handler?,
+    iconLoader: NamedTaskExecutor?, config: Config
+) : AbstractGoogleSource(context, uiThread, iconLoader) {
+    private var mSuggestUri: String?
+    private val mConnectTimeout: Int
 
-    private static final boolean DBG = false;
-    private static final String LOG_TAG = "GoogleSearch";
+    @get:Override
+    override val intentComponent: ComponentName
+        get() = ComponentName(context, com.android.quicksearchbox.google.GoogleSearch::class.java)
 
-    private static final String USER_AGENT = "Android/" + Build.VERSION.RELEASE;
-    private String mSuggestUri;
-
-    // TODO: this should be defined somewhere
-    private static final String HTTP_TIMEOUT = "http.conn-manager.timeout";
-
-    private final int mConnectTimeout;
-
-    public GoogleSuggestClient(Context context, Handler uiThread,
-            NamedTaskExecutor iconLoader, Config config) {
-        super(context, uiThread, iconLoader);
-
-        mConnectTimeout = config.getHttpConnectTimeout();
-        // NOTE:  Do not look up the resource here;  Localization changes may not have completed
-        // yet (e.g. we may still be reading the SIM card).
-        mSuggestUri = null;
+    @Override
+    override fun queryInternal(query: String): SourceResult? {
+        return query(query)
     }
 
     @Override
-    public ComponentName getIntentComponent() {
-        return new ComponentName(getContext(), GoogleSearch.class);
-    }
-
-    @Override
-    public SourceResult queryInternal(String query) {
-        return query(query);
-    }
-
-    @Override
-    public SourceResult queryExternal(String query) {
-        return query(query);
+    override fun queryExternal(query: String): SourceResult? {
+        return query(query)
     }
 
     /**
      * Queries for a given search term and returns a cursor containing
      * suggestions ordered by best match.
      */
-    private SourceResult query(String query) {
+    private fun query(query: String): SourceResult? {
         if (TextUtils.isEmpty(query)) {
-            return null;
+            return null
         }
-        if (!isNetworkConnected()) {
-            Log.i(LOG_TAG, "Not connected to network.");
-            return null;
+        if (!isNetworkConnected) {
+            Log.i(GoogleSuggestClient.Companion.LOG_TAG, "Not connected to network.")
+            return null
         }
-        HttpURLConnection connection = null;
+        var connection: HttpURLConnection? = null
         try {
-            String encodedQuery = URLEncoder.encode(query, "UTF-8");
+            val encodedQuery: String = URLEncoder.encode(query, "UTF-8")
             if (mSuggestUri == null) {
-                Locale l = Locale.getDefault();
-                String language = GoogleSearch.getLanguage(l);
-                mSuggestUri = getContext().getResources().getString(R.string.google_suggest_base,
-                    language);
+                val l: Locale = Locale.getDefault()
+                val language: String = com.android.quicksearchbox.google.GoogleSearch.getLanguage(l)
+                mSuggestUri = context.getResources().getString(
+                    R.string.google_suggest_base,
+                    language
+                )
             }
-
-            String suggestUri = mSuggestUri + encodedQuery;
-            if (DBG) Log.d(LOG_TAG, "Sending request: " + suggestUri);
-            URL url = URI.create(suggestUri).toURL();
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(mConnectTimeout);
-            connection.setRequestProperty("User-Agent", USER_AGENT);
-            connection.setRequestMethod("GET");
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream inputStream = connection.getInputStream();
-            if (connection.getResponseCode() == 200) {
+            val suggestUri = mSuggestUri + encodedQuery
+            if (GoogleSuggestClient.Companion.DBG) Log.d(
+                GoogleSuggestClient.Companion.LOG_TAG,
+                "Sending request: $suggestUri"
+            )
+            val url: URL = URI.create(suggestUri).toURL()
+            connection = url.openConnection() as HttpURLConnection
+            connection.setConnectTimeout(mConnectTimeout)
+            connection.setRequestProperty("User-Agent", GoogleSuggestClient.Companion.USER_AGENT)
+            connection.setRequestMethod("GET")
+            connection.setDoInput(true)
+            connection.connect()
+            val inputStream: InputStream = connection.getInputStream()
+            if (connection.getResponseCode() === 200) {
 
                 /* Goto http://www.google.com/complete/search?json=true&q=foo
                  * to see what the data format looks like. It's basically a json
                  * array containing 4 other arrays. We only care about the middle
                  * 2 which contain the suggestions and their popularity.
                  */
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
+                val reader = BufferedReader(InputStreamReader(inputStream))
+                val sb: StringBuilder = StringBuilder()
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    sb.append(line).append("\n")
                 }
-                reader.close();
-                JSONArray results = new JSONArray(sb.toString());
-                JSONArray suggestions = results.getJSONArray(1);
-                JSONArray popularity = results.getJSONArray(2);
-                if (DBG) Log.d(LOG_TAG, "Got " + suggestions.length() + " results");
-                return new GoogleSuggestCursor(this, query, suggestions, popularity);
+                reader.close()
+                val results = JSONArray(sb.toString())
+                val suggestions: JSONArray = results.getJSONArray(1)
+                val popularity: JSONArray = results.getJSONArray(2)
+                if (GoogleSuggestClient.Companion.DBG) Log.d(
+                    GoogleSuggestClient.Companion.LOG_TAG,
+                    "Got " + suggestions.length().toString() + " results"
+                )
+                return GoogleSuggestCursor(this, query, suggestions, popularity)
             } else {
-                if (DBG)
-                    Log.d(LOG_TAG, "Request failed " + connection.getResponseMessage());
+                if (GoogleSuggestClient.Companion.DBG) Log.d(
+                    GoogleSuggestClient.Companion.LOG_TAG,
+                    "Request failed " + connection.getResponseMessage()
+                )
             }
-        } catch (UnsupportedEncodingException e) {
-            Log.w(LOG_TAG, "Error", e);
-        } catch (IOException e) {
-            Log.w(LOG_TAG, "Error", e);
-        } catch (JSONException e) {
-            Log.w(LOG_TAG, "Error", e);
+        } catch (e: UnsupportedEncodingException) {
+            Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error", e)
+        } catch (e: IOException) {
+            Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error", e)
+        } catch (e: JSONException) {
+            Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error", e)
         } finally {
-            if (connection != null) connection.disconnect();
+            if (connection != null) connection.disconnect()
         }
-        return null;
+        return null
     }
 
     @Override
-    public SuggestionCursor refreshShortcut(String shortcutId, String oldExtraData) {
-        return null;
+    override fun refreshShortcut(shortcutId: String?, oldExtraData: String?): SuggestionCursor? {
+        return null
     }
 
-    private boolean isNetworkConnected() {
-        NetworkInfo networkInfo = getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnected();
-    }
-
-    private NetworkInfo getActiveNetworkInfo() {
-        ConnectivityManager connectivity =
-                (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity == null) {
-            return null;
+    private val isNetworkConnected: Boolean
+        private get() {
+            val networkInfo: NetworkInfo? = activeNetworkInfo
+            return networkInfo != null && networkInfo.isConnected()
         }
-        return connectivity.getActiveNetworkInfo();
-    }
+    private val activeNetworkInfo: NetworkInfo?
+        private get() {
+            val connectivity: ConnectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    ?: return null
+            return connectivity.getActiveNetworkInfo()
+        }
 
-    private static class GoogleSuggestCursor extends AbstractGoogleSourceResult {
-
+    private class GoogleSuggestCursor(
+        source: Source?, userQuery: String?,
+        suggestions: JSONArray, popularity: JSONArray
+    ) : AbstractGoogleSourceResult(source, userQuery!!) {
         /* Contains the actual suggestions */
-        private final JSONArray mSuggestions;
+        private val mSuggestions: JSONArray
 
         /* This contains the popularity of each suggestion
          * i.e. 165,000 results. It's not related to sorting.
          */
-        private final JSONArray mPopularity;
+        private val mPopularity: JSONArray
 
-        public GoogleSuggestCursor(Source source, String userQuery,
-                JSONArray suggestions, JSONArray popularity) {
-            super(source, userQuery);
-            mSuggestions = suggestions;
-            mPopularity = popularity;
-        }
+        @get:Override
+        override val count: Int
+            get() = mSuggestions.length()
 
-        @Override
-        public int getCount() {
-            return mSuggestions.length();
-        }
-
-        @Override
-        public String getSuggestionQuery() {
-            try {
-                return mSuggestions.getString(getPosition());
-            } catch (JSONException e) {
-                Log.w(LOG_TAG, "Error parsing response: " + e);
-                return null;
+        @get:Override
+        override val suggestionQuery: String?
+            get() = try {
+                mSuggestions.getString(getPosition())
+            } catch (e: JSONException) {
+                Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error parsing response: $e")
+                null
             }
-        }
 
-        @Override
-        public String getSuggestionText2() {
-            try {
-                return mPopularity.getString(getPosition());
-            } catch (JSONException e) {
-                Log.w(LOG_TAG, "Error parsing response: " + e);
-                return null;
+        @get:Override
+        override val suggestionText2: String?
+            get() = try {
+                mPopularity.getString(getPosition())
+            } catch (e: JSONException) {
+                Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error parsing response: $e")
+                null
             }
+
+        init {
+            mSuggestions = suggestions
+            mPopularity = popularity
         }
+    }
+
+    companion object {
+        private const val DBG = false
+        private const val LOG_TAG = "GoogleSearch"
+        private val USER_AGENT = "Android/" + Build.VERSION.RELEASE
+
+        // TODO: this should be defined somewhere
+        private const val HTTP_TIMEOUT = "http.conn-manager.timeout"
+    }
+
+    init {
+        mConnectTimeout = config.getHttpConnectTimeout()
+        // NOTE:  Do not look up the resource here;  Localization changes may not have completed
+        // yet (e.g. we may still be reading the SIM card).
+        mSuggestUri = null
     }
 }
