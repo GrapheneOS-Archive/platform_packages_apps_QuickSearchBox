@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox.google;
+package com.android.quicksearchbox.google
 
-import com.android.quicksearchbox.Source;
-import com.android.quicksearchbox.SourceResult;
-import com.android.quicksearchbox.SuggestionCursor;
+import com.android.quicksearchbox.SourceResult
+import com.android.quicksearchbox.SuggestionCursor
 
 /**
  * Special source interface for Google suggestions.
  */
-public interface GoogleSource extends Source {
-
-    SuggestionCursor refreshShortcut(String shortcutId, String extraData);
+interface GoogleSource : Source {
+    fun refreshShortcut(shortcutId: String?, extraData: String?): SuggestionCursor?
 
     /**
      * Called by QSB to get web suggestions for a query.
      */
-    SourceResult queryInternal(String query);
+    fun queryInternal(query: String?): SourceResult?
 
     /**
      * Called by external apps to get web suggestions for a query.
      */
-    SourceResult queryExternal(String query);
-
+    fun queryExternal(query: String?): SourceResult?
 }
