@@ -55,19 +55,19 @@ abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: N
         }
     protected abstract val iconPackage: String
     @Override
-    override fun getIcon(drawableId: String): NowOrLater<Drawable>? {
+    override fun getIcon(drawableId: String?): NowOrLater<Drawable?>? {
         return iconLoader?.getIcon(drawableId)
     }
 
     @Override
-    override fun getIconUri(drawableId: String): Uri? {
+    override fun getIconUri(drawableId: String?): Uri? {
         return iconLoader?.getIconUri(drawableId)
     }
 
     @Override
-    override fun createSearchIntent(query: String, appData: Bundle): Intent? {
+    override fun createSearchIntent(query: String?, appData: Bundle?): Intent? {
         return AbstractSource.Companion.createSourceSearchIntent(
-            getIntentComponent(),
+            intentComponent,
             query,
             appData
         )
