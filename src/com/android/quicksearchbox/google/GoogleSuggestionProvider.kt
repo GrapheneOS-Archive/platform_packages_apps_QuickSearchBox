@@ -13,124 +13,128 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.google
 
-package com.android.quicksearchbox.google;
-
-import com.android.quicksearchbox.CursorBackedSourceResult;
-import com.android.quicksearchbox.QsbApplication;
-import com.android.quicksearchbox.Source;
-import com.android.quicksearchbox.SourceResult;
-import com.android.quicksearchbox.SuggestionCursorBackedCursor;
-
-import android.app.SearchManager;
-import android.content.ContentProvider;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.UriMatcher;
-import android.database.Cursor;
-import android.net.Uri;
-import android.util.Log;
+import android.app.SearchManager
+import com.android.quicksearchbox.SourceResult
 
 /**
  * A suggestion provider which provides content from Genie, a service that offers
  * a superset of the content provided by Google Suggest.
  */
-public class GoogleSuggestionProvider extends ContentProvider {
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.GoogleSuggestionProvider";
-
-    // UriMatcher constants
-    private static final int SEARCH_SUGGEST = 0;
-    private static final int SEARCH_SHORTCUT = 1;
-
-    private UriMatcher mUriMatcher;
-
-    private GoogleSource mSource;
-
+class GoogleSuggestionProvider : ContentProvider() {
+    private var mUriMatcher: UriMatcher? = null
+    private var mSource: GoogleSource? = null
     @Override
-    public boolean onCreate() {
-        mSource = QsbApplication.get(getContext()).getGoogleSource();
-        mUriMatcher = buildUriMatcher(getContext());
-        return true;
+    fun onCreate(): Boolean {
+        mSource = QsbApplication.get(getContext()).getGoogleSource()
+        mUriMatcher = buildUriMatcher(getContext())
+        return true
     }
 
     /**
-     * This will always return {@link SearchManager#SUGGEST_MIME_TYPE} as this
+     * This will always return [SearchManager.SUGGEST_MIME_TYPE] as this
      * provider is purely to provide suggestions.
      */
     @Override
-    public String getType(Uri uri) {
-        return SearchManager.SUGGEST_MIME_TYPE;
+    fun getType(uri: Uri?): String {
+        return SearchManager.SUGGEST_MIME_TYPE
     }
 
-    private SourceResult emptyIfNull(SourceResult result, GoogleSource source, String query) {
-        return result == null ? new CursorBackedSourceResult(source, query) : result;
+    private fun emptyIfNull(
+        result: SourceResult?,
+        source: GoogleSource?,
+        query: String
+    ): SourceResult {
+        return result ?: CursorBackedSourceResult(source, query)
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-            String[] selectionArgs, String sortOrder) {
-
-        if (DBG) Log.d(TAG, "query uri=" + uri);
-        int match = mUriMatcher.match(uri);
-
-        if (match == SEARCH_SUGGEST) {
-            String query = getQuery(uri);
-            return new SuggestionCursorBackedCursor(
-                    emptyIfNull(mSource.queryExternal(query), mSource, query));
-        } else if (match == SEARCH_SHORTCUT) {
-            String shortcutId = getQuery(uri);
-            String extraData =
-                uri.getQueryParameter(SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA);
-            return new SuggestionCursorBackedCursor(mSource.refreshShortcut(shortcutId, extraData));
+    fun query(
+        uri: Uri, projection: Array<String?>?, selection: String?,
+        selectionArgs: Array<String?>?, sortOrder: String?
+    ): Cursor {
+        if (GoogleSuggestionProvider.Companion.DBG) Log.d(
+            GoogleSuggestionProvider.Companion.TAG,
+            "query uri=$uri"
+        )
+        val match: Int = mUriMatcher.match(uri)
+        return if (match == GoogleSuggestionProvider.Companion.SEARCH_SUGGEST) {
+            val query = getQuery(uri)
+            SuggestionCursorBackedCursor(
+                emptyIfNull(mSource!!.queryExternal(query), mSource, query)
+            )
+        } else if (match == GoogleSuggestionProvider.Companion.SEARCH_SHORTCUT) {
+            val shortcutId = getQuery(uri)
+            val extraData: String =
+                uri.getQueryParameter(SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA)
+            SuggestionCursorBackedCursor(mSource!!.refreshShortcut(shortcutId, extraData))
         } else {
-            throw new IllegalArgumentException("Unknown URI " + uri);
+            throw IllegalArgumentException("Unknown URI $uri")
         }
     }
 
     /**
      * Gets the search text from a uri.
      */
-    private String getQuery(Uri uri) {
-        if (uri.getPathSegments().size() > 1) {
-            return uri.getLastPathSegment();
+    private fun getQuery(uri: Uri): String {
+        return if (uri.getPathSegments().size() > 1) {
+            uri.getLastPathSegment()
         } else {
-            return "";
+            ""
         }
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        throw new UnsupportedOperationException();
+    fun insert(uri: Uri?, values: ContentValues?): Uri {
+        throw UnsupportedOperationException()
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
-            String[] selectionArgs) {
-        throw new UnsupportedOperationException();
+    fun update(
+        uri: Uri?, values: ContentValues?, selection: String?,
+        selectionArgs: Array<String?>?
+    ): Int {
+        throw UnsupportedOperationException()
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        throw new UnsupportedOperationException();
+    fun delete(uri: Uri?, selection: String?, selectionArgs: Array<String?>?): Int {
+        throw UnsupportedOperationException()
     }
 
-    private UriMatcher buildUriMatcher(Context context) {
-        String authority = getAuthority(context);
-        UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        matcher.addURI(authority, SearchManager.SUGGEST_URI_PATH_QUERY,
-                SEARCH_SUGGEST);
-        matcher.addURI(authority, SearchManager.SUGGEST_URI_PATH_QUERY + "/*",
-                SEARCH_SUGGEST);
-        matcher.addURI(authority, SearchManager.SUGGEST_URI_PATH_SHORTCUT,
-                SEARCH_SHORTCUT);
-        matcher.addURI(authority, SearchManager.SUGGEST_URI_PATH_SHORTCUT + "/*",
-                SEARCH_SHORTCUT);
-        return matcher;
+    private fun buildUriMatcher(context: Context): UriMatcher {
+        val authority = getAuthority(context)
+        val matcher = UriMatcher(UriMatcher.NO_MATCH)
+        matcher.addURI(
+            authority, SearchManager.SUGGEST_URI_PATH_QUERY,
+            GoogleSuggestionProvider.Companion.SEARCH_SUGGEST
+        )
+        matcher.addURI(
+            authority, SearchManager.SUGGEST_URI_PATH_QUERY.toString() + "/*",
+            GoogleSuggestionProvider.Companion.SEARCH_SUGGEST
+        )
+        matcher.addURI(
+            authority, SearchManager.SUGGEST_URI_PATH_SHORTCUT,
+            GoogleSuggestionProvider.Companion.SEARCH_SHORTCUT
+        )
+        matcher.addURI(
+            authority, SearchManager.SUGGEST_URI_PATH_SHORTCUT.toString() + "/*",
+            GoogleSuggestionProvider.Companion.SEARCH_SHORTCUT
+        )
+        return matcher
     }
 
-    protected String getAuthority(Context context) {
-        return context.getPackageName() + ".google";
+    protected fun getAuthority(context: Context): String {
+        return context.getPackageName().toString() + ".google"
     }
 
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.GoogleSuggestionProvider"
+
+        // UriMatcher constants
+        private const val SEARCH_SUGGEST = 0
+        private const val SEARCH_SHORTCUT = 1
+    }
 }
