@@ -1,6 +1,4 @@
-//
 // Copyright (C) 2009 The Android Open Source Project
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -21,6 +19,34 @@ package {
 
 android_app {
     name: "QuickSearchBox",
+    sdk_version: "current",
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+        "src/**/*.logtags",
+    ],
+    exclude_srcs: [
+      "src/**/quicksearchbox/Suggestion.java",
+      "src/**/quicksearchbox/SuggestionCursor.java",
+      "src/**/quicksearchbox/SuggestionCursorProvider.java",
+      "src/**/quicksearchbox/Source.java",
+      "src/**/quicksearchbox/AbstractSource.java",
+    ],
+    static_libs: [
+            "guava",
+            "android-common",
+    ],
+    certificate: "shared",
+    product_specific: true,
+    resource_dirs: ["res"],
+    optimize: {
+        proguard_flags_files: ["proguard.flags"],
+    },
+    kotlincflags: ["-Werror"],
+}
+
+android_app {
+    name: "QuickSearchBoxJava",
     sdk_version: "current",
     static_libs: [
         "guava",
