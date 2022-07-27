@@ -15,6 +15,7 @@
  */
 package com.android.quicksearchbox.google
 
+import com.android.quicksearchbox.Source
 import com.android.quicksearchbox.SourceResult
 import com.android.quicksearchbox.SuggestionCursor
 

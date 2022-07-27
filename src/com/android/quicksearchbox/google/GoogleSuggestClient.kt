@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,39 @@
 package com.android.quicksearchbox.google
 
 import android.content.ComponentName
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import android.os.Build
+import android.os.Handler
+import android.text.TextUtils
+import android.util.Log
+import com.android.quicksearchbox.Config
+import com.android.quicksearchbox.R
+import com.android.quicksearchbox.Source
+import com.android.quicksearchbox.SourceResult
 import com.android.quicksearchbox.SuggestionCursor
+import com.android.quicksearchbox.util.NamedTaskExecutor
+import org.json.JSONArray
+import org.json.JSONException
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.UnsupportedEncodingException
+import java.net.HttpURLConnection
+import java.net.URI
+import java.net.URL
+import java.net.URLEncoder
+import java.util.Locale
+
 
 /**
  * Use network-based Google Suggests to provide search suggestions.
  */
 class GoogleSuggestClient(
-    context: Context?, uiThread: Handler?,
-    iconLoader: NamedTaskExecutor?, config: Config
+    context: Context, uiThread: Handler,
+    iconLoader: NamedTaskExecutor, config: Config
 ) : AbstractGoogleSource(context, uiThread, iconLoader) {
     private var mSuggestUri: String?
     private val mConnectTimeout: Int
@@ -33,12 +58,12 @@ class GoogleSuggestClient(
         get() = ComponentName(context, com.android.quicksearchbox.google.GoogleSearch::class.java)
 
     @Override
-    override fun queryInternal(query: String): SourceResult? {
+    override fun queryInternal(query: String?): SourceResult? {
         return query(query)
     }
 
     @Override
-    override fun queryExternal(query: String): SourceResult? {
+    override fun queryExternal(query: String?): SourceResult? {
         return query(query)
     }
 
@@ -46,11 +71,11 @@ class GoogleSuggestClient(
      * Queries for a given search term and returns a cursor containing
      * suggestions ordered by best match.
      */
-    private fun query(query: String): SourceResult? {
+    private fun query(query: String?): SourceResult? {
         if (TextUtils.isEmpty(query)) {
             return null
         }
-        if (!isNetworkConnected) {
+        if (!isNetworkConnected()) {
             Log.i(GoogleSuggestClient.Companion.LOG_TAG, "Not connected to network.")
             return null
         }
@@ -78,7 +103,7 @@ class GoogleSuggestClient(
             connection.setDoInput(true)
             connection.connect()
             val inputStream: InputStream = connection.getInputStream()
-            if (connection.getResponseCode() === 200) {
+            if (connection.getResponseCode() == 200) {
 
                 /* Goto http://www.google.com/complete/search?json=true&q=foo
                  * to see what the data format looks like. It's basically a json
@@ -119,25 +144,24 @@ class GoogleSuggestClient(
     }
 
     @Override
-    override fun refreshShortcut(shortcutId: String?, oldExtraData: String?): SuggestionCursor? {
+    override fun refreshShortcut(shortcutId: String?, extraData: String?): SuggestionCursor? {
         return null
     }
 
-    private val isNetworkConnected: Boolean
-        private get() {
-            val networkInfo: NetworkInfo? = activeNetworkInfo
-            return networkInfo != null && networkInfo.isConnected()
-        }
-    private val activeNetworkInfo: NetworkInfo?
-        private get() {
-            val connectivity: ConnectivityManager =
-                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                    ?: return null
-            return connectivity.getActiveNetworkInfo()
-        }
+    private fun isNetworkConnected(): Boolean {
+        val networkInfo: NetworkInfo? = getActiveNetworkInfo()
+        return networkInfo != null && networkInfo.isConnected()
+    }
+
+    private fun getActiveNetworkInfo(): NetworkInfo? {
+        val connectivity: ConnectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                ?: return null
+        return connectivity.getActiveNetworkInfo()
+    }
 
     private class GoogleSuggestCursor(
-        source: Source?, userQuery: String?,
+        source: Source, userQuery: String?,
         suggestions: JSONArray, popularity: JSONArray
     ) : AbstractGoogleSourceResult(source, userQuery!!) {
         /* Contains the actual suggestions */
@@ -155,7 +179,7 @@ class GoogleSuggestClient(
         @get:Override
         override val suggestionQuery: String?
             get() = try {
-                mSuggestions.getString(getPosition())
+                mSuggestions.getString(position)
             } catch (e: JSONException) {
                 Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error parsing response: $e")
                 null
@@ -164,7 +188,7 @@ class GoogleSuggestClient(
         @get:Override
         override val suggestionText2: String?
             get() = try {
-                mPopularity.getString(getPosition())
+                mPopularity.getString(position)
             } catch (e: JSONException) {
                 Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error parsing response: $e")
                 null
@@ -186,7 +210,7 @@ class GoogleSuggestClient(
     }
 
     init {
-        mConnectTimeout = config.getHttpConnectTimeout()
+        mConnectTimeout = config.httpConnectTimeout
         // NOTE:  Do not look up the resource here;  Localization changes may not have completed
         // yet (e.g. we may still be reading the SIM card).
         mSuggestUri = null

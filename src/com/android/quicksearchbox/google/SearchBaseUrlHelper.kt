@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,19 @@
 package com.android.quicksearchbox.google
 
 import com.android.quicksearchbox.R
+import com.android.quicksearchbox.SearchSettings
+import com.android.quicksearchbox.SearchSettingsImpl
+import com.android.quicksearchbox.util.HttpHelper
+
+import android.content.Context
+import android.content.SharedPreferences
+import android.os.AsyncTask
+import android.text.TextUtils
+import android.util.Log
+
+import java.util.Locale
+import java.util.concurrent.Executors
+
 
 /**
  * Helper to build the base URL for all search requests.
@@ -38,7 +51,7 @@ class SearchBaseUrlHelper(
      * expired.
      */
     fun maybeUpdateBaseUrlSetting(force: Boolean) {
-        val lastUpdateTime: Long = mSearchSettings.getSearchBaseDomainApplyTime()
+        val lastUpdateTime: Long = mSearchSettings.searchBaseDomainApplyTime
         val currentTime: Long = System.currentTimeMillis()
         if (force || lastUpdateTime == -1L || currentTime - lastUpdateTime >= SearchBaseUrlHelper.Companion.SEARCH_BASE_URL_EXPIRY_MS) {
             if (mSearchSettings.shouldUseGoogleCom()) {
@@ -69,13 +82,13 @@ class SearchBaseUrlHelper(
      */
     val searchDomain: String?
         get() {
-            var domain: String = mSearchSettings.getSearchBaseDomain()
+            var domain: String = mSearchSettings.searchBaseDomain
             if (domain == null) {
                 if (SearchBaseUrlHelper.Companion.DBG) {
                     Log.w(
                         SearchBaseUrlHelper.Companion.TAG,
                         "Search base domain was null, last apply time=" +
-                                mSearchSettings.getSearchBaseDomainApplyTime()
+                                mSearchSettings.searchBaseDomainApplyTime
                     )
                 }
 
@@ -103,10 +116,10 @@ class SearchBaseUrlHelper(
      * URL for search requests.
      */
     private fun checkSearchDomain() {
-        val request = GetRequest(SearchBaseUrlHelper.Companion.DOMAIN_CHECK_URL)
+        val request = HttpHelper.GetRequest(SearchBaseUrlHelper.Companion.DOMAIN_CHECK_URL)
         object : AsyncTask<Void?, Void?, Void?>() {
             @Override
-            protected fun doInBackground(vararg params: Void?): Void? {
+            protected override fun doInBackground(vararg params: Void?): Void? {
                 if (SearchBaseUrlHelper.Companion.DBG) Log.d(
                     SearchBaseUrlHelper.Companion.TAG,
                     "Starting request to /searchdomaincheck"
@@ -135,7 +148,7 @@ class SearchBaseUrlHelper(
     }
 
     private val defaultBaseDomain: String
-        private get() = mContext.getResources().getString(R.string.default_search_domain)
+        get() = mContext.getResources().getString(R.string.default_search_domain)
 
     private fun setSearchBaseDomain(domain: String) {
         if (SearchBaseUrlHelper.Companion.DBG) Log.d(
@@ -146,7 +159,7 @@ class SearchBaseUrlHelper(
     }
 
     @Override
-    fun onSharedPreferenceChanged(pref: SharedPreferences?, key: String) {
+    override fun onSharedPreferenceChanged(pref: SharedPreferences?, key: String) {
         // Listen for changes only to the SEARCH_BASE_URL preference.
         if (SearchBaseUrlHelper.Companion.DBG) Log.d(
             SearchBaseUrlHelper.Companion.TAG,
