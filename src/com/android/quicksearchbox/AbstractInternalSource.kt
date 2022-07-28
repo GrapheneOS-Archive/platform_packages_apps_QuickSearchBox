@@ -15,23 +15,22 @@
  */
 package com.android.quicksearchbox
 
+import com.android.quicksearchbox.util.NamedTaskExecutor
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Handler
-import com.android.quicksearchbox.util.NamedTaskExecutor
 
 /**
  * Abstract implementation of a source that is not backed by a searchable activity.
  */
 abstract class AbstractInternalSource(
-    context: Context?,
-    uiThread: Handler?,
-    iconLoader: NamedTaskExecutor?
-) :
-    AbstractSource(context, uiThread, iconLoader!!) {
+    context: Context,
+    uiThread: Handler,
+    iconLoader: NamedTaskExecutor
+) : AbstractSource(context, uiThread, iconLoader) {
     @get:Override
-    override val suggestUri: String
+    override val suggestUri: String?
         get() = null
 
     @Override
@@ -39,13 +38,12 @@ abstract class AbstractInternalSource(
         return true
     }
 
-    @get:Override
-    override val defaultIntentData: String
+    override val defaultIntentData: String?
         get() = null
 
     @get:Override
     override val iconPackage: String
-        protected get() = getContext().getPackageName()
+        get() = context.getPackageName()
 
     @get:Override
     override val queryThreshold: Int
@@ -53,12 +51,12 @@ abstract class AbstractInternalSource(
 
     @get:Override
     override val sourceIcon: Drawable
-        get() = getContext().getResources().getDrawable(sourceIconResource)
+        get() = context.getResources().getDrawable(sourceIconResource, null)
 
     @get:Override
     override val sourceIconUri: Uri
         get() = Uri.parse(
-            "android.resource://" + getContext().getPackageName()
+            "android.resource://" + context.getPackageName()
                 .toString() + "/" + sourceIconResource
         )
     protected abstract val sourceIconResource: Int

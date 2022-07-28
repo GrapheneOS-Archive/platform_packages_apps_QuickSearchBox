@@ -16,6 +16,8 @@
 package com.android.quicksearchbox
 
 import org.json.JSONException
+
+import kotlin.collections.Collection
 import java.util.HashSet
 
 /**
@@ -23,7 +25,7 @@ import java.util.HashSet
  */
 abstract class AbstractSuggestionExtras protected constructor(private val mMore: SuggestionExtras?) :
     SuggestionExtras {
-    override fun getExtraColumnNames(): Collection? {
+    override fun getExtraColumnNames(): Collection<String> {
         val columns: HashSet<String> = HashSet<String>()
         columns.addAll(doGetExtraColumnNames())
         if (mMore != null) {
@@ -32,7 +34,7 @@ abstract class AbstractSuggestionExtras protected constructor(private val mMore:
         return columns
     }
 
-    protected abstract fun doGetExtraColumnNames(): Collection<String?>?
+    protected abstract fun doGetExtraColumnNames(): Collection<String>
     override fun getExtra(columnName: String): String {
         var extra = doGetExtra(columnName)
         if (extra == null && mMore != null) {
@@ -41,7 +43,7 @@ abstract class AbstractSuggestionExtras protected constructor(private val mMore:
         return extra
     }
 
-    protected abstract fun doGetExtra(columnName: String?): String
+    protected abstract fun doGetExtra(columnName: String): String
 
     @Throws(JSONException::class)
     override fun toJsonString(): String? {

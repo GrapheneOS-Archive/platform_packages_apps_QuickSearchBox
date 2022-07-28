@@ -13,21 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
 /**
  * A SuggestionCursor that delegates all calls to other suggestions.
  */
-public abstract class AbstractSuggestionCursorWrapper extends AbstractSuggestionWrapper
-        implements SuggestionCursor {
-
-    private final String mUserQuery;
-
-    public AbstractSuggestionCursorWrapper(String userQuery) {
-        mUserQuery = userQuery;
-    }
-
-    public String getUserQuery() {
-        return mUserQuery;
-    }
-}
+abstract class AbstractSuggestionCursorWrapper(override val userQuery: String) :
+    AbstractSuggestionWrapper(), SuggestionCursor
