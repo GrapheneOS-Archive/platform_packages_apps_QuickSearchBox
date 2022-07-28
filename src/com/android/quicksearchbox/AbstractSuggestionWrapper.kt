@@ -13,94 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import android.content.ComponentName;
+import android.content.ComponentName
 
 /**
  * A Suggestion that delegates all calls to other suggestions.
  */
-public abstract class AbstractSuggestionWrapper implements Suggestion {
-
+abstract class AbstractSuggestionWrapper : Suggestion {
     /**
      * Gets the current suggestion.
      */
-    protected abstract Suggestion current();
-
-    public String getShortcutId() {
-        return current().getShortcutId();
-    }
-
-    public String getSuggestionFormat() {
-        return current().getSuggestionFormat();
-    }
-
-    public String getSuggestionIcon1() {
-        return current().getSuggestionIcon1();
-    }
-
-    public String getSuggestionIcon2() {
-        return current().getSuggestionIcon2();
-    }
-
-    public String getSuggestionIntentAction() {
-        return current().getSuggestionIntentAction();
-    }
-
-    public ComponentName getSuggestionIntentComponent() {
-        return current().getSuggestionIntentComponent();
-    }
-
-    public String getSuggestionIntentDataString() {
-        return current().getSuggestionIntentDataString();
-    }
-
-    public String getSuggestionIntentExtraData() {
-        return current().getSuggestionIntentExtraData();
-    }
-
-    public String getSuggestionLogType() {
-        return current().getSuggestionLogType();
-    }
-
-    public String getSuggestionQuery() {
-        return current().getSuggestionQuery();
-    }
-
-    public Source getSuggestionSource() {
-        return current().getSuggestionSource();
-    }
-
-    public String getSuggestionText1() {
-        return current().getSuggestionText1();
-    }
-
-    public String getSuggestionText2() {
-        return current().getSuggestionText2();
-    }
-
-    public String getSuggestionText2Url() {
-        return current().getSuggestionText2Url();
-    }
-
-    public boolean isSpinnerWhileRefreshing() {
-        return current().isSpinnerWhileRefreshing();
-    }
-
-    public boolean isSuggestionShortcut() {
-        return current().isSuggestionShortcut();
-    }
-
-    public boolean isWebSearchSuggestion() {
-        return current().isWebSearchSuggestion();
-    }
-
-    public boolean isHistorySuggestion() {
-        return current().isHistorySuggestion();
-    }
-
-    public SuggestionExtras getExtras() {
-        return current().getExtras();
-    }
-
+    protected abstract fun current(): Suggestion
+    override val shortcutId: String
+        get() = current().getShortcutId()
+    override val suggestionFormat: String
+        get() = current().getSuggestionFormat()
+    override val suggestionIcon1: String
+        get() = current().getSuggestionIcon1()
+    override val suggestionIcon2: String
+        get() = current().getSuggestionIcon2()
+    override val suggestionIntentAction: String
+        get() = current().getSuggestionIntentAction()
+    override val suggestionIntentComponent: ComponentName
+        get() = current().getSuggestionIntentComponent()
+    override val suggestionIntentDataString: String
+        get() = current().getSuggestionIntentDataString()
+    override val suggestionIntentExtraData: String
+        get() = current().getSuggestionIntentExtraData()
+    override val suggestionLogType: String
+        get() = current().getSuggestionLogType()
+    override val suggestionQuery: String
+        get() = current().getSuggestionQuery()
+    override val suggestionSource: Source
+        get() = current().getSuggestionSource()
+    override val suggestionText1: String
+        get() = current().getSuggestionText1()
+    override val suggestionText2: String
+        get() = current().getSuggestionText2()
+    override val suggestionText2Url: String
+        get() = current().getSuggestionText2Url()
+    override val isSpinnerWhileRefreshing: Boolean
+        get() = current().isSpinnerWhileRefreshing()
+    override val isSuggestionShortcut: Boolean
+        get() = current().isSuggestionShortcut()
+    override val isWebSearchSuggestion: Boolean
+        get() = current().isWebSearchSuggestion()
+    override val isHistorySuggestion: Boolean
+        get() = current().isHistorySuggestion()
+    override val extras: SuggestionExtras
+        get() = current().getExtras()
 }
