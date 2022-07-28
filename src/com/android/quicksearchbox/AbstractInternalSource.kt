@@ -13,65 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import com.android.quicksearchbox.util.NamedTaskExecutor;
-
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Handler;
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Handler
+import com.android.quicksearchbox.util.NamedTaskExecutor
 
 /**
  * Abstract implementation of a source that is not backed by a searchable activity.
  */
-public abstract class AbstractInternalSource extends AbstractSource {
-
-    public AbstractInternalSource(Context context, Handler uiThread, NamedTaskExecutor iconLoader) {
-        super(context, uiThread, iconLoader);
-    }
-
-    @Override
-    public String getSuggestUri() {
-        return null;
-    }
-
-    @Override
-    public boolean canRead() {
-        return true;
-    }
+abstract class AbstractInternalSource(
+    context: Context?,
+    uiThread: Handler?,
+    iconLoader: NamedTaskExecutor?
+) :
+    AbstractSource(context, uiThread, iconLoader!!) {
+    @get:Override
+    override val suggestUri: String
+        get() = null
 
     @Override
-    public String getDefaultIntentData() {
-        return null;
+    override fun canRead(): Boolean {
+        return true
     }
+
+    @get:Override
+    override val defaultIntentData: String
+        get() = null
+
+    @get:Override
+    override val iconPackage: String
+        protected get() = getContext().getPackageName()
+
+    @get:Override
+    override val queryThreshold: Int
+        get() = 0
+
+    @get:Override
+    override val sourceIcon: Drawable
+        get() = getContext().getResources().getDrawable(sourceIconResource)
+
+    @get:Override
+    override val sourceIconUri: Uri
+        get() = Uri.parse(
+            "android.resource://" + getContext().getPackageName()
+                .toString() + "/" + sourceIconResource
+        )
+    protected abstract val sourceIconResource: Int
 
     @Override
-    protected String getIconPackage() {
-        return getContext().getPackageName();
+    override fun queryAfterZeroResults(): Boolean {
+        return true
     }
-
-    @Override
-    public int getQueryThreshold() {
-        return 0;
-    }
-
-    @Override
-    public Drawable getSourceIcon() {
-        return getContext().getResources().getDrawable(getSourceIconResource());
-    }
-
-    @Override
-    public Uri getSourceIconUri() {
-        return Uri.parse("android.resource://" + getContext().getPackageName()
-                + "/" +  getSourceIconResource());
-    }
-
-    protected abstract int getSourceIconResource();
-
-    @Override
-    public boolean queryAfterZeroResults() {
-        return true;
-    }
-
 }
