@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,72 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.database.DataSetObserver;
-
-import java.util.Collection;
+import android.database.DataSetObserver
 
 /**
  * A suggestion cursor that delegates all methods to another SuggestionCursor.
  */
-public class SuggestionCursorWrapper extends AbstractSuggestionCursorWrapper {
-
-    private final SuggestionCursor mCursor;
-
-    public SuggestionCursorWrapper(String userQuery, SuggestionCursor cursor) {
-        super(userQuery);
-        mCursor = cursor;
-    }
-
-    public void close() {
+open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: SuggestionCursor) :
+    AbstractSuggestionCursorWrapper(userQuery!!) {
+    override fun close() {
         if (mCursor != null) {
-            mCursor.close();
+            mCursor.close()
         }
     }
 
-    public int getCount() {
-        return mCursor == null ? 0 : mCursor.getCount();
-    }
+    override val count: Int
+        get() = if (mCursor == null) 0 else mCursor.getCount()
+    override val position: Int
+        get() = if (mCursor == null) 0 else mCursor.getPosition()
 
-    public int getPosition() {
-        return mCursor == null ? 0 : mCursor.getPosition();
-    }
-
-    public void moveTo(int pos) {
+    override fun moveTo(pos: Int) {
         if (mCursor != null) {
-            mCursor.moveTo(pos);
+            mCursor.moveTo(pos)
         }
     }
 
-    public boolean moveToNext() {
+    override fun moveToNext(): Boolean {
+        return mCursor?.moveToNext() ?: false
+    }
+
+    override fun registerDataSetObserver(observer: DataSetObserver) {
         if (mCursor != null) {
-            return mCursor.moveToNext();
-        } else {
-            return false;
+            mCursor.registerDataSetObserver(observer)
         }
     }
 
-    public void registerDataSetObserver(DataSetObserver observer) {
+    override fun unregisterDataSetObserver(observer: DataSetObserver) {
         if (mCursor != null) {
-            mCursor.registerDataSetObserver(observer);
-        }
-    }
-
-    public void unregisterDataSetObserver(DataSetObserver observer) {
-        if (mCursor != null) {
-            mCursor.unregisterDataSetObserver(observer);
+            mCursor.unregisterDataSetObserver(observer)
         }
     }
 
     @Override
-    protected SuggestionCursor current() {
-        return mCursor;
+    override fun current(): SuggestionCursor {
+        return mCursor
     }
 
-    public Collection<String> getExtraColumns() {
-        return mCursor.getExtraColumns();
-    }
+    override val extraColumns: Collection<String>
+        get() = mCursor.getExtraColumns()
 
 }
