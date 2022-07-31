@@ -23,7 +23,7 @@ interface SuggestionCursorProvider<C : SuggestionCursor?> {
      * Gets the name of the provider. This is used for logging and
      * to execute tasks on the queue for the provider.
      */
-    fun getName() : String
+    val name: String?
 
     /**
      * Gets suggestions from the provider.
@@ -32,5 +32,5 @@ interface SuggestionCursorProvider<C : SuggestionCursor?> {
      * @param queryLimit An advisory maximum number of results that the source should return.
      * @return The suggestion results. Must not be `null`.
      */
-    fun getSuggestions(query: String?, queryLimit: Int): C
+    fun getSuggestions(query: String?, queryLimit: Int): C?
 }
