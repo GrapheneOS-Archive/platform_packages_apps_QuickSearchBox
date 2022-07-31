@@ -26,6 +26,7 @@ android_app {
         "src/**/*.logtags",
     ],
     exclude_srcs: [
+      "src/**/quicksearchbox/google/AbstractGoogleSource.java",
       "src/**/quicksearchbox/Suggestion.java",
       "src/**/quicksearchbox/SuggestionCursor.java",
       "src/**/quicksearchbox/SuggestionCursorProvider.java",
