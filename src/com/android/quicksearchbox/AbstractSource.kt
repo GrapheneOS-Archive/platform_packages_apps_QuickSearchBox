@@ -54,6 +54,7 @@ abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: N
             return mIconLoader
         }
     protected abstract val iconPackage: String
+
     @Override
     override fun getIcon(drawableId: String?): NowOrLater<Drawable?>? {
         return iconLoader?.getIcon(drawableId)
@@ -74,11 +75,11 @@ abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: N
     }
 
     protected fun createVoiceWebSearchIntent(appData: Bundle?): Intent {
-        return com.android.quicksearchbox.QsbApplication.get(mContext).getVoiceSearch()
+        return com.android.quicksearchbox.QsbApplication.get(mContext).voiceSearch
             .createVoiceWebSearchIntent(appData)
     }
 
-    override fun getRoot() : Source {
+    override fun getRoot(): Source {
         return this
     }
 
@@ -88,7 +89,7 @@ abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: N
             val s: com.android.quicksearchbox.Source =
                 other.getRoot()
             if (s::class.equals(this::class)) {
-                return s.getName().equals(getName())
+                return s.name.equals(name)
             }
         }
         return false
@@ -96,16 +97,17 @@ abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: N
 
     @Override
     override fun hashCode(): Int {
-        return getName().hashCode()
+        return name.hashCode()
     }
 
     @Override
     override fun toString(): String {
-        return "Source{name=" + getName().toString() + "}"
+        return "Source{name=" + name.toString() + "}"
     }
 
     companion object {
         private const val TAG = "QSB.AbstractSource"
+
         @JvmStatic
         fun createSourceSearchIntent(
             activity: ComponentName?, query: String?,
