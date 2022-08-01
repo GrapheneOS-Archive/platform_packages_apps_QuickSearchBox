@@ -42,19 +42,22 @@ abstract class AbstractGoogleSource(
     abstract override val intentComponent: ComponentName?
 
     @Override
-    abstract override fun refreshShortcut(shortcutId: String, extraData: String): SuggestionCursor
+    abstract override fun refreshShortcut(
+        shortcutId: String?,
+        extraData: String?
+    ): SuggestionCursor?
 
     /**
      * Called by QSB to get web suggestions for a query.
      */
     @Override
-    abstract override fun queryInternal(query: String?): SourceResult
+    abstract override fun queryInternal(query: String?): SourceResult?
 
     /**
      * Called by external apps to get web suggestions for a query.
      */
     @Override
-    abstract override fun queryExternal(query: String?): SourceResult
+    abstract override fun queryExternal(query: String?): SourceResult?
 
     @Override
     override fun createVoiceSearchIntent(appData: Bundle?): Intent? {
