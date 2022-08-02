@@ -84,10 +84,9 @@ abstract class AbstractGoogleSource(
     override val settingsDescription: CharSequence
         get() = context.getString(R.string.google_search_description)
 
-    @Override
-    protected override fun getSourceIconResource(): Int {
-        return R.mipmap.google_icon
-    }
+    @get:Override
+    override val sourceIconResource: Int
+        get() = R.mipmap.google_icon
 
     @Override
     override fun getSuggestions(query: String?, queryLimit: Int): SourceResult? {
