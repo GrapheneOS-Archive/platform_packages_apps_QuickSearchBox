@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,302 +13,220 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import android.content.ComponentName;
-import android.content.Intent;
-
+import android.content.ComponentName
+import android.content.Intent
+import com.google.common.annotations.VisibleForTesting
 
 /**
  * Holds data for each suggest item including the display data and how to launch the result.
  * Used for passing from the provider to the suggest cursor.
  */
-public class SuggestionData implements Suggestion {
+class SuggestionData(override val suggestionSource: Source) : Suggestion {
+    private var mFormat: String? = null
+    private var mText1: String? = null
+    private var mText2: String? = null
+    private var mText2Url: String? = null
+    private var mIcon1: String? = null
+    private var mIcon2: String? = null
+    private var mShortcutId: String? = null
+    override var isSpinnerWhileRefreshing = false
+        private set
+    private var mIntentAction: String? = null
+    private var mIntentData: String? = null
+    var intentExtraData: String? = null
+        private set
+    private var mSuggestionQuery: String? = null
+    private var mLogType: String? = null
+    override var isSuggestionShortcut = false
+        private set
+    override var isHistorySuggestion = false
+        private set
+    private var mExtras: SuggestionExtras? = null
+    override val suggestionFormat: String
+        get() = mFormat!!
+    override val suggestionText1: String
+        get() = mText1!!
+    override val suggestionText2: String
+        get() = mText2!!
+    override val suggestionText2Url: String
+        get() = mText2Url!!
+    override val suggestionIcon1: String
+        get() = mIcon1!!
+    override val suggestionIcon2: String
+        get() = mIcon2!!
+    override val shortcutId: String
+        get() = mShortcutId!!
+    override val suggestionIntentAction: String
+        get() = if (mIntentAction != null) mIntentAction else suggestionSource.getDefaultIntentAction()
+    override val suggestionIntentComponent: ComponentName
+        get() = suggestionSource.getIntentComponent()
+    override val suggestionIntentDataString: String
+        get() = mIntentData!!
+    override val suggestionIntentExtraData: String
+        get() = intentExtraData!!
+    override val suggestionQuery: String
+        get() = mSuggestionQuery!!
+    override val suggestionLogType: String
+        get() = mLogType!!
+    override val isWebSearchSuggestion: Boolean
+        get() = Intent.ACTION_WEB_SEARCH.equals(suggestionIntentAction)
 
-    private final Source mSource;
-    private String mFormat;
-    private String mText1;
-    private String mText2;
-    private String mText2Url;
-    private String mIcon1;
-    private String mIcon2;
-    private String mShortcutId;
-    private boolean mSpinnerWhileRefreshing;
-    private String mIntentAction;
-    private String mIntentData;
-    private String mIntentExtraData;
-    private String mSuggestionQuery;
-    private String mLogType;
-    private boolean mIsShortcut;
-    private boolean mIsHistory;
-    private SuggestionExtras mExtras;
-
-    public SuggestionData(Source source) {
-        mSource = source;
-    }
-
-    public Source getSuggestionSource() {
-        return mSource;
-    }
-
-    public String getSuggestionFormat() {
-        return mFormat;
-    }
-
-    public String getSuggestionText1() {
-        return mText1;
-    }
-
-    public String getSuggestionText2() {
-        return mText2;
-    }
-
-    public String getSuggestionText2Url() {
-        return mText2Url;
-    }
-
-    public String getSuggestionIcon1() {
-        return mIcon1;
-    }
-
-    public String getSuggestionIcon2() {
-        return mIcon2;
-    }
-
-    public boolean isSpinnerWhileRefreshing() {
-        return mSpinnerWhileRefreshing;
-    }
-
-    public String getIntentExtraData() {
-        return mIntentExtraData;
-    }
-
-    public String getShortcutId() {
-        return mShortcutId;
-    }
-
-    public String getSuggestionIntentAction() {
-        if (mIntentAction != null) return mIntentAction;
-        return mSource.getDefaultIntentAction();
-    }
-
-    public ComponentName getSuggestionIntentComponent() {
-        return mSource.getIntentComponent();
-    }
-
-    public String getSuggestionIntentDataString() {
-        return mIntentData;
-    }
-
-    public String getSuggestionIntentExtraData() {
-        return mIntentExtraData;
-    }
-
-    public String getSuggestionQuery() {
-        return mSuggestionQuery;
-    }
-
-    public String getSuggestionLogType() {
-        return mLogType;
-    }
-
-    public boolean isSuggestionShortcut() {
-        return mIsShortcut;
-    }
-
-    public boolean isWebSearchSuggestion() {
-        return Intent.ACTION_WEB_SEARCH.equals(getSuggestionIntentAction());
-    }
-
-    public boolean isHistorySuggestion() {
-        return mIsHistory;
+    @VisibleForTesting
+    fun setFormat(format: String?): SuggestionData {
+        mFormat = format
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setFormat(String format) {
-        mFormat = format;
-        return this;
+    fun setText1(text1: String?): SuggestionData {
+        mText1 = text1
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setText1(String text1) {
-        mText1 = text1;
-        return this;
+    fun setText2(text2: String?): SuggestionData {
+        mText2 = text2
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setText2(String text2) {
-        mText2 = text2;
-        return this;
+    fun setText2Url(text2Url: String?): SuggestionData {
+        mText2Url = text2Url
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setText2Url(String text2Url) {
-        mText2Url = text2Url;
-        return this;
+    fun setIcon1(icon1: String?): SuggestionData {
+        mIcon1 = icon1
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setIcon1(String icon1) {
-        mIcon1 = icon1;
-        return this;
+    fun setIcon2(icon2: String?): SuggestionData {
+        mIcon2 = icon2
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setIcon2(String icon2) {
-        mIcon2 = icon2;
-        return this;
+    fun setIntentAction(intentAction: String?): SuggestionData {
+        mIntentAction = intentAction
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setIntentAction(String intentAction) {
-        mIntentAction = intentAction;
-        return this;
+    fun setIntentData(intentData: String?): SuggestionData {
+        mIntentData = intentData
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setIntentData(String intentData) {
-        mIntentData = intentData;
-        return this;
+    fun setIntentExtraData(intentExtraData: String?): SuggestionData {
+        this.intentExtraData = intentExtraData
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setIntentExtraData(String intentExtraData) {
-        mIntentExtraData = intentExtraData;
-        return this;
+    fun setSuggestionQuery(suggestionQuery: String?): SuggestionData {
+        mSuggestionQuery = suggestionQuery
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setSuggestionQuery(String suggestionQuery) {
-        mSuggestionQuery = suggestionQuery;
-        return this;
+    fun setShortcutId(shortcutId: String?): SuggestionData {
+        mShortcutId = shortcutId
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setShortcutId(String shortcutId) {
-        mShortcutId = shortcutId;
-        return this;
+    fun setSpinnerWhileRefreshing(spinnerWhileRefreshing: Boolean): SuggestionData {
+        isSpinnerWhileRefreshing = spinnerWhileRefreshing
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setSpinnerWhileRefreshing(boolean spinnerWhileRefreshing) {
-        mSpinnerWhileRefreshing = spinnerWhileRefreshing;
-        return this;
+    fun setSuggestionLogType(logType: String?): SuggestionData {
+        mLogType = logType
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setSuggestionLogType(String logType) {
-        mLogType = logType;
-        return this;
+    fun setIsShortcut(isShortcut: Boolean): SuggestionData {
+        isSuggestionShortcut = isShortcut
+        return this
     }
 
     @VisibleForTesting
-    public SuggestionData setIsShortcut(boolean isShortcut) {
-        mIsShortcut = isShortcut;
-        return this;
-    }
-
-    @VisibleForTesting
-    public SuggestionData setIsHistory(boolean isHistory) {
-        mIsHistory = isHistory;
-        return this;
+    fun setIsHistory(isHistory: Boolean): SuggestionData {
+        isHistorySuggestion = isHistory
+        return this
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((mFormat == null) ? 0 : mFormat.hashCode());
-        result = prime * result + ((mIcon1 == null) ? 0 : mIcon1.hashCode());
-        result = prime * result + ((mIcon2 == null) ? 0 : mIcon2.hashCode());
-        result = prime * result + ((mIntentAction == null) ? 0 : mIntentAction.hashCode());
-        result = prime * result + ((mIntentData == null) ? 0 : mIntentData.hashCode());
-        result = prime * result + ((mIntentExtraData == null) ? 0 : mIntentExtraData.hashCode());
-        result = prime * result + ((mLogType == null) ? 0 : mLogType.hashCode());
-        result = prime * result + ((mShortcutId == null) ? 0 : mShortcutId.hashCode());
-        result = prime * result + ((mSource == null) ? 0 : mSource.hashCode());
-        result = prime * result + (mSpinnerWhileRefreshing ? 1231 : 1237);
-        result = prime * result + ((mSuggestionQuery == null) ? 0 : mSuggestionQuery.hashCode());
-        result = prime * result + ((mText1 == null) ? 0 : mText1.hashCode());
-        result = prime * result + ((mText2 == null) ? 0 : mText2.hashCode());
-        return result;
+    override fun hashCode(): Int {
+        val prime = 31
+        var result = 1
+        result = prime * result + if (mFormat == null) 0 else mFormat.hashCode()
+        result = prime * result + if (mIcon1 == null) 0 else mIcon1.hashCode()
+        result = prime * result + if (mIcon2 == null) 0 else mIcon2.hashCode()
+        result = prime * result + if (mIntentAction == null) 0 else mIntentAction.hashCode()
+        result = prime * result + if (mIntentData == null) 0 else mIntentData.hashCode()
+        result = prime * result + if (intentExtraData == null) 0 else intentExtraData.hashCode()
+        result = prime * result + if (mLogType == null) 0 else mLogType.hashCode()
+        result = prime * result + if (mShortcutId == null) 0 else mShortcutId.hashCode()
+        result = prime * result + if (suggestionSource == null) 0 else suggestionSource.hashCode()
+        result = prime * result + if (isSpinnerWhileRefreshing) 1231 else 1237
+        result = prime * result + if (mSuggestionQuery == null) 0 else mSuggestionQuery.hashCode()
+        result = prime * result + if (mText1 == null) 0 else mText1.hashCode()
+        result = prime * result + if (mText2 == null) 0 else mText2.hashCode()
+        return result
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        SuggestionData other = (SuggestionData)obj;
+    override fun equals(obj: Object?): Boolean {
+        if (this === obj) return true
+        if (obj == null) return false
+        if (getClass() !== obj.getClass()) return false
+        val other = obj as SuggestionData
         if (mFormat == null) {
-            if (other.mFormat != null)
-                return false;
-        } else if (!mFormat.equals(other.mFormat))
-            return false;
+            if (other.mFormat != null) return false
+        } else if (!mFormat.equals(other.mFormat)) return false
         if (mIcon1 == null) {
-            if (other.mIcon1 != null)
-                return false;
-        } else if (!mIcon1.equals(other.mIcon1))
-            return false;
+            if (other.mIcon1 != null) return false
+        } else if (!mIcon1.equals(other.mIcon1)) return false
         if (mIcon2 == null) {
-            if (other.mIcon2 != null)
-                return false;
-        } else if (!mIcon2.equals(other.mIcon2))
-            return false;
+            if (other.mIcon2 != null) return false
+        } else if (!mIcon2.equals(other.mIcon2)) return false
         if (mIntentAction == null) {
-            if (other.mIntentAction != null)
-                return false;
-        } else if (!mIntentAction.equals(other.mIntentAction))
-            return false;
+            if (other.mIntentAction != null) return false
+        } else if (!mIntentAction.equals(other.mIntentAction)) return false
         if (mIntentData == null) {
-            if (other.mIntentData != null)
-                return false;
-        } else if (!mIntentData.equals(other.mIntentData))
-            return false;
-        if (mIntentExtraData == null) {
-            if (other.mIntentExtraData != null)
-                return false;
-        } else if (!mIntentExtraData.equals(other.mIntentExtraData))
-            return false;
+            if (other.mIntentData != null) return false
+        } else if (!mIntentData.equals(other.mIntentData)) return false
+        if (intentExtraData == null) {
+            if (other.intentExtraData != null) return false
+        } else if (!intentExtraData.equals(other.intentExtraData)) return false
         if (mLogType == null) {
-            if (other.mLogType != null)
-                return false;
-        } else if (!mLogType.equals(other.mLogType))
-            return false;
+            if (other.mLogType != null) return false
+        } else if (!mLogType.equals(other.mLogType)) return false
         if (mShortcutId == null) {
-            if (other.mShortcutId != null)
-                return false;
-        } else if (!mShortcutId.equals(other.mShortcutId))
-            return false;
-        if (mSource == null) {
-            if (other.mSource != null)
-                return false;
-        } else if (!mSource.equals(other.mSource))
-            return false;
-        if (mSpinnerWhileRefreshing != other.mSpinnerWhileRefreshing)
-            return false;
+            if (other.mShortcutId != null) return false
+        } else if (!mShortcutId.equals(other.mShortcutId)) return false
+        if (suggestionSource == null) {
+            if (other.suggestionSource != null) return false
+        } else if (!suggestionSource.equals(other.suggestionSource)) return false
+        if (isSpinnerWhileRefreshing != other.isSpinnerWhileRefreshing) return false
         if (mSuggestionQuery == null) {
-            if (other.mSuggestionQuery != null)
-                return false;
-        } else if (!mSuggestionQuery.equals(other.mSuggestionQuery))
-            return false;
+            if (other.mSuggestionQuery != null) return false
+        } else if (!mSuggestionQuery.equals(other.mSuggestionQuery)) return false
         if (mText1 == null) {
-            if (other.mText1 != null)
-                return false;
-        } else if (!mText1.equals(other.mText1))
-            return false;
+            if (other.mText1 != null) return false
+        } else if (!mText1.equals(other.mText1)) return false
         if (mText2 == null) {
-            if (other.mText2 != null)
-                return false;
-        } else if (!mText2.equals(other.mText2))
-            return false;
-        return true;
+            if (other.mText2 != null) return false
+        } else if (!mText2.equals(other.mText2)) return false
+        return true
     }
 
     /**
@@ -316,31 +234,29 @@ public class SuggestionData implements Suggestion {
      * for debugging purposes.
      */
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder("SuggestionData(");
-        appendField(builder, "source", mSource.getName());
-        appendField(builder, "text1", mText1);
-        appendField(builder, "intentAction", mIntentAction);
-        appendField(builder, "intentData", mIntentData);
-        appendField(builder, "query", mSuggestionQuery);
-        appendField(builder, "shortcutid", mShortcutId);
-        appendField(builder, "logtype", mLogType);
-        return builder.toString();
+    override fun toString(): String {
+        val builder: StringBuilder = StringBuilder("SuggestionData(")
+        appendField(builder, "source", suggestionSource.getName())
+        appendField(builder, "text1", mText1)
+        appendField(builder, "intentAction", mIntentAction)
+        appendField(builder, "intentData", mIntentData)
+        appendField(builder, "query", mSuggestionQuery)
+        appendField(builder, "shortcutid", mShortcutId)
+        appendField(builder, "logtype", mLogType)
+        return builder.toString()
     }
 
-    private void appendField(StringBuilder builder, String name, String value) {
+    private fun appendField(builder: StringBuilder, name: String, value: String?) {
         if (value != null) {
-            builder.append(",").append(name).append("=").append(value);
+            builder.append(",").append(name).append("=").append(value)
         }
     }
 
-    @VisibleForTesting
-    public void setExtras(SuggestionExtras extras) {
-        mExtras = extras;
-    }
-
-    public SuggestionExtras getExtras() {
-        return mExtras;
-    }
+    @set:VisibleForTesting
+    override var extras: SuggestionExtras?
+        get() = mExtras
+        set(extras) {
+            mExtras = extras
+        }
 
 }
