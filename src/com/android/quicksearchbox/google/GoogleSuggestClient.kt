@@ -18,19 +18,22 @@ package com.android.quicksearchbox.google
 import android.content.ComponentName
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
+
 import com.android.quicksearchbox.Config
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Source
 import com.android.quicksearchbox.SourceResult
 import com.android.quicksearchbox.SuggestionCursor
 import com.android.quicksearchbox.util.NamedTaskExecutor
+
 import org.json.JSONArray
 import org.json.JSONException
+
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -75,7 +78,7 @@ class GoogleSuggestClient(
         if (TextUtils.isEmpty(query)) {
             return null
         }
-        if (!isNetworkConnected()) {
+        if (!isNetworkConnected) {
             Log.i(GoogleSuggestClient.Companion.LOG_TAG, "Not connected to network.")
             return null
         }
@@ -148,17 +151,18 @@ class GoogleSuggestClient(
         return null
     }
 
-    private fun isNetworkConnected(): Boolean {
-        val networkInfo: NetworkInfo? = getActiveNetworkInfo()
-        return networkInfo != null && networkInfo.isConnected()
-    }
-
-    private fun getActiveNetworkInfo(): NetworkInfo? {
-        val connectivity: ConnectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                ?: return null
-        return connectivity.getActiveNetworkInfo()
-    }
+    private val isNetworkConnected: Boolean
+        get() {
+            val actNC = activeNetworkCapabilities
+            return actNC != null && actNC.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        }
+    private val activeNetworkCapabilities: NetworkCapabilities?
+        get() {
+            val connectivityManager =
+                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork = connectivityManager.getActiveNetwork()
+            return connectivityManager.getNetworkCapabilities(activeNetwork)
+        }
 
     private class GoogleSuggestCursor(
         source: Source, userQuery: String?,
