@@ -13,99 +13,109 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import android.database.Cursor;
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import android.database.Cursor
+import android.util.Log
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.HashSet
+import java.util.List
 
 /**
  * SuggestionExtras taking values from the extra columns in a suggestion cursor.
  */
-public class CursorBackedSuggestionExtras extends AbstractSuggestionExtras {
-    private static final String TAG = "QSB.CursorBackedSuggestionExtras";
-
-    private static final HashSet<String> DEFAULT_COLUMNS = new HashSet<String>();
-    static {
-        DEFAULT_COLUMNS.addAll(Arrays.asList(SuggestionCursorBackedCursor.COLUMNS));
-    }
-
-    private final Cursor mCursor;
-    private final int mCursorPosition;
-    private final List<String> mExtraColumns;
-
-    static CursorBackedSuggestionExtras createExtrasIfNecessary(Cursor cursor, int position) {
-        List<String> extraColumns = getExtraColumns(cursor);
-        if (extraColumns != null) {
-            return new CursorBackedSuggestionExtras(cursor, position, extraColumns);
-        } else {
-            return null;
-        }
-    }
-
-    static String[] getCursorColumns(Cursor cursor) {
-        try {
-            return cursor.getColumnNames();
-        } catch (RuntimeException ex) {
-            // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "getColumnNames() failed, ", ex);
-            return null;
-        }
-    }
-
-    static boolean cursorContainsExtras(Cursor cursor) {
-        String[] columns = getCursorColumns(cursor);
-        for (String cursorColumn : columns) {
-            if (!DEFAULT_COLUMNS.contains(cursorColumn)) {
-                return true;
+class CursorBackedSuggestionExtras private constructor(
+    cursor: Cursor,
+    position: Int,
+    extraColumns: List<String>
+) : AbstractSuggestionExtras(null) {
+    companion object {
+        private const val TAG = "QSB.CursorBackedSuggestionExtras"
+        private val DEFAULT_COLUMNS: HashSet<String> = HashSet<String>()
+        @JvmStatic
+        fun createExtrasIfNecessary(cursor: Cursor?, position: Int): CursorBackedSuggestionExtras? {
+            val extraColumns: List<String> =
+                CursorBackedSuggestionExtras.Companion.getExtraColumns(cursor)
+            return if (extraColumns != null) {
+                CursorBackedSuggestionExtras(cursor, position, extraColumns)
+            } else {
+                null
             }
         }
-        return false;
-    }
 
-    static List<String> getExtraColumns(Cursor cursor) {
-        String[] columns = getCursorColumns(cursor);
-        if (columns == null) return null;
-        List<String> extraColumns = null;
-        for (String cursorColumn : columns) {
-            if (!DEFAULT_COLUMNS.contains(cursorColumn)) {
-                if (extraColumns == null) {
-                    extraColumns = new ArrayList<String>();
+        @JvmStatic
+        fun getCursorColumns(cursor: Cursor): Array<String>? {
+            return try {
+                cursor.getColumnNames()
+            } catch (ex: RuntimeException) {
+                // all operations on cross-process cursors can throw random exceptions
+                Log.e(CursorBackedSuggestionExtras.Companion.TAG, "getColumnNames() failed, ", ex)
+                null
+            }
+        }
+
+        fun cursorContainsExtras(cursor: Cursor?): Boolean {
+            val columns: Array<String> =
+                CursorBackedSuggestionExtras.Companion.getCursorColumns(cursor)
+            for (cursorColumn in columns) {
+                if (!CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.contains(cursorColumn)) {
+                    return true
                 }
-                extraColumns.add(cursorColumn);
             }
+            return false
         }
-        return extraColumns;
+
+        @JvmStatic
+        fun getExtraColumns(cursor: Cursor?): List<String>? {
+            val columns: Array<String> =
+                CursorBackedSuggestionExtras.Companion.getCursorColumns(cursor)
+                    ?: return null
+            var extraColumns: List<String>? = null
+            for (cursorColumn in columns) {
+                if (!CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.contains(cursorColumn)) {
+                    if (extraColumns == null) {
+                        extraColumns = ArrayList<String>()
+                    }
+                    extraColumns.add(cursorColumn)
+                }
+            }
+            return extraColumns
+        }
+
+        init {
+            CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.addAll(
+                Arrays.asList(
+                    SuggestionCursorBackedCursor.COLUMNS
+                )
+            )
+        }
     }
 
-    private CursorBackedSuggestionExtras(Cursor cursor, int position, List<String> extraColumns) {
-        super(null);
-        mCursor = cursor;
-        mCursorPosition = position;
-        mExtraColumns = extraColumns;
-    }
-
+    private val mCursor: Cursor
+    private val mCursorPosition: Int
+    private val mExtraColumns: List<String>
     @Override
-    public String doGetExtra(String columnName) {
-        try {
-            mCursor.moveToPosition(mCursorPosition);
-            int columnIdx = mCursor.getColumnIndex(columnName);
-            if (columnIdx < 0) return null;
-            return mCursor.getString(columnIdx);
-        } catch (RuntimeException ex) {
+    override fun doGetExtra(columnName: String): String {
+        return try {
+            mCursor.moveToPosition(mCursorPosition)
+            val columnIdx: Int = mCursor.getColumnIndex(columnName)
+            if (columnIdx < 0) null else mCursor.getString(columnIdx)
+        } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "getExtra(" + columnName + ") failed, ", ex);
-            return null;
+            Log.e(CursorBackedSuggestionExtras.Companion.TAG, "getExtra($columnName) failed, ", ex)
+            null
         }
     }
 
     @Override
-    public List<String> doGetExtraColumnNames() {
-        return mExtraColumns;
+    public override fun doGetExtraColumnNames(): List<String> {
+        return mExtraColumns
     }
 
+    init {
+        mCursor = cursor
+        mCursorPosition = position
+        mExtraColumns = extraColumns
+    }
 }
