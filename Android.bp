@@ -39,6 +39,10 @@ android_app {
       "src/**/quicksearchbox/Source.java",
       "src/**/quicksearchbox/SourceResult.java",
       "src/**/quicksearchbox/AbstractSource.java",
+      "src/**/quicksearchbox/AbstractInternalSource.java",
+      "src/**/quicksearchbox/AbstractSuggestionCursorWrapper.java",
+      "src/**/quicksearchbox/AbstractSuggestionExtras.java",
+      "src/**/quicksearchbox/AbstractSuggestionWrapper.java",
     ],
     static_libs: [
             "guava",
