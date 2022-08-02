@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import org.json.JSONException;
-
-import java.util.Collection;
+import org.json.JSONException
 
 /**
  * Extra data that can be attached to a suggestion.
  */
-public interface SuggestionExtras {
-
+interface SuggestionExtras {
     /**
      * Return the names of custom columns present in these extras.
      */
-    Collection<String> getExtraColumnNames();
+    val extraColumnNames: Collection<String?>?
 
     /**
      * @param columnName The column to get a value from.
      */
-    String getExtra(String columnName);
+    fun getExtra(columnName: String?): String?
 
     /**
      * Flatten these extras as a JSON object.
      */
-    String toJsonString() throws JSONException;
-
+    @Throws(JSONException::class)
+    fun toJsonString(): String?
 }
