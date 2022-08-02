@@ -15,21 +15,17 @@
  */
 package com.android.quicksearchbox.google
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.SearchSettings
 import com.android.quicksearchbox.SearchSettingsImpl
 import com.android.quicksearchbox.util.HttpHelper
-
-import android.content.Context
-import android.content.SharedPreferences
-import android.text.TextUtils
-import android.util.Log
-
-import java.util.Locale
-
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import java.util.Locale
 
 
 /**
@@ -85,7 +81,7 @@ class SearchBaseUrlHelper(
      */
     val searchDomain: String?
         get() {
-            var domain: String = mSearchSettings.searchBaseDomain
+            var domain: String? = mSearchSettings.searchBaseDomain
             if (domain == null) {
                 if (SearchBaseUrlHelper.Companion.DBG) {
                     Log.w(

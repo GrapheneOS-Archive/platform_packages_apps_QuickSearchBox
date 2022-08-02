@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,62 +18,58 @@ package com.android.quicksearchbox
 import android.app.SearchManager
 import android.database.AbstractCursor
 import android.database.CursorIndexOutOfBoundsException
-import java.util.ArrayList
-import java.util.Arrays
+import kotlin.collections.ArrayList
 
-class SuggestionCursorBackedCursor(private val mCursor: SuggestionCursor) :
+class SuggestionCursorBackedCursor(private val mCursor: SuggestionCursor?) :
     AbstractCursor() {
     private var mExtraColumns: ArrayList<String>? = null
+
     @Override
-    fun close() {
+    override fun close() {
         super.close()
-        mCursor.close()
+        mCursor?.close()
     }
 
-    @get:Override
-    val columnNames: Array<String>
-        get() {
-            val extraColumns: Collection<String> = mCursor.getExtraColumns()
-            return if (extraColumns != null) {
-                val allColumns: ArrayList<String> = ArrayList<String>(
-                    COLUMNS.size +
-                            extraColumns.size()
-                )
-                mExtraColumns = ArrayList<String>(extraColumns)
-                allColumns.addAll(Arrays.asList(COLUMNS))
-                allColumns.addAll(mExtraColumns)
-                allColumns.toArray(arrayOfNulls<String>(allColumns.size()))
-            } else {
-                COLUMNS
-            }
+    @Override
+    override fun getColumnNames(): Array<String> {
+        val extraColumns: Collection<String>? = mCursor?.extraColumns
+        return if (extraColumns != null) {
+            val allColumns: ArrayList<String> = ArrayList<String>(
+                COLUMNS.size +
+                        extraColumns.size
+            )
+            mExtraColumns = ArrayList<String>(extraColumns)
+            allColumns.addAll(COLUMNS.asList())
+            mExtraColumns?.let { allColumns.addAll(it) }
+            allColumns.toArray(arrayOfNulls<String>(allColumns.size))
+        } else {
+            COLUMNS
         }
+    }
 
-    @get:Override
-    val count: Int
-        get() = mCursor.getCount()
+    @Override
+    override fun getCount(): Int {
+        return mCursor!!.count
+    }
 
-    private fun get(): Suggestion {
-        mCursor.moveTo(getPosition())
+    private fun get(): SuggestionCursor? {
+        mCursor?.moveTo(position)
         return mCursor
     }
 
     private fun getExtra(columnIdx: Int): String? {
         val extraColumn = columnIdx - COLUMNS.size
-        val extras: SuggestionExtras = get().getExtras()
-        return if (extras != null) {
-            extras.getExtra(mExtraColumns.get(extraColumn))
-        } else {
-            null
-        }
+        val extras: SuggestionExtras? = get()?.extras
+        return extras?.getExtra(mExtraColumns!!.get(extraColumn))
     }
 
     @Override
-    fun getInt(column: Int): Int {
+    override fun getInt(column: Int): Int {
         return if (column == COLUMN_INDEX_ID) {
-            getPosition()
+            position
         } else {
             try {
-                Integer.valueOf(getString(column))
+                getString(column)!!.toInt()
             } catch (e: NumberFormatException) {
                 0
             }
@@ -81,22 +77,22 @@ class SuggestionCursorBackedCursor(private val mCursor: SuggestionCursor) :
     }
 
     @Override
-    fun getString(column: Int): String? {
+    override fun getString(column: Int): String? {
         return if (column < COLUMNS.size) {
             when (column) {
-                COLUMN_INDEX_ID -> String.valueOf(getPosition())
-                COLUMN_INDEX_TEXT1 -> get().getSuggestionText1()
-                COLUMN_INDEX_TEXT2 -> get().getSuggestionText2()
-                COLUMN_INDEX_TEXT2_URL -> get().getSuggestionText2Url()
-                COLUMN_INDEX_ICON1 -> get().getSuggestionIcon1()
-                COLUMN_INDEX_ICON2 -> get().getSuggestionIcon2()
-                COLUMN_INDEX_INTENT_ACTION -> get().getSuggestionIntentAction()
-                COLUMN_INDEX_INTENT_DATA -> get().getSuggestionIntentDataString()
-                COLUMN_INDEX_INTENT_EXTRA_DATA -> get().getSuggestionIntentExtraData()
-                COLUMN_INDEX_QUERY -> get().getSuggestionQuery()
-                COLUMN_INDEX_FORMAT -> get().getSuggestionFormat()
-                COLUMN_INDEX_SHORTCUT_ID -> get().getShortcutId()
-                COLUMN_INDEX_SPINNER_WHILE_REFRESHING -> String.valueOf(get().isSpinnerWhileRefreshing())
+                COLUMN_INDEX_ID -> position.toString()
+                COLUMN_INDEX_TEXT1 -> get()?.suggestionText1
+                COLUMN_INDEX_TEXT2 -> get()?.suggestionText2
+                COLUMN_INDEX_TEXT2_URL -> get()?.suggestionText2Url
+                COLUMN_INDEX_ICON1 -> get()?.suggestionIcon1
+                COLUMN_INDEX_ICON2 -> get()?.suggestionIcon2
+                COLUMN_INDEX_INTENT_ACTION -> get()?.suggestionIntentAction
+                COLUMN_INDEX_INTENT_DATA -> get()?.suggestionIntentDataString
+                COLUMN_INDEX_INTENT_EXTRA_DATA -> get()?.suggestionIntentExtraData
+                COLUMN_INDEX_QUERY -> get()?.suggestionQuery
+                COLUMN_INDEX_FORMAT -> get()?.suggestionFormat
+                COLUMN_INDEX_SHORTCUT_ID -> get()?.shortcutId
+                COLUMN_INDEX_SPINNER_WHILE_REFRESHING -> get()?.isSpinnerWhileRefreshing.toString()
                 else -> throw CursorIndexOutOfBoundsException(
                     "Requested column " + column
                             + " of " + COLUMNS.size
@@ -108,43 +104,43 @@ class SuggestionCursorBackedCursor(private val mCursor: SuggestionCursor) :
     }
 
     @Override
-    fun getLong(column: Int): Long {
+    override fun getLong(column: Int): Long {
         return try {
-            Long.valueOf(getString(column))
+            getString(column)!!.toLong()
         } catch (e: NumberFormatException) {
             0
         }
     }
 
     @Override
-    fun isNull(column: Int): Boolean {
+    override fun isNull(column: Int): Boolean {
         return getString(column) == null
     }
 
     @Override
-    fun getShort(column: Int): Short {
+    override fun getShort(column: Int): Short {
         return try {
-            Short.valueOf(getString(column))
+            getString(column)!!.toShort()
         } catch (e: NumberFormatException) {
             0
         }
     }
 
     @Override
-    fun getDouble(column: Int): Double {
+    override fun getDouble(column: Int): Double {
         return try {
-            Double.valueOf(getString(column))
+            getString(column)!!.toDouble()
         } catch (e: NumberFormatException) {
-            0
+            0.0
         }
     }
 
     @Override
-    fun getFloat(column: Int): Float {
+    override fun getFloat(column: Int): Float {
         return try {
-            Float.valueOf(getString(column))
+            getString(column)!!.toFloat()
         } catch (e: NumberFormatException) {
-            0
+            0.0F
         }
     }
 

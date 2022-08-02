@@ -24,7 +24,7 @@ interface SuggestionExtras {
     /**
      * Return the names of custom columns present in these extras.
      */
-    val extraColumnNames: Collection<String?>?
+    val extraColumnNames: Collection<String>
 
     /**
      * @param columnName The column to get a value from.

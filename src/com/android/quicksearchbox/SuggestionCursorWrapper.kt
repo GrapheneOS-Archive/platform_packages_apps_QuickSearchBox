@@ -20,7 +20,7 @@ import android.database.DataSetObserver
 /**
  * A suggestion cursor that delegates all methods to another SuggestionCursor.
  */
-open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: SuggestionCursor) :
+open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: SuggestionCursor?) :
     AbstractSuggestionCursorWrapper(userQuery!!) {
     override fun close() {
         if (mCursor != null) {
@@ -29,9 +29,9 @@ open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: Sugg
     }
 
     override val count: Int
-        get() = if (mCursor == null) 0 else mCursor.getCount()
+        get() = if (mCursor == null) 0 else mCursor.count
     override val position: Int
-        get() = if (mCursor == null) 0 else mCursor.getPosition()
+        get() = if (mCursor == null) 0 else mCursor.position
 
     override fun moveTo(pos: Int) {
         if (mCursor != null) {
@@ -43,13 +43,13 @@ open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: Sugg
         return mCursor?.moveToNext() ?: false
     }
 
-    override fun registerDataSetObserver(observer: DataSetObserver) {
+    override fun registerDataSetObserver(observer: DataSetObserver?) {
         if (mCursor != null) {
             mCursor.registerDataSetObserver(observer)
         }
     }
 
-    override fun unregisterDataSetObserver(observer: DataSetObserver) {
+    override fun unregisterDataSetObserver(observer: DataSetObserver?) {
         if (mCursor != null) {
             mCursor.unregisterDataSetObserver(observer)
         }
@@ -57,10 +57,10 @@ open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: Sugg
 
     @Override
     override fun current(): SuggestionCursor {
-        return mCursor
+        return mCursor!!
     }
 
-    override val extraColumns: Collection<String>
-        get() = mCursor.getExtraColumns()
+    override val extraColumns: Collection<String>?
+        get() = mCursor?.extraColumns
 
 }

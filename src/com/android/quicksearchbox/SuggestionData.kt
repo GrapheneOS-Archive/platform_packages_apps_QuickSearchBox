@@ -23,7 +23,7 @@ import com.google.common.annotations.VisibleForTesting
  * Holds data for each suggest item including the display data and how to launch the result.
  * Used for passing from the provider to the suggest cursor.
  */
-class SuggestionData(override val suggestionSource: Source) : Suggestion {
+class SuggestionData(override val suggestionSource: Source?) : Suggestion {
     private var mFormat: String? = null
     private var mText1: String? = null
     private var mText2: String? = null
@@ -58,10 +58,10 @@ class SuggestionData(override val suggestionSource: Source) : Suggestion {
         get() = mIcon2!!
     override val shortcutId: String
         get() = mShortcutId!!
-    override val suggestionIntentAction: String
-        get() = if (mIntentAction != null) mIntentAction else suggestionSource.getDefaultIntentAction()
-    override val suggestionIntentComponent: ComponentName
-        get() = suggestionSource.getIntentComponent()
+    override val suggestionIntentAction: String?
+        get() = mIntentAction ?: suggestionSource?.defaultIntentAction
+    override val suggestionIntentComponent: ComponentName?
+        get() = suggestionSource?.intentComponent
     override val suggestionIntentDataString: String
         get() = mIntentData!!
     override val suggestionIntentExtraData: String
@@ -184,48 +184,48 @@ class SuggestionData(override val suggestionSource: Source) : Suggestion {
     }
 
     @Override
-    override fun equals(obj: Object?): Boolean {
-        if (this === obj) return true
-        if (obj == null) return false
-        if (getClass() !== obj.getClass()) return false
-        val other = obj as SuggestionData
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        if (this::class !== other::class) return false
+        val suggestionData = other as SuggestionData
         if (mFormat == null) {
-            if (other.mFormat != null) return false
-        } else if (!mFormat.equals(other.mFormat)) return false
+            if (suggestionData.mFormat != null) return false
+        } else if (!mFormat.equals(suggestionData.mFormat)) return false
         if (mIcon1 == null) {
-            if (other.mIcon1 != null) return false
-        } else if (!mIcon1.equals(other.mIcon1)) return false
+            if (suggestionData.mIcon1 != null) return false
+        } else if (!mIcon1.equals(suggestionData.mIcon1)) return false
         if (mIcon2 == null) {
-            if (other.mIcon2 != null) return false
-        } else if (!mIcon2.equals(other.mIcon2)) return false
+            if (suggestionData.mIcon2 != null) return false
+        } else if (!mIcon2.equals(suggestionData.mIcon2)) return false
         if (mIntentAction == null) {
-            if (other.mIntentAction != null) return false
-        } else if (!mIntentAction.equals(other.mIntentAction)) return false
+            if (suggestionData.mIntentAction != null) return false
+        } else if (!mIntentAction.equals(suggestionData.mIntentAction)) return false
         if (mIntentData == null) {
-            if (other.mIntentData != null) return false
-        } else if (!mIntentData.equals(other.mIntentData)) return false
+            if (suggestionData.mIntentData != null) return false
+        } else if (!mIntentData.equals(suggestionData.mIntentData)) return false
         if (intentExtraData == null) {
-            if (other.intentExtraData != null) return false
-        } else if (!intentExtraData.equals(other.intentExtraData)) return false
+            if (suggestionData.intentExtraData != null) return false
+        } else if (!intentExtraData.equals(suggestionData.intentExtraData)) return false
         if (mLogType == null) {
-            if (other.mLogType != null) return false
-        } else if (!mLogType.equals(other.mLogType)) return false
+            if (suggestionData.mLogType != null) return false
+        } else if (!mLogType.equals(suggestionData.mLogType)) return false
         if (mShortcutId == null) {
-            if (other.mShortcutId != null) return false
-        } else if (!mShortcutId.equals(other.mShortcutId)) return false
+            if (suggestionData.mShortcutId != null) return false
+        } else if (!mShortcutId.equals(suggestionData.mShortcutId)) return false
         if (suggestionSource == null) {
-            if (other.suggestionSource != null) return false
-        } else if (!suggestionSource.equals(other.suggestionSource)) return false
-        if (isSpinnerWhileRefreshing != other.isSpinnerWhileRefreshing) return false
+            if (suggestionData.suggestionSource != null) return false
+        } else if (!suggestionSource.equals(suggestionData.suggestionSource)) return false
+        if (isSpinnerWhileRefreshing != suggestionData.isSpinnerWhileRefreshing) return false
         if (mSuggestionQuery == null) {
-            if (other.mSuggestionQuery != null) return false
-        } else if (!mSuggestionQuery.equals(other.mSuggestionQuery)) return false
+            if (suggestionData.mSuggestionQuery != null) return false
+        } else if (!mSuggestionQuery.equals(suggestionData.mSuggestionQuery)) return false
         if (mText1 == null) {
-            if (other.mText1 != null) return false
-        } else if (!mText1.equals(other.mText1)) return false
+            if (suggestionData.mText1 != null) return false
+        } else if (!mText1.equals(suggestionData.mText1)) return false
         if (mText2 == null) {
-            if (other.mText2 != null) return false
-        } else if (!mText2.equals(other.mText2)) return false
+            if (suggestionData.mText2 != null) return false
+        } else if (!mText2.equals(suggestionData.mText2)) return false
         return true
     }
 
@@ -236,7 +236,7 @@ class SuggestionData(override val suggestionSource: Source) : Suggestion {
     @Override
     override fun toString(): String {
         val builder: StringBuilder = StringBuilder("SuggestionData(")
-        appendField(builder, "source", suggestionSource.getName())
+        appendField(builder, "source", suggestionSource!!.name)
         appendField(builder, "text1", mText1)
         appendField(builder, "intentAction", mIntentAction)
         appendField(builder, "intentData", mIntentData)

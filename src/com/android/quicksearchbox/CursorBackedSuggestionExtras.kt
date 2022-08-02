@@ -17,16 +17,15 @@ package com.android.quicksearchbox
 
 import android.database.Cursor
 import android.util.Log
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.HashSet
-import java.util.List
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+import kotlin.Array
 
 /**
  * SuggestionExtras taking values from the extra columns in a suggestion cursor.
  */
 class CursorBackedSuggestionExtras private constructor(
-    cursor: Cursor,
+    cursor: Cursor?,
     position: Int,
     extraColumns: List<String>
 ) : AbstractSuggestionExtras(null) {
@@ -35,7 +34,7 @@ class CursorBackedSuggestionExtras private constructor(
         private val DEFAULT_COLUMNS: HashSet<String> = HashSet<String>()
         @JvmStatic
         fun createExtrasIfNecessary(cursor: Cursor?, position: Int): CursorBackedSuggestionExtras? {
-            val extraColumns: List<String> =
+            val extraColumns: List<String>? =
                 CursorBackedSuggestionExtras.Companion.getExtraColumns(cursor)
             return if (extraColumns != null) {
                 CursorBackedSuggestionExtras(cursor, position, extraColumns)
@@ -45,9 +44,9 @@ class CursorBackedSuggestionExtras private constructor(
         }
 
         @JvmStatic
-        fun getCursorColumns(cursor: Cursor): Array<String>? {
+        fun getCursorColumns(cursor: Cursor?): Array<String>? {
             return try {
-                cursor.getColumnNames()
+                cursor?.getColumnNames()
             } catch (ex: RuntimeException) {
                 // all operations on cross-process cursors can throw random exceptions
                 Log.e(CursorBackedSuggestionExtras.Companion.TAG, "getColumnNames() failed, ", ex)
@@ -56,11 +55,13 @@ class CursorBackedSuggestionExtras private constructor(
         }
 
         fun cursorContainsExtras(cursor: Cursor?): Boolean {
-            val columns: Array<String> =
+            val columns: Array<String>? =
                 CursorBackedSuggestionExtras.Companion.getCursorColumns(cursor)
-            for (cursorColumn in columns) {
-                if (!CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.contains(cursorColumn)) {
-                    return true
+            if (columns != null) {
+                for (cursorColumn in columns) {
+                    if (!CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.contains(cursorColumn)) {
+                        return true
+                    }
                 }
             }
             return false
@@ -71,11 +72,11 @@ class CursorBackedSuggestionExtras private constructor(
             val columns: Array<String> =
                 CursorBackedSuggestionExtras.Companion.getCursorColumns(cursor)
                     ?: return null
-            var extraColumns: List<String>? = null
+            var extraColumns: ArrayList<String>? = null
             for (cursorColumn in columns) {
                 if (!CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.contains(cursorColumn)) {
                     if (extraColumns == null) {
-                        extraColumns = ArrayList<String>()
+                        extraColumns = arrayListOf<String>()
                     }
                     extraColumns.add(cursorColumn)
                 }
@@ -85,21 +86,19 @@ class CursorBackedSuggestionExtras private constructor(
 
         init {
             CursorBackedSuggestionExtras.Companion.DEFAULT_COLUMNS.addAll(
-                Arrays.asList(
-                    SuggestionCursorBackedCursor.COLUMNS
-                )
+                SuggestionCursorBackedCursor.COLUMNS.asList()
             )
         }
     }
 
-    private val mCursor: Cursor
+    private val mCursor: Cursor?
     private val mCursorPosition: Int
     private val mExtraColumns: List<String>
     @Override
-    override fun doGetExtra(columnName: String): String {
+    override fun doGetExtra(columnName: String?): String? {
         return try {
-            mCursor.moveToPosition(mCursorPosition)
-            val columnIdx: Int = mCursor.getColumnIndex(columnName)
+            mCursor?.moveToPosition(mCursorPosition)
+            val columnIdx: Int = mCursor!!.getColumnIndex(columnName)
             if (columnIdx < 0) null else mCursor.getString(columnIdx)
         } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
