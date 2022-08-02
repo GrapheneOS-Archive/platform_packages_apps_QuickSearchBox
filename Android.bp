@@ -43,6 +43,7 @@ android_app {
     static_libs: [
             "guava",
             "android-common",
+            "kotlinx_coroutines",
     ],
     certificate: "shared",
     product_specific: true,
