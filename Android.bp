@@ -49,6 +49,7 @@ android_app {
       "src/**/quicksearchbox/SuggestionCursorWrapper.java",
       "src/**/quicksearchbox/SuggestionData.java",
       "src/**/quicksearchbox/SuggestionExtras.java",
+      "src/**/quicksearchbox/SuggestionFilter.java",
     ],
     static_libs: [
             "guava",

@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
 /**
  * Interface for choosing which suggestions to include in a promoted list.
  */
-public interface SuggestionFilter {
+interface SuggestionFilter {
     /**
      * Determines if a suggestion should be added to the promoted suggestion list.
      *
      * @param s The suggestion in question
      * @return true to include it in the results
      */
-    boolean accept(Suggestion s);
+    fun accept(s: Suggestion?): Boolean
 }
