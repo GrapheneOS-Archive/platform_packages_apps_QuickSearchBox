@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox;
-
+package com.android.quicksearchbox
 
 /**
  * Interface for search settings.
@@ -24,32 +22,23 @@ package com.android.quicksearchbox;
  * implementers of this interface are passed around by class name.
  * Should this be deprecated ?
  */
-public interface SearchSettings {
-
-    public void upgradeSettingsIfNeeded();
+interface SearchSettings {
+    fun upgradeSettingsIfNeeded()
 
     /**
      * Informs our listeners about the updated settings data.
      */
-    public void broadcastSettingsChanged();
-
-    public int getNextVoiceSearchHintIndex(int size);
-
-    public void resetVoiceSearchHintFirstSeenTime();
-
-    public boolean haveVoiceSearchHintsExpired(int currentVoiceSearchVersion);
+    fun broadcastSettingsChanged()
+    fun getNextVoiceSearchHintIndex(size: Int): Int
+    fun resetVoiceSearchHintFirstSeenTime()
+    fun haveVoiceSearchHintsExpired(currentVoiceSearchVersion: Int): Boolean
 
     /**
      * Determines whether google.com should be used as the base path
      * for all searches (as opposed to using its country specific variants).
      */
-    public boolean shouldUseGoogleCom();
-
-    public void setUseGoogleCom(boolean useGoogleCom);
-
-    public long getSearchBaseDomainApplyTime();
-
-    public String getSearchBaseDomain();
-
-    public void setSearchBaseDomain(String searchBaseUrl);
+    fun shouldUseGoogleCom(): Boolean
+    fun setUseGoogleCom(useGoogleCom: Boolean)
+    val searchBaseDomainApplyTime: Long
+    var searchBaseDomain: String?
 }
