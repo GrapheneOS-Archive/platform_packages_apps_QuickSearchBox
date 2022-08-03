@@ -27,15 +27,27 @@ android_app {
     ],
     exclude_srcs: [
       "src/**/quicksearchbox/google/AbstractGoogleSource.java",
+      "src/**/quicksearchbox/google/AbstractGoogleSourceResult.java",
+      "src/**/quicksearchbox/google/GoogleSearch.java",
+      "src/**/quicksearchbox/google/GoogleSource.java",
+      "src/**/quicksearchbox/google/GoogleSuggestClient.java",
+      "src/**/quicksearchbox/google/GoogleSuggestionProvider.java",
+      "src/**/quicksearchbox/google/SearchBaseUrlHelper.java",
       "src/**/quicksearchbox/Suggestion.java",
       "src/**/quicksearchbox/SuggestionCursor.java",
       "src/**/quicksearchbox/SuggestionCursorProvider.java",
       "src/**/quicksearchbox/Source.java",
+      "src/**/quicksearchbox/SourceResult.java",
       "src/**/quicksearchbox/AbstractSource.java",
+      "src/**/quicksearchbox/AbstractInternalSource.java",
+      "src/**/quicksearchbox/AbstractSuggestionCursorWrapper.java",
+      "src/**/quicksearchbox/AbstractSuggestionExtras.java",
+      "src/**/quicksearchbox/AbstractSuggestionWrapper.java",
     ],
     static_libs: [
             "guava",
             "android-common",
+            "kotlinx_coroutines",
     ],
     certificate: "shared",
     product_specific: true,
@@ -43,7 +55,6 @@ android_app {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
-    kotlincflags: ["-Werror"],
 }
 
 android_app {

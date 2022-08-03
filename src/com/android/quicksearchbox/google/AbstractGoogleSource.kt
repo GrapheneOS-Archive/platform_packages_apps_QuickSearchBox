@@ -42,19 +42,22 @@ abstract class AbstractGoogleSource(
     abstract override val intentComponent: ComponentName?
 
     @Override
-    abstract override fun refreshShortcut(shortcutId: String, extraData: String): SuggestionCursor
+    abstract override fun refreshShortcut(
+        shortcutId: String?,
+        extraData: String?
+    ): SuggestionCursor?
 
     /**
      * Called by QSB to get web suggestions for a query.
      */
     @Override
-    abstract override fun queryInternal(query: String?): SourceResult
+    abstract override fun queryInternal(query: String?): SourceResult?
 
     /**
      * Called by external apps to get web suggestions for a query.
      */
     @Override
-    abstract override fun queryExternal(query: String?): SourceResult
+    abstract override fun queryExternal(query: String?): SourceResult?
 
     @Override
     override fun createVoiceSearchIntent(appData: Bundle?): Intent? {
@@ -81,10 +84,9 @@ abstract class AbstractGoogleSource(
     override val settingsDescription: CharSequence
         get() = context.getString(R.string.google_search_description)
 
-    @Override
-    protected override fun getSourceIconResource(): Int {
-        return R.mipmap.google_icon
-    }
+    @get:Override
+    override val sourceIconResource: Int
+        get() = R.mipmap.google_icon
 
     @Override
     override fun getSuggestions(query: String?, queryLimit: Int): SourceResult? {
