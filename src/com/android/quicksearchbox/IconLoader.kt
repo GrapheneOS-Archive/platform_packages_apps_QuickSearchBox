@@ -15,7 +15,11 @@
  */
 package com.android.quicksearchbox
 
+import com.android.quicksearchbox.util.NowOrLater
+
 import android.content.ContentResolver
+import android.graphics.drawable.Drawable
+import android.net.Uri
 
 /**
  * Interface for icon loaders.
