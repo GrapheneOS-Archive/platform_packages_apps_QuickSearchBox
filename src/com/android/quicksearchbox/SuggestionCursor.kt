@@ -79,5 +79,5 @@ interface SuggestionCursor : Suggestion, QuietlyCloseable {
     /**
      * Return the extra columns present in this cursor, or null if none exist.
      */
-    val extraColumns: Collection<String?>?
+    val extraColumns: Collection<String>?
 }
