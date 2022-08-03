@@ -13,52 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox;
-
-
+package com.android.quicksearchbox
 
 /**
  * Interface for logging implementations.
  */
-public interface Logger {
-
-    public static final int SEARCH_METHOD_BUTTON = 0;
-    public static final int SEARCH_METHOD_KEYBOARD = 1;
-
-    public static final int SUGGESTION_CLICK_TYPE_LAUNCH = 0;
-    public static final int SUGGESTION_CLICK_TYPE_REFINE = 1;
-    public static final int SUGGESTION_CLICK_TYPE_QUICK_CONTACT = 2;
-
+interface Logger {
     /**
      * Called when QSB has started.
      *
      * @param latency User-visible start-up latency in milliseconds.
      */
-    void logStart(int onCreateLatency, int latency, String intentSource);
+    fun logStart(onCreateLatency: Int, latency: Int, intentSource: String?)
 
     /**
      * Called when a suggestion is clicked.
      *
      * @param suggestionId Suggestion ID; 0-based position of the suggestion in the UI if the list
-     *      is flat.
+     * is flat.
      * @param suggestionCursor all the suggestions shown in the UI.
      * @param clickType One of the SUGGESTION_CLICK_TYPE constants.
      */
-    void logSuggestionClick(long suggestionId, SuggestionCursor suggestionCursor,  int clickType);
+    fun logSuggestionClick(suggestionId: Long, suggestionCursor: SuggestionCursor?, clickType: Int)
 
     /**
      * The user launched a search.
      *
-     * @param startMethod One of {@link #SEARCH_METHOD_BUTTON} or {@link #SEARCH_METHOD_KEYBOARD}.
+     * @param startMethod One of [.SEARCH_METHOD_BUTTON] or [.SEARCH_METHOD_KEYBOARD].
      * @param numChars The number of characters in the query.
      */
-    void logSearch(int startMethod, int numChars);
+    fun logSearch(startMethod: Int, numChars: Int)
 
     /**
      * The user launched a voice search.
      */
-    void logVoiceSearch();
+    fun logVoiceSearch()
 
     /**
      * The user left QSB without performing any action (click suggestions, search or voice search).
@@ -66,13 +55,20 @@ public interface Logger {
      * @param suggestionCursor all the suggestions shown in the UI when the user left
      * @param numChars The number of characters in the query typed when the user left.
      */
-    void logExit(SuggestionCursor suggestionCursor, int numChars);
+    fun logExit(suggestionCursor: SuggestionCursor?, numChars: Int)
 
     /**
      * Logs the latency of a suggestion query to a specific source.
      *
      * @param result The result of the query.
      */
-    void logLatency(SourceResult result);
+    fun logLatency(result: SourceResult?)
 
+    companion object {
+        const val SEARCH_METHOD_BUTTON = 0
+        const val SEARCH_METHOD_KEYBOARD = 1
+        const val SUGGESTION_CLICK_TYPE_LAUNCH = 0
+        const val SUGGESTION_CLICK_TYPE_REFINE = 1
+        const val SUGGESTION_CLICK_TYPE_QUICK_CONTACT = 2
+    }
 }
