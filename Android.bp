@@ -37,6 +37,7 @@ android_app {
       "src/**/quicksearchbox/util/Factory.java",
       "src/**/quicksearchbox/util/HttpHelper.java",
       "src/**/quicksearchbox/util/NamedTask.java",
+      "src/**/quicksearchbox/util/NamedTaskExecutor.java",
       "src/**/quicksearchbox/AbstractInternalSource.java",
       "src/**/quicksearchbox/AbstractSource.java",
       "src/**/quicksearchbox/AbstractSuggestionCursorWrapper.java",
