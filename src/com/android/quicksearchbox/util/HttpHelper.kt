@@ -16,6 +16,7 @@
 package com.android.quicksearchbox.util
 
 import java.io.IOException
+import kotlin.collections.HashMap
 
 /**
  * An interface that can issue HTTP GET / POST requests
@@ -23,13 +24,13 @@ import java.io.IOException
  */
 interface HttpHelper {
     @Throws(IOException::class, HttpException::class)
-    operator fun get(request: HttpHelper.GetRequest?): String?
+    operator fun get(request: GetRequest?): String?
 
     @Throws(IOException::class, HttpException::class)
     operator fun get(url: String?, requestHeaders: Map<String?, String?>?): String?
 
     @Throws(IOException::class, HttpException::class)
-    fun post(request: HttpHelper.PostRequest?): String?
+    fun post(request: PostRequest?): String?
 
     @Throws(IOException::class, HttpException::class)
     fun post(url: String?, requestHeaders: Map<String?, String?>?, content: String?): String?
@@ -49,13 +50,13 @@ interface HttpHelper {
          *
          * @return The response headers. May return `null` if no headers are set.
          */
-        var headers: Map<String, String>? = null
+        var headers: HashMap<String, String>? = null
             private set
 
         /**
          * Creates a new request.
          */
-        constructor() {}
+        constructor()
 
         /**
          * Creates a new request.
@@ -72,19 +73,19 @@ interface HttpHelper {
          * @param name Header name.
          * @param value Header value.
          */
-        fun setHeader(name: String?, value: String?) {
+        fun setHeader(name: String, value: String) {
             if (headers == null) {
-                headers = HashMap<String, String>()
+                headers = hashMapOf()
             }
-            headers.put(name, value)
+            headers?.put(name, value)
         }
     }
 
-    class PostRequest : HttpHelper.GetRequest {
+    class PostRequest : GetRequest {
         var content: String? = null
 
-        constructor() {}
-        constructor(url: String?) : super(url) {}
+        constructor()
+        constructor(url: String?) : super(url)
     }
 
     /**
