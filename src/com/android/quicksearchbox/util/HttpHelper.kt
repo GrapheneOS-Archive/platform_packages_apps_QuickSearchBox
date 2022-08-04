@@ -13,72 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException
 
 /**
  * An interface that can issue HTTP GET / POST requests
  * with timeouts.
  */
-public interface HttpHelper {
+interface HttpHelper {
+    @Throws(IOException::class, HttpException::class)
+    operator fun get(request: HttpHelper.GetRequest?): String?
 
-    public String get(GetRequest request) throws IOException, HttpException;
+    @Throws(IOException::class, HttpException::class)
+    operator fun get(url: String?, requestHeaders: Map<String?, String?>?): String?
 
-    public String get(String url, Map<String,String> requestHeaders)
-            throws IOException, HttpException;
+    @Throws(IOException::class, HttpException::class)
+    fun post(request: HttpHelper.PostRequest?): String?
 
-    public String post(PostRequest request) throws IOException, HttpException;
+    @Throws(IOException::class, HttpException::class)
+    fun post(url: String?, requestHeaders: Map<String?, String?>?, content: String?): String?
+    fun setConnectTimeout(timeoutMillis: Int)
+    fun setReadTimeout(timeoutMillis: Int)
+    open class GetRequest {
+        /**
+         * Gets the request URI.
+         */
+        /**
+         * Sets the request URI.
+         */
+        var url: String? = null
 
-    public String post(String url, Map<String,String> requestHeaders, String content)
-            throws IOException, HttpException;
-
-    public void setConnectTimeout(int timeoutMillis);
-
-    public void setReadTimeout(int timeoutMillis);
-
-    public static class GetRequest {
-        private String mUrl;
-        private Map<String,String> mHeaders;
+        /**
+         * Gets the request headers.
+         *
+         * @return The response headers. May return `null` if no headers are set.
+         */
+        var headers: Map<String, String>? = null
+            private set
 
         /**
          * Creates a new request.
          */
-        public GetRequest() {
-        }
+        constructor() {}
 
         /**
          * Creates a new request.
          *
          * @param url Request URI.
          */
-        public GetRequest(String url) {
-            mUrl = url;
-        }
-
-        /**
-         * Gets the request URI.
-         */
-        public String getUrl() {
-            return mUrl;
-        }
-        /**
-         * Sets the request URI.
-         */
-        public void setUrl(String url) {
-            mUrl = url;
-        }
-
-        /**
-         * Gets the request headers.
-         *
-         * @return The response headers. May return {@code null} if no headers are set.
-         */
-        public Map<String, String> getHeaders() {
-            return mHeaders;
+        constructor(url: String?) {
+            this.url = url
         }
 
         /**
@@ -87,66 +72,39 @@ public interface HttpHelper {
          * @param name Header name.
          * @param value Header value.
          */
-        public void setHeader(String name, String value) {
-            if (mHeaders == null) {
-                mHeaders = new HashMap<String,String>();
+        fun setHeader(name: String?, value: String?) {
+            if (headers == null) {
+                headers = HashMap<String, String>()
             }
-            mHeaders.put(name, value);
+            headers.put(name, value)
         }
     }
 
-    public static class PostRequest extends GetRequest {
+    class PostRequest : HttpHelper.GetRequest {
+        var content: String? = null
 
-        private String mContent;
-
-        public PostRequest() {
-        }
-
-        public PostRequest(String url) {
-            super(url);
-        }
-
-        public void setContent(String content) {
-            mContent = content;
-        }
-
-        public String getContent() {
-            return mContent;
-        }
+        constructor() {}
+        constructor(url: String?) : super(url) {}
     }
 
     /**
      * A HTTP exception.
      */
-    public static class HttpException extends IOException {
-        private final int mStatusCode;
-        private final String mReasonPhrase;
-
-        public HttpException(int statusCode, String reasonPhrase) {
-            super(statusCode + " " + reasonPhrase);
-            mStatusCode = statusCode;
-            mReasonPhrase = reasonPhrase;
-        }
-
+    class HttpException(
         /**
          * Gets the HTTP response status code.
          */
-        public int getStatusCode() {
-            return mStatusCode;
-        }
-
+        val statusCode: Int,
         /**
          * Gets the HTTP response reason phrase.
          */
-        public String getReasonPhrase() {
-            return mReasonPhrase;
-        }
-    }
+        val reasonPhrase: String
+    ) : IOException("$statusCode $reasonPhrase")
 
     /**
      * An interface for URL rewriting.
      */
-    public static interface UrlRewriter {
-      public String rewrite(String url);
+    interface UrlRewriter {
+        fun rewrite(url: String?): String?
     }
 }
