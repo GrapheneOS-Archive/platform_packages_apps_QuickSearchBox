@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-import java.io.Closeable;
+import java.io.Closeable
 
 /**
  * Interface for closeable objects whose close method doesn't throw IOExceptions.
  */
-public interface QuietlyCloseable extends Closeable {
-
-    void close();
-
+interface QuietlyCloseable : Closeable {
+    fun close()
 }
