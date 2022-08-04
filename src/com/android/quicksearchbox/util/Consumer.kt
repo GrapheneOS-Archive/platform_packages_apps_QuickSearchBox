@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
 /**
  * Interface for data consumers.
  *
  * @param <A> The type of data to consume.
- */
-public interface Consumer<A> {
-
+</A> */
+interface Consumer<A> {
     /**
      * Consumes a value.
      *
      * @param value The value to consume.
-     * @return {@code true} if the value was accepted, {@code false} otherwise.
+     * @return `true` if the value was accepted, `false` otherwise.
      */
-    boolean consume(A value);
-
+    fun consume(value: A): Boolean
 }
