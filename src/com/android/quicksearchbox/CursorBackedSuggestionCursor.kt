@@ -13,289 +13,268 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
+import android.app.SearchManager
+import android.content.ComponentName
+import android.content.Intent
+import android.database.Cursor
+import android.database.DataSetObserver
+import android.net.Uri
+import android.util.Log
 
-import android.app.SearchManager;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.DataSetObserver;
-import android.net.Uri;
-import android.util.Log;
+abstract class CursorBackedSuggestionCursor(override val userQuery: String, cursor: Cursor?) :
+    SuggestionCursor {
 
-public abstract class CursorBackedSuggestionCursor implements SuggestionCursor {
+    /** The suggestions, or `null` if the suggestions query failed.  */
+    @JvmField
+    protected val mCursor: Cursor?
 
-    private static final boolean DBG = false;
-    protected static final String TAG = "QSB.CursorBackedSuggestionCursor";
+    /** Column index of [SearchManager.SUGGEST_COLUMN_FORMAT] in @{link mCursor}.  */
+    private val mFormatCol: Int
 
-    public static final String SUGGEST_COLUMN_LOG_TYPE = "suggest_log_type";
+    /** Column index of [SearchManager.SUGGEST_COLUMN_TEXT_1] in @{link mCursor}.  */
+    private val mText1Col: Int
 
-    private final String mUserQuery;
+    /** Column index of [SearchManager.SUGGEST_COLUMN_TEXT_2] in @{link mCursor}.  */
+    private val mText2Col: Int
 
-    /** The suggestions, or {@code null} if the suggestions query failed. */
-    protected final Cursor mCursor;
+    /** Column index of [SearchManager.SUGGEST_COLUMN_TEXT_2_URL] in @{link mCursor}.  */
+    private val mText2UrlCol: Int
 
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_FORMAT} in @{link mCursor}. */
-    private final int mFormatCol;
+    /** Column index of [SearchManager.SUGGEST_COLUMN_ICON_1] in @{link mCursor}.  */
+    private val mIcon1Col: Int
 
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_TEXT_1} in @{link mCursor}. */
-    private final int mText1Col;
+    /** Column index of [SearchManager.SUGGEST_COLUMN_ICON_1] in @{link mCursor}.  */
+    private val mIcon2Col: Int
 
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_TEXT_2} in @{link mCursor}. */
-    private final int mText2Col;
-
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_TEXT_2_URL} in @{link mCursor}. */
-    private final int mText2UrlCol;
-
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_ICON_1} in @{link mCursor}. */
-    private final int mIcon1Col;
-
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_ICON_1} in @{link mCursor}. */
-    private final int mIcon2Col;
-
-    /** Column index of {@link SearchManager#SUGGEST_COLUMN_SPINNER_WHILE_REFRESHING}
+    /** Column index of [SearchManager.SUGGEST_COLUMN_SPINNER_WHILE_REFRESHING]
      * in @{link mCursor}.
-     **/
-    private final int mRefreshSpinnerCol;
+     */
+    private val mRefreshSpinnerCol: Int
 
-    /** True if this result has been closed. */
-    private boolean mClosed = false;
+    /** True if this result has been closed.  */
+    private var mClosed = false
+    abstract override val suggestionSource: Source
+    override val suggestionLogType: String
+        get() = getStringOrNull(CursorBackedSuggestionCursor.Companion.SUGGEST_COLUMN_LOG_TYPE)
 
-    public CursorBackedSuggestionCursor(String userQuery, Cursor cursor) {
-        mUserQuery = userQuery;
-        mCursor = cursor;
-        mFormatCol = getColumnIndex(SearchManager.SUGGEST_COLUMN_FORMAT);
-        mText1Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1);
-        mText2Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_2);
-        mText2UrlCol = getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_2_URL);
-        mIcon1Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_ICON_1);
-        mIcon2Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_ICON_2);
-        mRefreshSpinnerCol = getColumnIndex(SearchManager.SUGGEST_COLUMN_SPINNER_WHILE_REFRESHING);
-    }
-
-    public String getUserQuery() {
-        return mUserQuery;
-    }
-
-    public abstract Source getSuggestionSource();
-
-    public String getSuggestionLogType() {
-        return getStringOrNull(SUGGEST_COLUMN_LOG_TYPE);
-    }
-
-    public void close() {
-        if (DBG) Log.d(TAG, "close()");
+    override fun close() {
+        if (CursorBackedSuggestionCursor.Companion.DBG) Log.d(
+            CursorBackedSuggestionCursor.Companion.TAG,
+            "close()"
+        )
         if (mClosed) {
-            throw new IllegalStateException("Double close()");
+            throw IllegalStateException("Double close()")
         }
-        mClosed = true;
+        mClosed = true
         if (mCursor != null) {
             try {
-                mCursor.close();
-            } catch (RuntimeException ex) {
+                mCursor.close()
+            } catch (ex: RuntimeException) {
                 // all operations on cross-process cursors can throw random exceptions
-                Log.e(TAG, "close() failed, ", ex);
+                Log.e(CursorBackedSuggestionCursor.Companion.TAG, "close() failed, ", ex)
             }
         }
     }
 
     @Override
-    protected void finalize() {
+    protected fun finalize() {
         if (!mClosed) {
-            Log.e(TAG, "LEAK! Finalized without being closed: " + toString());
+            Log.e(
+                CursorBackedSuggestionCursor.Companion.TAG,
+                "LEAK! Finalized without being closed: " + toString()
+            )
         }
     }
 
-    public int getCount() {
-        if (mClosed) {
-            throw new IllegalStateException("getCount() after close()");
+    override val count: Int
+        get() {
+            if (mClosed) {
+                throw IllegalStateException("getCount() after close()")
+            }
+            return if (mCursor == null) 0 else try {
+                mCursor.getCount()
+            } catch (ex: RuntimeException) {
+                // all operations on cross-process cursors can throw random exceptions
+                Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getCount() failed, ", ex)
+                0
+            }
         }
-        if (mCursor == null) return 0;
-        try {
-            return mCursor.getCount();
-        } catch (RuntimeException ex) {
-            // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "getCount() failed, ", ex);
-            return 0;
-        }
-    }
 
-    public void moveTo(int pos) {
+    override fun moveTo(pos: Int) {
         if (mClosed) {
-            throw new IllegalStateException("moveTo(" + pos + ") after close()");
+            throw IllegalStateException("moveTo($pos) after close()")
         }
         try {
             if (!mCursor.moveToPosition(pos)) {
-                Log.e(TAG, "moveToPosition(" + pos + ") failed, count=" + getCount());
+                Log.e(
+                    CursorBackedSuggestionCursor.Companion.TAG,
+                    "moveToPosition($pos) failed, count=$count"
+                )
             }
-        } catch (RuntimeException ex) {
+        } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "moveToPosition() failed, ", ex);
+            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "moveToPosition() failed, ", ex)
         }
     }
 
-    public boolean moveToNext() {
+    override fun moveToNext(): Boolean {
         if (mClosed) {
-            throw new IllegalStateException("moveToNext() after close()");
+            throw IllegalStateException("moveToNext() after close()")
         }
-        try {
-            return mCursor.moveToNext();
-        } catch (RuntimeException ex) {
+        return try {
+            mCursor.moveToNext()
+        } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "moveToNext() failed, ", ex);
-            return false;
+            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "moveToNext() failed, ", ex)
+            false
         }
     }
 
-    public int getPosition() {
-        if (mClosed) {
-            throw new IllegalStateException("getPosition after close()");
+    override val position: Int
+        get() {
+            if (mClosed) {
+                throw IllegalStateException("getPosition after close()")
+            }
+            return try {
+                mCursor.getPosition()
+            } catch (ex: RuntimeException) {
+                // all operations on cross-process cursors can throw random exceptions
+                Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getPosition() failed, ", ex)
+                -1
+            }
         }
-        try {
-            return mCursor.getPosition();
-        } catch (RuntimeException ex) {
-            // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "getPosition() failed, ", ex);
-            return -1;
-        }
-    }
-
-    public String getShortcutId() {
-        return getStringOrNull(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID);
-    }
-
-    public String getSuggestionFormat() {
-        return getStringOrNull(mFormatCol);
-    }
-
-    public String getSuggestionText1() {
-        return getStringOrNull(mText1Col);
-    }
-
-    public String getSuggestionText2() {
-        return getStringOrNull(mText2Col);
-    }
-
-    public String getSuggestionText2Url() {
-        return getStringOrNull(mText2UrlCol);
-    }
-
-    public String getSuggestionIcon1() {
-        return getStringOrNull(mIcon1Col);
-    }
-
-    public String getSuggestionIcon2() {
-        return getStringOrNull(mIcon2Col);
-    }
-
-    public boolean isSpinnerWhileRefreshing() {
-        return "true".equals(getStringOrNull(mRefreshSpinnerCol));
-    }
+    override val shortcutId: String
+        get() = getStringOrNull(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID)
+    override val suggestionFormat: String?
+        get() = getStringOrNull(mFormatCol)
+    override val suggestionText1: String?
+        get() = getStringOrNull(mText1Col)
+    override val suggestionText2: String?
+        get() = getStringOrNull(mText2Col)
+    override val suggestionText2Url: String?
+        get() = getStringOrNull(mText2UrlCol)
+    override val suggestionIcon1: String?
+        get() = getStringOrNull(mIcon1Col)
+    override val suggestionIcon2: String?
+        get() = getStringOrNull(mIcon2Col)
+    override val isSpinnerWhileRefreshing: Boolean
+        get() = "true".equals(getStringOrNull(mRefreshSpinnerCol))
 
     /**
      * Gets the intent action for the current suggestion.
      */
-    public String getSuggestionIntentAction() {
-        String action = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_ACTION);
-        if (action != null) return action;
-        return getSuggestionSource().getDefaultIntentAction();
-    }
-
-    public abstract ComponentName getSuggestionIntentComponent();
+    override val suggestionIntentAction: String
+        get() {
+            val action: String = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_ACTION)
+            return action
+        }
+    abstract override val suggestionIntentComponent: ComponentName
 
     /**
      * Gets the query for the current suggestion.
      */
-    public String getSuggestionQuery() {
-        return getStringOrNull(SearchManager.SUGGEST_COLUMN_QUERY);
-    }
+    override val suggestionQuery: String
+        get() = getStringOrNull(SearchManager.SUGGEST_COLUMN_QUERY)
 
-    public String getSuggestionIntentDataString() {
-         // use specific data if supplied, or default data if supplied
-         String data = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA);
-         if (data == null) {
-             data = getSuggestionSource().getDefaultIntentData();
-         }
-         // then, if an ID was provided, append it.
-         if (data != null) {
-             String id = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID);
-             if (id != null) {
-                 data = data + "/" + Uri.encode(id);
-             }
-         }
-         return data;
-     }
+    override val suggestionIntentDataString: String?
+        get() {
+            // use specific data if supplied, or default data if supplied
+            var data: String? = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA)
+            if (data == null) {
+                data = suggestionSource.getDefaultIntentData()
+            }
+            // then, if an ID was provided, append it.
+            if (data != null) {
+                val id: String = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID)
+                if (id != null) {
+                    data = data.toString() + "/" + Uri.encode(id)
+                }
+            }
+            return data
+        }
 
     /**
      * Gets the intent extra data for the current suggestion.
      */
-    public String getSuggestionIntentExtraData() {
-        return getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA);
-    }
-
-    public boolean isWebSearchSuggestion() {
-        return Intent.ACTION_WEB_SEARCH.equals(getSuggestionIntentAction());
-    }
+    override val suggestionIntentExtraData: String
+        get() = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA)
+    override val isWebSearchSuggestion: Boolean
+        get() = Intent.ACTION_WEB_SEARCH.equals(suggestionIntentAction)
 
     /**
-     * Gets the index of a column in {@link #mCursor} by name.
+     * Gets the index of a column in [.mCursor] by name.
      *
-     * @return The index, or {@code -1} if the column was not found.
+     * @return The index, or `-1` if the column was not found.
      */
-    protected int getColumnIndex(String colName) {
-        if (mCursor == null) return -1;
-        try {
-            return mCursor.getColumnIndex(colName);
-        } catch (RuntimeException ex) {
+    protected fun getColumnIndex(colName: String?): Int {
+        return if (mCursor == null) -1 else try {
+            mCursor.getColumnIndex(colName)
+        } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "getColumnIndex() failed, ", ex);
-            return -1;
+            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getColumnIndex() failed, ", ex)
+            -1
         }
     }
 
     /**
-     * Gets the string value of a column in {@link #mCursor} by column index.
+     * Gets the string value of a column in [.mCursor] by column index.
      *
      * @param col Column index.
-     * @return The string value, or {@code null}.
+     * @return The string value, or `null`.
      */
-    protected String getStringOrNull(int col) {
-        if (mCursor == null) return null;
-        if (col == -1) {
-            return null;
-        }
-        try {
-            return mCursor.getString(col);
-        } catch (RuntimeException ex) {
+    protected fun getStringOrNull(col: Int): String? {
+        if (mCursor == null) return null
+        return if (col == -1) {
+            null
+        } else try {
+            mCursor.getString(col)
+        } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(TAG, "getString() failed, ", ex);
-            return null;
+            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getString() failed, ", ex)
+            null
         }
     }
 
     /**
-     * Gets the string value of a column in {@link #mCursor} by column name.
+     * Gets the string value of a column in [.mCursor] by column name.
      *
      * @param colName Column name.
-     * @return The string value, or {@code null}.
+     * @return The string value, or `null`.
      */
-    protected String getStringOrNull(String colName) {
-        int col = getColumnIndex(colName);
-        return getStringOrNull(col);
+    protected fun getStringOrNull(colName: String?): String? {
+        val col = getColumnIndex(colName)
+        return getStringOrNull(col)
     }
 
-    public void registerDataSetObserver(DataSetObserver observer) {
+    override fun registerDataSetObserver(observer: DataSetObserver?) {
         // We don't watch Cursor-backed SuggestionCursors for changes
     }
 
-    public void unregisterDataSetObserver(DataSetObserver observer) {
+    override fun unregisterDataSetObserver(observer: DataSetObserver?) {
         // We don't watch Cursor-backed SuggestionCursors for changes
     }
 
     @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + mUserQuery + "]";
+    override fun toString(): String {
+        return getClass().getSimpleName().toString() + "[" + userQuery + "]"
     }
 
+    companion object {
+        private const val DBG = false
+        protected const val TAG = "QSB.CursorBackedSuggestionCursor"
+        const val SUGGEST_COLUMN_LOG_TYPE = "suggest_log_type"
+    }
+
+    init {
+        mCursor = cursor
+        mFormatCol = getColumnIndex(SearchManager.SUGGEST_COLUMN_FORMAT)
+        mText1Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1)
+        mText2Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_2)
+        mText2UrlCol = getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_2_URL)
+        mIcon1Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_ICON_1)
+        mIcon2Col = getColumnIndex(SearchManager.SUGGEST_COLUMN_ICON_2)
+        mRefreshSpinnerCol = getColumnIndex(SearchManager.SUGGEST_COLUMN_SPINNER_WHILE_REFRESHING)
+    }
 }
