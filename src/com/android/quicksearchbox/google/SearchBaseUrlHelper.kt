@@ -52,7 +52,7 @@ class SearchBaseUrlHelper(
     fun maybeUpdateBaseUrlSetting(force: Boolean) {
         val lastUpdateTime: Long = mSearchSettings.searchBaseDomainApplyTime
         val currentTime: Long = System.currentTimeMillis()
-        if (force || lastUpdateTime == -1L || currentTime - lastUpdateTime >= SearchBaseUrlHelper.Companion.SEARCH_BASE_URL_EXPIRY_MS) {
+        if (force || lastUpdateTime == -1L || currentTime - lastUpdateTime >= SEARCH_BASE_URL_EXPIRY_MS) {
             if (mSearchSettings.shouldUseGoogleCom()) {
                 setSearchBaseDomain(defaultBaseDomain)
             } else {
@@ -83,9 +83,9 @@ class SearchBaseUrlHelper(
         get() {
             var domain: String? = mSearchSettings.searchBaseDomain
             if (domain == null) {
-                if (SearchBaseUrlHelper.Companion.DBG) {
+                if (DBG) {
                     Log.w(
-                        SearchBaseUrlHelper.Companion.TAG,
+                        TAG,
                         "Search base domain was null, last apply time=" +
                                 mSearchSettings.searchBaseDomainApplyTime
                     )
@@ -101,8 +101,8 @@ class SearchBaseUrlHelper(
                 domain = defaultBaseDomain
             }
             if (domain.startsWith(".")) {
-                if (SearchBaseUrlHelper.Companion.DBG) Log.d(
-                    SearchBaseUrlHelper.Companion.TAG,
+                if (DBG) Log.d(
+                    TAG,
                     "Prepending www to $domain"
                 )
                 domain = "www$domain"
@@ -139,18 +139,18 @@ class SearchBaseUrlHelper(
         get() = mContext.getResources().getString(R.string.default_search_domain)
 
     private fun setSearchBaseDomain(domain: String?) {
-        if (SearchBaseUrlHelper.Companion.DBG) Log.d(
-            SearchBaseUrlHelper.Companion.TAG,
+        if (DBG) Log.d(
+            TAG,
             "Setting search domain to : $domain"
         )
-        mSearchSettings.setSearchBaseDomain(domain)
+        mSearchSettings.searchBaseDomain = domain
     }
 
     @Override
     override fun onSharedPreferenceChanged(pref: SharedPreferences?, key: String) {
         // Listen for changes only to the SEARCH_BASE_URL preference.
-        if (SearchBaseUrlHelper.Companion.DBG) Log.d(
-            SearchBaseUrlHelper.Companion.TAG,
+        if (DBG) Log.d(
+            TAG,
             "Handling changed preference : $key"
         )
         if (SearchSettingsImpl.USE_GOOGLE_COM_PREF.equals(key)) {
