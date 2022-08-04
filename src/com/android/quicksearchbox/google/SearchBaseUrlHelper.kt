@@ -15,19 +15,17 @@
  */
 package com.android.quicksearchbox.google
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.SearchSettings
 import com.android.quicksearchbox.SearchSettingsImpl
 import com.android.quicksearchbox.util.HttpHelper
-
-import android.content.Context
-import android.content.SharedPreferences
-import android.os.AsyncTask
-import android.text.TextUtils
-import android.util.Log
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import java.util.Locale
-import java.util.concurrent.Executors
 
 
 /**
@@ -40,6 +38,7 @@ class SearchBaseUrlHelper(
     private val mHttpHelper: HttpHelper
     private val mContext: Context
     private val mSearchSettings: SearchSettings
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     /**
      * Update the base search url, either:
@@ -82,7 +81,7 @@ class SearchBaseUrlHelper(
      */
     val searchDomain: String?
         get() {
-            var domain: String = mSearchSettings.searchBaseDomain
+            var domain: String? = mSearchSettings.searchBaseDomain
             if (domain == null) {
                 if (SearchBaseUrlHelper.Companion.DBG) {
                     Log.w(
@@ -116,41 +115,30 @@ class SearchBaseUrlHelper(
      * URL for search requests.
      */
     private fun checkSearchDomain() {
-        val request = HttpHelper.GetRequest(SearchBaseUrlHelper.Companion.DOMAIN_CHECK_URL)
-        object : AsyncTask<Void?, Void?, Void?>() {
-            @Override
-            protected override fun doInBackground(vararg params: Void?): Void? {
-                if (SearchBaseUrlHelper.Companion.DBG) Log.d(
-                    SearchBaseUrlHelper.Companion.TAG,
-                    "Starting request to /searchdomaincheck"
+        val request = HttpHelper.GetRequest(DOMAIN_CHECK_URL)
+        scope.async {
+            if (DBG) Log.d(TAG, "Starting request to /searchdomaincheck")
+            var domain: String?
+            try {
+                domain = mHttpHelper[request]
+            } catch (e: Exception) {
+                if (DBG) Log.d(
+                    TAG,
+                    "Request to /searchdomaincheck failed : $e"
                 )
-                var domain: String
-                try {
-                    domain = mHttpHelper.get(request)
-                } catch (e: Exception) {
-                    if (SearchBaseUrlHelper.Companion.DBG) Log.d(
-                        SearchBaseUrlHelper.Companion.TAG,
-                        "Request to /searchdomaincheck failed : $e"
-                    )
-                    // Swallow any exceptions thrown by the HTTP helper, in
-                    // this rare case, we just use the default URL.
-                    domain = defaultBaseDomain
-                    return null
-                }
-                if (SearchBaseUrlHelper.Companion.DBG) Log.d(
-                    SearchBaseUrlHelper.Companion.TAG,
-                    "Request to /searchdomaincheck succeeded"
-                )
-                setSearchBaseDomain(domain)
-                return null
+                // Swallow any exceptions thrown by the HTTP helper, in
+                // this rare case, we just use the default URL.
+                domain = defaultBaseDomain
             }
-        }.execute()
+            if (DBG) Log.d(TAG, "Request to /searchdomaincheck succeeded")
+            setSearchBaseDomain(domain)
+        }
     }
 
     private val defaultBaseDomain: String
         get() = mContext.getResources().getString(R.string.default_search_domain)
 
-    private fun setSearchBaseDomain(domain: String) {
+    private fun setSearchBaseDomain(domain: String?) {
         if (SearchBaseUrlHelper.Companion.DBG) Log.d(
             SearchBaseUrlHelper.Companion.TAG,
             "Setting search domain to : $domain"
