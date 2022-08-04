@@ -26,7 +26,6 @@ import java.util.HashSet
  *
  * All the methods in this class return fixed default values. Subclasses may
  * make these values server-side settable.
- *
  */
 class Config(context: Context) {
     private val mContext: Context
@@ -34,10 +33,11 @@ class Config(context: Context) {
     private val mHiddenCorpora: HashSet<String>? = null
     private val mDefaultCorporaSuggestUris: HashSet<String>? = null
     protected val context: Context
-        protected get() = mContext
+        get() = mContext
 
     /**
      * Releases any resources used by the configuration object.
+     *
      *
      * Default implementation does nothing.
      */
@@ -49,7 +49,13 @@ class Config(context: Context) {
             set.add(item)
         }
         return set
-    }// Get the list of default corpora from a resource, which allows vendor overlays.
+    }
+
+    /**
+     * The number of promoted sources.
+     */
+    val numPromotedSources: Int
+        get() = NUM_PROMOTED_SOURCES  // Get the list of default corpora from a resource, which allows vendor overlays.
 
     /**
      * The number of suggestions visible above the onscreen keyboard.
@@ -63,8 +69,15 @@ class Config(context: Context) {
      */
     val maxPromotedSuggestions: Int
         get() = mContext.getResources().getInteger(R.integer.max_promoted_suggestions)
+
     val maxPromotedResults: Int
         get() = mContext.getResources().getInteger(R.integer.max_promoted_results)
+
+    /**
+     * The number of results to ask each source for.
+     */
+    val maxResultsPerSource: Int
+        get() = MAX_RESULTS_PER_SOURCE
 
     /**
      * The maximum number of shortcuts to show for the web source in All mode.
@@ -81,13 +94,100 @@ class Config(context: Context) {
     /**
      * Gets the maximum number of shortcuts that will be shown from the given source.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun getMaxShortcuts(sourceName: String?): Int {
         return maxShortcutsPerNonWebSource
     }
 
+    /**
+     * The timeout for querying each source, in milliseconds.
+     */
+    val sourceTimeoutMillis: Long
+        get() = SOURCE_TIMEOUT_MILLIS
+
+    /**
+     * The priority of query threads.
+     *
+     * @return A thread priority, as defined in [Process].
+     */
+    val queryThreadPriority: Int
+        get() = QUERY_THREAD_PRIORITY
+
+    /**
+     * The maximum age of log data used for shortcuts.
+     */
+    val maxStatAgeMillis: Long
+        get() = MAX_STAT_AGE_MILLIS
+
+    /**
+     * The minimum number of clicks needed to rank a source.
+     */
+    val minClicksForSourceRanking: Int
+        get() = MIN_CLICKS_FOR_SOURCE_RANKING
+
+    val numWebCorpusThreads: Int
+        get() = NUM_WEB_CORPUS_THREADS
+
+    /**
+     * How often query latency should be logged.
+     *
+     * @return An integer in the range 0-1000. 0 means that no latency events
+     * should be logged. 1000 means that all latency events should be logged.
+     */
+    val latencyLogFrequency: Int
+        get() = LATENCY_LOG_FREQUENCY
+
+    /**
+     * The delay in milliseconds before suggestions are updated while typing.
+     * If a new character is typed before this timeout expires, the timeout is reset.
+     */
+    val typingUpdateSuggestionsDelayMillis: Long
+        get() = TYPING_SUGGESTIONS_UPDATE_DELAY_MILLIS
+
     fun allowVoiceSearchHints(): Boolean {
         return true
     }
+
+    /**
+     * The period of time for which after installing voice search we should consider showing voice
+     * search hints.
+     *
+     * @return The period in milliseconds.
+     */
+    val voiceSearchHintActivePeriod: Long
+        get() = VOICE_SEARCH_HINT_ACTIVE_PERIOD
+
+    /**
+     * The time interval at which we should consider whether or not to show some voice search hints.
+     *
+     * @return The period in milliseconds.
+     */
+    val voiceSearchHintUpdatePeriod: Long
+        get() = VOICE_SEARCH_HINT_UPDATE_INTERVAL
+
+    /**
+     * The time interval at which, on average, voice search hints are displayed.
+     *
+     * @return The period in milliseconds.
+     */
+    val voiceSearchHintShowPeriod: Long
+        get() = VOICE_SEARCH_HINT_SHOW_PERIOD_MILLIS
+
+    /**
+     * The amount of time for which voice search hints are displayed in one go.
+     *
+     * @return The period in milliseconds.
+     */
+    val voiceSearchHintVisibleTime: Long
+        get() = VOICE_SEARCH_HINT_VISIBLE_PERIOD
+
+    /**
+     * The period that we change voice search hints at while they're being displayed.
+     *
+     * @return The period in milliseconds.
+     */
+    val voiceSearchHintChangePeriod: Long
+        get() = VOICE_SEARCH_HINT_CHANGE_PERIOD
 
     fun showSuggestionsForZeroQuery(): Boolean {
         // Get the list of default corpora from a resource, which allows vendor overlays.
@@ -107,121 +207,47 @@ class Config(context: Context) {
         return mContext.getResources().getBoolean(R.bool.show_scrolling_results)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun getHelpUrl(activity: String?): Uri? {
         return null
     }
 
+    val httpConnectTimeout: Int
+        get() = HTTP_CONNECT_TIMEOUT_MILLIS
+
+    val httpReadTimeout: Int
+        get() = HTTP_READ_TIMEOUT_MILLIS
+
+    val userAgent: String
+        get() = USER_AGENT
+
     companion object {
+        protected const val SECOND_MILLIS = 1000L
+
+        @JvmField
+        protected val MINUTE_MILLIS: Long = 60L * SECOND_MILLIS
+        private val VOICE_SEARCH_HINT_CHANGE_PERIOD: Long = 2L * MINUTE_MILLIS
+        private val VOICE_SEARCH_HINT_VISIBLE_PERIOD: Long = 6L * MINUTE_MILLIS
+        protected const val DAY_MILLIS = 86400000L
         private const val TAG = "QSB.Config"
         private const val DBG = false
-        protected const val SECOND_MILLIS = 1000L
-        protected const val MINUTE_MILLIS = 60L * SECOND_MILLIS
-        protected const val DAY_MILLIS = 86400000L
-
-        /**
-         * The number of promoted sources.
-         */
-        val numPromotedSources = 3
-            get() = Companion.field
-
-        /**
-         * The number of results to ask each source for.
-         */
-        val maxResultsPerSource = 50
-            get() = Companion.field
-
-        /**
-         * The timeout for querying each source, in milliseconds.
-         */
-        val sourceTimeoutMillis: Long = 10000
-            get() = Companion.field
-
-        /**
-         * The priority of query threads.
-         *
-         * @return A thread priority, as defined in [Process].
-         */
-        val queryThreadPriority: Int =
+        private const val NUM_PROMOTED_SOURCES = 3
+        private const val MAX_RESULTS_PER_SOURCE = 50
+        private const val SOURCE_TIMEOUT_MILLIS: Long = 10000
+        private val QUERY_THREAD_PRIORITY: Int =
             Process.THREAD_PRIORITY_BACKGROUND + Process.THREAD_PRIORITY_MORE_FAVORABLE
-            get() = Companion.field
-
-        /**
-         * The maximum age of log data used for shortcuts.
-         */
-        val maxStatAgeMillis = 30 * DAY_MILLIS
-            get() = Companion.field
-
-        /**
-         * The minimum number of clicks needed to rank a source.
-         */
-        val minClicksForSourceRanking = 3
-            get() = Companion.field
-        val numWebCorpusThreads = 2
-            get() = Companion.field
-
-        /**
-         * How often query latency should be logged.
-         *
-         * @return An integer in the range 0-1000. 0 means that no latency events
-         * should be logged. 1000 means that all latency events should be logged.
-         */
-        val latencyLogFrequency = 1000
-            get() = Companion.field
-
-        /**
-         * The delay in milliseconds before suggestions are updated while typing.
-         * If a new character is typed before this timeout expires, the timeout is reset.
-         */
-        val typingUpdateSuggestionsDelayMillis: Long = 100
-            get() = Companion.field
+        private val MAX_STAT_AGE_MILLIS: Long = 30 * DAY_MILLIS
+        private const val MIN_CLICKS_FOR_SOURCE_RANKING = 3
+        private const val NUM_WEB_CORPUS_THREADS = 2
+        private const val LATENCY_LOG_FREQUENCY = 1000
+        private const val TYPING_SUGGESTIONS_UPDATE_DELAY_MILLIS: Long = 100
         private const val PUBLISH_RESULT_DELAY_MILLIS: Long = 200
-
-        /**
-         * The period of time for which after installing voice search we should consider showing voice
-         * search hints.
-         *
-         * @return The period in milliseconds.
-         */
-        val voiceSearchHintActivePeriod = 7L * DAY_MILLIS
-            get() = Companion.field
-
-        /**
-         * The time interval at which we should consider whether or not to show some voice search hints.
-         *
-         * @return The period in milliseconds.
-         */
-        val voiceSearchHintUpdatePeriod: Long = AlarmManager.INTERVAL_FIFTEEN_MINUTES
-            get() = Companion.field
-
-        /**
-         * The time interval at which, on average, voice search hints are displayed.
-         *
-         * @return The period in milliseconds.
-         */
-        val voiceSearchHintShowPeriod: Long = AlarmManager.INTERVAL_HOUR * 2
-            get() = Companion.field
-
-        /**
-         * The period that we change voice search hints at while they're being displayed.
-         *
-         * @return The period in milliseconds.
-         */
-        val voiceSearchHintChangePeriod = 2L * MINUTE_MILLIS
-            get() = Companion.field
-
-        /**
-         * The amount of time for which voice search hints are displayed in one go.
-         *
-         * @return The period in milliseconds.
-         */
-        val voiceSearchHintVisibleTime = 6L * MINUTE_MILLIS
-            get() = Companion.field
-        val httpConnectTimeout = 4000
-            get() = Companion.field
-        val httpReadTimeout = 4000
-            get() = Companion.field
-        val userAgent = "Android/1.0"
-            get() = Companion.field
+        private val VOICE_SEARCH_HINT_ACTIVE_PERIOD: Long = 7L * DAY_MILLIS
+        private val VOICE_SEARCH_HINT_UPDATE_INTERVAL: Long = AlarmManager.INTERVAL_FIFTEEN_MINUTES
+        private val VOICE_SEARCH_HINT_SHOW_PERIOD_MILLIS: Long = AlarmManager.INTERVAL_HOUR * 2
+        private const val HTTP_CONNECT_TIMEOUT_MILLIS = 4000
+        private const val HTTP_READ_TIMEOUT_MILLIS = 4000
+        private const val USER_AGENT = "Android/1.0"
     }
 
     /**
