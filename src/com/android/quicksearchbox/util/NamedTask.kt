@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
 /**
  * A task that has a name.
  */
-public interface NamedTask extends Runnable {
-
-    String getName();
-
+interface NamedTask : Runnable {
+    val name: String?
 }
