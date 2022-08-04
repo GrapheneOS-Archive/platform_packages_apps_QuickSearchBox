@@ -33,16 +33,22 @@ android_app {
       "src/**/quicksearchbox/google/GoogleSuggestClient.java",
       "src/**/quicksearchbox/google/GoogleSuggestionProvider.java",
       "src/**/quicksearchbox/google/SearchBaseUrlHelper.java",
-      "src/**/quicksearchbox/Suggestion.java",
-      "src/**/quicksearchbox/SuggestionCursor.java",
-      "src/**/quicksearchbox/SuggestionCursorProvider.java",
-      "src/**/quicksearchbox/Source.java",
-      "src/**/quicksearchbox/SourceResult.java",
-      "src/**/quicksearchbox/AbstractSource.java",
       "src/**/quicksearchbox/AbstractInternalSource.java",
+      "src/**/quicksearchbox/AbstractSource.java",
       "src/**/quicksearchbox/AbstractSuggestionCursorWrapper.java",
       "src/**/quicksearchbox/AbstractSuggestionExtras.java",
       "src/**/quicksearchbox/AbstractSuggestionWrapper.java",
+      "src/**/quicksearchbox/CursorBackedSuggestionExtras.java",
+      "src/**/quicksearchbox/IconLoader.java",
+      "src/**/quicksearchbox/Source.java",
+      "src/**/quicksearchbox/SourceResult.java",
+      "src/**/quicksearchbox/Suggestion.java",
+      "src/**/quicksearchbox/SuggestionCursor.java",
+      "src/**/quicksearchbox/SuggestionCursorProvider.java",
+      "src/**/quicksearchbox/SuggestionCursorBackedCursor.java",
+      "src/**/quicksearchbox/SuggestionCursorWrapper.java",
+      "src/**/quicksearchbox/SuggestionData.java",
+      "src/**/quicksearchbox/SuggestionExtras.java",
     ],
     static_libs: [
             "guava",
@@ -55,6 +61,8 @@ android_app {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
+
+    kotlincflags: ["-Werror"],
 }
 
 android_app {
