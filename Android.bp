@@ -45,6 +45,7 @@ android_app {
       "src/**/quicksearchbox/AbstractSuggestionCursorWrapper.java",
       "src/**/quicksearchbox/AbstractSuggestionExtras.java",
       "src/**/quicksearchbox/AbstractSuggestionWrapper.java",
+      "src/**/quicksearchbox/CachingIconLoader.java",
       "src/**/quicksearchbox/CursorBackedSuggestionExtras.java",
       "src/**/quicksearchbox/IconLoader.java",
       "src/**/quicksearchbox/Logger.java",
