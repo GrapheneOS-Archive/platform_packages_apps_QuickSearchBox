@@ -21,5 +21,5 @@ import java.io.Closeable
  * Interface for closeable objects whose close method doesn't throw IOExceptions.
  */
 interface QuietlyCloseable : Closeable {
-    fun close()
+    override fun close()
 }
