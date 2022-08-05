@@ -40,6 +40,7 @@ android_app {
       "src/**/quicksearchbox/AbstractSuggestionWrapper.java",
       "src/**/quicksearchbox/CursorBackedSuggestionExtras.java",
       "src/**/quicksearchbox/IconLoader.java",
+      "src/**/quicksearchbox/Logger.java",
       "src/**/quicksearchbox/Source.java",
       "src/**/quicksearchbox/SourceResult.java",
       "src/**/quicksearchbox/Suggestion.java",
@@ -49,6 +50,9 @@ android_app {
       "src/**/quicksearchbox/SuggestionCursorWrapper.java",
       "src/**/quicksearchbox/SuggestionData.java",
       "src/**/quicksearchbox/SuggestionExtras.java",
+      "src/**/quicksearchbox/SuggestionFilter.java",
+      "src/**/quicksearchbox/SearchSettings.java",
+      "src/**/quicksearchbox/SuggestionsProvider.java",
     ],
     static_libs: [
             "guava",
