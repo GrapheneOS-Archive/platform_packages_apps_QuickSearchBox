@@ -30,6 +30,12 @@ class Suggestions(val query: String, val source: Source) {
      */
     private val mDataSetObservable: DataSetObservable = DataSetObservable()
 
+    private var mResult: SourceResult? = null
+
+    private var mRefCount = 0
+
+    private var mDone = false
+
     /**
      * True if [Suggestions.close] has been called.
      */
@@ -40,12 +46,14 @@ class Suggestions(val query: String, val source: Source) {
      * Gets the list of corpus results reported so far. Do not modify or hang on to
      * the returned iterator.
      */
-    var webResult: SourceResult? = null
-        private set
-        get() = field
-    set
-    private var mRefCount = 0
-    private var mDone = false
+    fun getResult(): SourceResult? {
+        return mResult
+    }
+
+    fun getWebResult(): SourceResult? {
+        return mResult
+    }
+
     fun acquire() {
         mRefCount++
     }
@@ -70,7 +78,7 @@ class Suggestions(val query: String, val source: Source) {
      * Must be called on the UI thread, or before this object is seen by the UI thread.
      */
     val isDone: Boolean
-        get() = mDone || webResult != null
+        get() = mDone || mResult != null
 
     /**
      * Adds a list of corpus results. Must be called on the UI thread, or before this
@@ -81,19 +89,19 @@ class Suggestions(val query: String, val source: Source) {
             result.close()
             return
         }
-        if (Suggestions.Companion.DBG) {
+        if (DBG) {
             Log.d(
-                Suggestions.Companion.TAG, "addResults[" + hashCode().toString() + "] source:" +
-                        result.getSource().getName().toString() + " results:" + result.getCount()
+                TAG, "addResults[" + hashCode().toString() + "] source:" +
+                        result.source?.name.toString() + " results:" + result.count
             )
         }
-        if (!query.equals(result.getUserQuery())) {
+        if (query != result.userQuery) {
             throw IllegalArgumentException(
                 "Got result for wrong query: "
-                        + query + " != " + result.getUserQuery()
+                        + query + " != " + result.userQuery
             )
         }
-        webResult = result
+        mResult = result
         notifyDataSetChanged()
     }
 
@@ -119,7 +127,7 @@ class Suggestions(val query: String, val source: Source) {
      * Calls [DataSetObserver.onChanged] on all observers.
      */
     protected fun notifyDataSetChanged() {
-        if (Suggestions.Companion.DBG) Log.d(Suggestions.Companion.TAG, "notifyDataSetChanged()")
+        if (DBG) Log.d(TAG, "notifyDataSetChanged()")
         mDataSetObservable.notifyChanged()
     }
 
@@ -127,8 +135,8 @@ class Suggestions(val query: String, val source: Source) {
      * Closes all the source results and unregisters all observers.
      */
     private fun close() {
-        if (Suggestions.Companion.DBG) Log.d(
-            Suggestions.Companion.TAG,
+        if (DBG) Log.d(
+            TAG,
             "close() [" + hashCode().toString() + "]"
         )
         if (isClosed) {
@@ -136,17 +144,15 @@ class Suggestions(val query: String, val source: Source) {
         }
         isClosed = true
         mDataSetObservable.unregisterAll()
-        if (webResult != null) {
-            webResult!!.close()
-        }
-        webResult = null
+        mResult?.close()
+        mResult = null
     }
 
     @Override
     protected fun finalize() {
         if (!isClosed) {
             Log.e(
-                Suggestions.Companion.TAG,
+                TAG,
                 "LEAK! Finalized without being closed: Suggestions[$query]"
             )
         }
@@ -159,15 +165,15 @@ class Suggestions(val query: String, val source: Source) {
     val resultCount: Int
         get() {
             if (isClosed) {
-                throw IllegalStateException("Called getSourceCount() when closed.")
+                throw IllegalStateException("Called resultCount when closed.")
             }
-            return if (webResult == null) 0 else webResult.getCount()
+            return mResult?.count ?: 0
         }
 
     @Override
     override fun toString(): String {
         return "Suggestions@" + hashCode().toString() + "{source=" + source
-            .toString() + ",getResultCount()=" + resultCount.toString() + "}"
+            .toString() + ",resultCount=" + resultCount.toString() + "}"
     }
 
     companion object {

@@ -65,6 +65,7 @@ android_app {
       "src/**/quicksearchbox/SuggestionData.java",
       "src/**/quicksearchbox/SuggestionExtras.java",
       "src/**/quicksearchbox/SuggestionFilter.java",
+      "src/**/quicksearchbox/Suggestions.java",
       "src/**/quicksearchbox/SearchSettings.java",
       "src/**/quicksearchbox/SuggestionsProvider.java",
     ],
