@@ -40,7 +40,7 @@ abstract class SuggestionFormatter protected constructor(private val mSpanFactor
         setSpans(text, start, end, mSpanFactory.createSuggestionSuggestedTextAppearance())
     }
 
-    private fun setSpans(text: Spannable, start: Int, end: Int, spans: Array<Object>) {
+    private fun setSpans(text: Spannable, start: Int, end: Int, spans: Array<Any>) {
         for (span in spans) {
             text.setSpan(span, start, end, 0)
         }

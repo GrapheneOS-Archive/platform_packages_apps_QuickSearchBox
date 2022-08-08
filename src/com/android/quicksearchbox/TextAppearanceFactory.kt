@@ -23,14 +23,14 @@ import android.text.style.TextAppearanceSpan
  */
 open class TextAppearanceFactory(context: Context) {
     private val mContext: Context
-    open fun createSuggestionQueryTextAppearance(): Array<Object>? {
-        return arrayOf<Object>(
+    open fun createSuggestionQueryTextAppearance(): Array<Any> {
+        return arrayOf(
             TextAppearanceSpan(mContext, R.style.SuggestionText1_Query)
         )
     }
 
-    open fun createSuggestionSuggestedTextAppearance(): Array<Object>? {
-        return arrayOf<Object>(
+    open fun createSuggestionSuggestedTextAppearance(): Array<Any> {
+        return arrayOf(
             TextAppearanceSpan(mContext, R.style.SuggestionText1_Suggested)
         )
     }

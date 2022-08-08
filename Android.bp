@@ -66,9 +66,11 @@ android_app {
       "src/**/quicksearchbox/SuggestionData.java",
       "src/**/quicksearchbox/SuggestionExtras.java",
       "src/**/quicksearchbox/SuggestionFilter.java",
+      "src/**/quicksearchbox/SuggestionFormatter.java",
       "src/**/quicksearchbox/Suggestions.java",
       "src/**/quicksearchbox/SearchSettings.java",
       "src/**/quicksearchbox/SuggestionsProvider.java",
+      "src/**/quicksearchbox/TextAppearanceFactory.java",
     ],
     static_libs: [
             "guava",
