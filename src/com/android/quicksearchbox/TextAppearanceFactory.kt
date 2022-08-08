@@ -13,32 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.content.Context;
-import android.text.style.TextAppearanceSpan;
+import android.content.Context
+import android.text.style.TextAppearanceSpan
 
 /**
  * Factory class for text appearances.
  */
-public class TextAppearanceFactory {
-    private final Context mContext;
-
-    public TextAppearanceFactory(Context context) {
-        mContext = context;
+open class TextAppearanceFactory(context: Context) {
+    private val mContext: Context
+    open fun createSuggestionQueryTextAppearance(): Array<Object>? {
+        return arrayOf<Object>(
+            TextAppearanceSpan(mContext, R.style.SuggestionText1_Query)
+        )
     }
 
-    public Object[] createSuggestionQueryTextAppearance() {
-        return new Object[]{
-                new TextAppearanceSpan(mContext, R.style.SuggestionText1_Query)
-        };
+    open fun createSuggestionSuggestedTextAppearance(): Array<Object>? {
+        return arrayOf<Object>(
+            TextAppearanceSpan(mContext, R.style.SuggestionText1_Suggested)
+        )
     }
 
-    public Object[] createSuggestionSuggestedTextAppearance() {
-        return new Object[]{
-                new TextAppearanceSpan(mContext, R.style.SuggestionText1_Suggested)
-        };
+    init {
+        mContext = context
     }
-
 }
