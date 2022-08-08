@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.text.Spannable;
+import android.text.Spannable
 
 /**
  * Suggestion formatter interface. This is used to bold (or otherwise highlight) portions of a
  * suggestion which were not a part of the query.
  */
-public abstract class SuggestionFormatter {
-
-    private final TextAppearanceFactory mSpanFactory;
-
-    protected SuggestionFormatter(TextAppearanceFactory spanFactory) {
-        mSpanFactory = spanFactory;
-    }
-
+abstract class SuggestionFormatter protected constructor(private val mSpanFactory: TextAppearanceFactory) {
     /**
      * Formats a suggestion for display in the UI.
      *
@@ -37,22 +29,20 @@ public abstract class SuggestionFormatter {
      * @param suggestion the suggestion
      * @return Formatted suggestion text.
      */
-    public abstract CharSequence formatSuggestion(String query, String suggestion);
-
-    protected void applyQueryTextStyle(Spannable text, int start, int end) {
-        if (start == end) return;
-        setSpans(text, start, end, mSpanFactory.createSuggestionQueryTextAppearance());
+    abstract fun formatSuggestion(query: String?, suggestion: String?): CharSequence?
+    protected fun applyQueryTextStyle(text: Spannable, start: Int, end: Int) {
+        if (start == end) return
+        setSpans(text, start, end, mSpanFactory.createSuggestionQueryTextAppearance())
     }
 
-    protected void applySuggestedTextStyle(Spannable text, int start, int end) {
-        if (start == end) return;
-        setSpans(text, start, end, mSpanFactory.createSuggestionSuggestedTextAppearance());
+    protected fun applySuggestedTextStyle(text: Spannable, start: Int, end: Int) {
+        if (start == end) return
+        setSpans(text, start, end, mSpanFactory.createSuggestionSuggestedTextAppearance())
     }
 
-    private void setSpans(Spannable text, int start, int end, Object[] spans) {
-        for (Object span : spans) {
-            text.setSpan(span, start, end, 0);
+    private fun setSpans(text: Spannable, start: Int, end: Int, spans: Array<Object>) {
+        for (span in spans) {
+            text.setSpan(span, start, end, 0)
         }
     }
-
 }
