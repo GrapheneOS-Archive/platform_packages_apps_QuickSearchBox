@@ -52,6 +52,7 @@ android_app {
       "src/**/quicksearchbox/CursorBackedSuggestionExtras.java",
       "src/**/quicksearchbox/DialogActivity.java",
       "src/**/quicksearchbox/EventLogLogger.java",
+      "src/**/quicksearchbox/Help.java",
       "src/**/quicksearchbox/IconLoader.java",
       "src/**/quicksearchbox/Logger.java",
       "src/**/quicksearchbox/Source.java",
