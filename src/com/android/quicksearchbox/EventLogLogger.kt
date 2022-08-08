@@ -16,6 +16,11 @@
 package com.android.quicksearchbox
 
 import android.content.Context
+import android.util.EventLog
+
+import java.util.Random
+
+import kotlin.text.StringBuilder
 
 /**
  * Logs events to [EventLog].
@@ -26,12 +31,12 @@ class EventLogLogger(context: Context, config: Config) : Logger {
     private val mPackageName: String
     private val mRandom: Random
     protected val context: Context
-        protected get() = mContext
+        get() = mContext
     protected val versionCode: Int
-        protected get() = QsbApplication.get(context).versionCode
+        get() = QsbApplication.get(context).versionCode
 
     @Override
-    override fun logStart(onCreateLatency: Int, latency: Int, intentSource: String) {
+    override fun logStart(onCreateLatency: Int, latency: Int, intentSource: String?) {
         // TODO: Add more info to startMethod
         EventLogTags.writeQsbStart(
             mPackageName, versionCode, intentSource,
@@ -40,11 +45,15 @@ class EventLogLogger(context: Context, config: Config) : Logger {
     }
 
     @Override
-    override fun logSuggestionClick(id: Long, suggestionCursor: SuggestionCursor?, clickType: Int) {
+    override fun logSuggestionClick(
+        suggestionId: Long,
+        suggestionCursor: SuggestionCursor?,
+        clickType: Int
+    ) {
         val suggestions = getSuggestions(suggestionCursor)
-        val numChars: Int = suggestionCursor.getUserQuery().length()
+        val numChars: Int = suggestionCursor!!.userQuery!!.length
         EventLogTags.writeQsbClick(
-            id, suggestions, null, numChars,
+            suggestionId, suggestions, null, numChars,
             clickType
         )
     }
@@ -70,17 +79,16 @@ class EventLogLogger(context: Context, config: Config) : Logger {
     }
 
     private fun getSuggestions(cursor: SuggestionCursor?): String {
-        val sb: StringBuilder = StringBuilder()
-        val count = if (cursor == null) 0 else cursor.getCount()
+        val sb = StringBuilder()
+        val count = cursor?.count ?: 0
         for (i in 0 until count) {
-            if (i > 0) append(value = EventLogLogger.Companion.LIST_SEPARATOR)
+            if (i > 0) sb.append(LIST_SEPARATOR)
             cursor!!.moveTo(i)
-            val source: String = cursor.getSuggestionSource().getName()
-            var type: String = cursor.getSuggestionLogType()
+            val source: String? = cursor.suggestionSource?.name
+            var type: String? = cursor.suggestionLogType
             if (type == null) type = ""
-            val shortcut = if (cursor.isSuggestionShortcut()) "shortcut" else ""
-            sb.append(source).append(':').append(type)
-            append(value = ':').append(shortcut)
+            val shortcut = if (cursor.isSuggestionShortcut) "shortcut" else ""
+            sb.append(source).append(":").append(type).append(":").append(shortcut)
         }
         return sb.toString()
     }
