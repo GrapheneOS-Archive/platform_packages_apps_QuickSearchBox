@@ -13,43 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.os.SystemClock;
+import android.os.SystemClock
 
 /**
- * Tracks latency in wall-clock time. Since {@link #getLatency} returns an {@code int},
+ * Tracks latency in wall-clock time. Since [.getLatency] returns an `int`,
  * latencies over 2^31 ms (~ 25 days) cannot be measured.
- * This class uses {@link SystemClock#uptimeMillis} which does not advance during deep sleep.
+ * This class uses [SystemClock.uptimeMillis] which does not advance during deep sleep.
  */
-public class LatencyTracker {
-
+class LatencyTracker {
     /**
-     * Start time, in milliseconds as returned by {@link SystemClock#uptimeMillis}.
+     * Start time, in milliseconds as returned by [SystemClock.uptimeMillis].
      */
-    private long mStartTime;
-
-    /**
-     * Creates a new latency tracker and sets the start time.
-     */
-    public LatencyTracker() {
-        mStartTime = SystemClock.uptimeMillis();
-    }
+    private var mStartTime: Long
 
     /**
      * Resets the start time.
      */
-    public void reset() {
-        mStartTime = SystemClock.uptimeMillis();
+    fun reset() {
+        mStartTime = SystemClock.uptimeMillis()
     }
 
     /**
-     * Gets the number of milliseconds since the object was created, or {@link #reset} was called.
+     * Gets the number of milliseconds since the object was created, or [.reset] was called.
      */
-    public int getLatency() {
-        long now = SystemClock.uptimeMillis();
-        return (int) (now - mStartTime);
-    }
+    val latency: Int
+        get() {
+            val now: Long = SystemClock.uptimeMillis()
+            return (now - mStartTime).toInt()
+        }
 
+    /**
+     * Creates a new latency tracker and sets the start time.
+     */
+    init {
+        mStartTime = SystemClock.uptimeMillis()
+    }
 }
