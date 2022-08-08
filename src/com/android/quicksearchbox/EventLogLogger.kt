@@ -13,99 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.content.Context;
-import android.util.EventLog;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import android.content.Context
 
 /**
- * Logs events to {@link EventLog}.
+ * Logs events to [EventLog].
  */
-public class EventLogLogger implements Logger {
-
-    private static final char LIST_SEPARATOR = '|';
-
-    private final Context mContext;
-
-    private final Config mConfig;
-
-    private final String mPackageName;
-
-    private final Random mRandom;
-
-    public EventLogLogger(Context context, Config config) {
-        mContext = context;
-        mConfig = config;
-        mPackageName = mContext.getPackageName();
-        mRandom = new Random();
-    }
-
-    protected Context getContext() {
-        return mContext;
-    }
-
-    protected int getVersionCode() {
-        return QsbApplication.get(getContext()).getVersionCode();
-    }
-
-    protected Config getConfig() {
-        return mConfig;
-    }
+class EventLogLogger(context: Context, config: Config) : Logger {
+    private val mContext: Context
+    protected val config: Config
+    private val mPackageName: String
+    private val mRandom: Random
+    protected val context: Context
+        protected get() = mContext
+    protected val versionCode: Int
+        protected get() = QsbApplication.get(context).versionCode
 
     @Override
-    public void logStart(int onCreateLatency, int latency, String intentSource) {
+    override fun logStart(onCreateLatency: Int, latency: Int, intentSource: String) {
         // TODO: Add more info to startMethod
-        String startMethod = intentSource;
-        EventLogTags.writeQsbStart(mPackageName, getVersionCode(), startMethod,
-                latency, null, null, onCreateLatency);
+        EventLogTags.writeQsbStart(
+            mPackageName, versionCode, intentSource,
+            latency, null, null, onCreateLatency
+        )
     }
 
     @Override
-    public void logSuggestionClick(long id, SuggestionCursor suggestionCursor, int clickType) {
-        String suggestions = getSuggestions(suggestionCursor);
-        int numChars = suggestionCursor.getUserQuery().length();
-        EventLogTags.writeQsbClick(id, suggestions, null, numChars,
-                clickType);
+    override fun logSuggestionClick(id: Long, suggestionCursor: SuggestionCursor?, clickType: Int) {
+        val suggestions = getSuggestions(suggestionCursor)
+        val numChars: Int = suggestionCursor.getUserQuery().length()
+        EventLogTags.writeQsbClick(
+            id, suggestions, null, numChars,
+            clickType
+        )
     }
 
     @Override
-    public void logSearch(int startMethod, int numChars) {
-        EventLogTags.writeQsbSearch(null, startMethod, numChars);
+    override fun logSearch(startMethod: Int, numChars: Int) {
+        EventLogTags.writeQsbSearch(null, startMethod, numChars)
     }
 
     @Override
-    public void logVoiceSearch() {
-        EventLogTags.writeQsbVoiceSearch(null);
+    override fun logVoiceSearch() {
+        EventLogTags.writeQsbVoiceSearch(null)
     }
 
     @Override
-    public void logExit(SuggestionCursor suggestionCursor, int numChars) {
-        String suggestions = getSuggestions(suggestionCursor);
-        EventLogTags.writeQsbExit(suggestions, numChars);
+    override fun logExit(suggestionCursor: SuggestionCursor?, numChars: Int) {
+        val suggestions = getSuggestions(suggestionCursor)
+        EventLogTags.writeQsbExit(suggestions, numChars)
     }
 
     @Override
-    public void logLatency(SourceResult result) {
+    override fun logLatency(result: SourceResult?) {
     }
 
-    private String getSuggestions(SuggestionCursor cursor) {
-        StringBuilder sb = new StringBuilder();
-        final int count = cursor == null ? 0 : cursor.getCount();
-        for (int i = 0; i < count; i++) {
-            if (i > 0) sb.append(LIST_SEPARATOR);
-            cursor.moveTo(i);
-            String source = cursor.getSuggestionSource().getName();
-            String type = cursor.getSuggestionLogType();
-            if (type == null) type = "";
-            String shortcut = cursor.isSuggestionShortcut() ? "shortcut" : "";
-            sb.append(source).append(':').append(type).append(':').append(shortcut);
+    private fun getSuggestions(cursor: SuggestionCursor?): String {
+        val sb: StringBuilder = StringBuilder()
+        val count = if (cursor == null) 0 else cursor.getCount()
+        for (i in 0 until count) {
+            if (i > 0) append(value = EventLogLogger.Companion.LIST_SEPARATOR)
+            cursor!!.moveTo(i)
+            val source: String = cursor.getSuggestionSource().getName()
+            var type: String = cursor.getSuggestionLogType()
+            if (type == null) type = ""
+            val shortcut = if (cursor.isSuggestionShortcut()) "shortcut" else ""
+            sb.append(source).append(':').append(type)
+            append(value = ':').append(shortcut)
         }
-        return sb.toString();
+        return sb.toString()
     }
 
+    companion object {
+        private const val LIST_SEPARATOR = '|'
+    }
+
+    init {
+        mContext = context
+        this.config = config
+        mPackageName = mContext.getPackageName()
+        mRandom = Random()
+    }
 }
