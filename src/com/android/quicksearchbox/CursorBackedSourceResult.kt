@@ -16,34 +16,46 @@
 package com.android.quicksearchbox
 
 import android.content.ComponentName
+import android.database.Cursor
+
 import com.android.quicksearchbox.google.GoogleSource
 
+import kotlin.collections.Collection
+
 class CursorBackedSourceResult(
-    @get:Override override val suggestionSource: GoogleSource,
+    override val suggestionSource: GoogleSource?,
     userQuery: String?,
     cursor: Cursor?
 ) : CursorBackedSuggestionCursor(userQuery, cursor), SourceResult {
-    constructor(source: GoogleSource, userQuery: String?) : this(source, userQuery, null)
 
-    override val suggestionIntentComponent: ComponentName
-        @Override get() = suggestionSource.getIntentComponent()
+    constructor(source: GoogleSource?, userQuery: String?) : this(source, userQuery, null)
+
+    override val source: Source?
+        get() = suggestionSource
+
+    @get:Override
+    override val suggestionIntentComponent: ComponentName?
+        get() = suggestionSource?.intentComponent
+
     override val isSuggestionShortcut: Boolean
         get() = false
+
     override val isHistorySuggestion: Boolean
         get() = false
 
     @Override
     override fun toString(): String {
-        return suggestionSource.toString() + "[" + getUserQuery() + "]"
+        return suggestionSource.toString() + "[" + userQuery + "]"
     }
 
-    override val extras: SuggestionExtras
-        @Override get() = if (mCursor == null) null else CursorBackedSuggestionExtras.createExtrasIfNecessary(
+    @get:Override
+    override val extras: SuggestionExtras?
+        get() = if (mCursor == null) null else CursorBackedSuggestionExtras.createExtrasIfNecessary(
             mCursor,
-            getPosition()
+            position
         )!!
+
     override val extraColumns: Collection<String>?
-        get() = if (mCursor == null) null else CursorBackedSuggestionExtras.getExtraColumns(
-            mCursor
-        )
+        get() = if (mCursor == null) null else CursorBackedSuggestionExtras.getExtraColumns(mCursor)!!
+
 }

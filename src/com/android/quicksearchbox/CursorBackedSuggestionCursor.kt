@@ -23,7 +23,7 @@ import android.database.DataSetObserver
 import android.net.Uri
 import android.util.Log
 
-abstract class CursorBackedSuggestionCursor(override val userQuery: String, cursor: Cursor?) :
+abstract class CursorBackedSuggestionCursor(override val userQuery: String?, cursor: Cursor?) :
     SuggestionCursor {
 
     /** The suggestions, or `null` if the suggestions query failed.  */
@@ -55,13 +55,13 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
 
     /** True if this result has been closed.  */
     private var mClosed = false
-    abstract override val suggestionSource: Source
-    override val suggestionLogType: String
-        get() = getStringOrNull(CursorBackedSuggestionCursor.Companion.SUGGEST_COLUMN_LOG_TYPE)
+    abstract override val suggestionSource: Source?
+    override val suggestionLogType: String?
+        get() = getStringOrNull(SUGGEST_COLUMN_LOG_TYPE)
 
     override fun close() {
-        if (CursorBackedSuggestionCursor.Companion.DBG) Log.d(
-            CursorBackedSuggestionCursor.Companion.TAG,
+        if (DBG) Log.d(
+            TAG,
             "close()"
         )
         if (mClosed) {
@@ -73,7 +73,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
                 mCursor.close()
             } catch (ex: RuntimeException) {
                 // all operations on cross-process cursors can throw random exceptions
-                Log.e(CursorBackedSuggestionCursor.Companion.TAG, "close() failed, ", ex)
+                Log.e(TAG, "close() failed, ", ex)
             }
         }
     }
@@ -82,7 +82,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
     protected fun finalize() {
         if (!mClosed) {
             Log.e(
-                CursorBackedSuggestionCursor.Companion.TAG,
+                TAG,
                 "LEAK! Finalized without being closed: " + toString()
             )
         }
@@ -97,7 +97,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
                 mCursor.getCount()
             } catch (ex: RuntimeException) {
                 // all operations on cross-process cursors can throw random exceptions
-                Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getCount() failed, ", ex)
+                Log.e(TAG, "getCount() failed, ", ex)
                 0
             }
         }
@@ -107,15 +107,15 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
             throw IllegalStateException("moveTo($pos) after close()")
         }
         try {
-            if (!mCursor.moveToPosition(pos)) {
+            if (!mCursor!!.moveToPosition(pos)) {
                 Log.e(
-                    CursorBackedSuggestionCursor.Companion.TAG,
+                    TAG,
                     "moveToPosition($pos) failed, count=$count"
                 )
             }
         } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "moveToPosition() failed, ", ex)
+            Log.e(TAG, "moveToPosition() failed, ", ex)
         }
     }
 
@@ -124,10 +124,10 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
             throw IllegalStateException("moveToNext() after close()")
         }
         return try {
-            mCursor.moveToNext()
+            mCursor!!.moveToNext()
         } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "moveToNext() failed, ", ex)
+            Log.e(TAG, "moveToNext() failed, ", ex)
             false
         }
     }
@@ -135,17 +135,17 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
     override val position: Int
         get() {
             if (mClosed) {
-                throw IllegalStateException("getPosition after close()")
+                throw IllegalStateException("get() on position after close()")
             }
             return try {
-                mCursor.getPosition()
+                mCursor!!.position
             } catch (ex: RuntimeException) {
                 // all operations on cross-process cursors can throw random exceptions
-                Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getPosition() failed, ", ex)
+                Log.e(TAG, "get() on position failed, ", ex)
                 -1
             }
         }
-    override val shortcutId: String
+    override val shortcutId: String?
         get() = getStringOrNull(SearchManager.SUGGEST_COLUMN_SHORTCUT_ID)
     override val suggestionFormat: String?
         get() = getStringOrNull(mFormatCol)
@@ -165,17 +165,17 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
     /**
      * Gets the intent action for the current suggestion.
      */
-    override val suggestionIntentAction: String
+    override val suggestionIntentAction: String?
         get() {
-            val action: String = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_ACTION)
+            val action: String? = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_ACTION)
             return action
         }
-    abstract override val suggestionIntentComponent: ComponentName
+    abstract override val suggestionIntentComponent: ComponentName?
 
     /**
      * Gets the query for the current suggestion.
      */
-    override val suggestionQuery: String
+    override val suggestionQuery: String?
         get() = getStringOrNull(SearchManager.SUGGEST_COLUMN_QUERY)
 
     override val suggestionIntentDataString: String?
@@ -183,11 +183,11 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
             // use specific data if supplied, or default data if supplied
             var data: String? = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA)
             if (data == null) {
-                data = suggestionSource.getDefaultIntentData()
+                data = suggestionSource?.defaultIntentData
             }
             // then, if an ID was provided, append it.
             if (data != null) {
-                val id: String = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID)
+                val id: String? = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID)
                 if (id != null) {
                     data = data.toString() + "/" + Uri.encode(id)
                 }
@@ -198,7 +198,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
     /**
      * Gets the intent extra data for the current suggestion.
      */
-    override val suggestionIntentExtraData: String
+    override val suggestionIntentExtraData: String?
         get() = getStringOrNull(SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA)
     override val isWebSearchSuggestion: Boolean
         get() = Intent.ACTION_WEB_SEARCH.equals(suggestionIntentAction)
@@ -213,7 +213,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
             mCursor.getColumnIndex(colName)
         } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getColumnIndex() failed, ", ex)
+            Log.e(TAG, "getColumnIndex() failed, ", ex)
             -1
         }
     }
@@ -232,7 +232,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
             mCursor.getString(col)
         } catch (ex: RuntimeException) {
             // all operations on cross-process cursors can throw random exceptions
-            Log.e(CursorBackedSuggestionCursor.Companion.TAG, "getString() failed, ", ex)
+            Log.e(TAG, "getString() failed, ", ex)
             null
         }
     }
@@ -258,7 +258,7 @@ abstract class CursorBackedSuggestionCursor(override val userQuery: String, curs
 
     @Override
     override fun toString(): String {
-        return getClass().getSimpleName().toString() + "[" + userQuery + "]"
+        return this::class.simpleName.toString() + "[" + userQuery + "]"
     }
 
     companion object {
