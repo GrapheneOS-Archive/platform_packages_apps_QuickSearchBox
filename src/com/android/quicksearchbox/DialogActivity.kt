@@ -33,7 +33,7 @@ abstract class DialogActivity : Activity() {
     protected var mContentFrame: FrameLayout? = null
 
     @Override
-    protected fun onCreate(savedInstanceState: Bundle?) {
+    protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         getWindow().requestFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.dialog_activity)
@@ -42,26 +42,20 @@ abstract class DialogActivity : Activity() {
     }
 
     fun setHeading(titleRes: Int) {
-        mTitleView.setText(titleRes)
+        mTitleView?.setText(titleRes)
     }
 
     fun setHeading(title: CharSequence?) {
-        mTitleView.setText(title)
+        mTitleView?.setText(title)
+    }
+
+    fun setDialogContent(layoutRes: Int) {
+        mContentFrame?.removeAllViews()
+        getLayoutInflater().inflate(layoutRes, mContentFrame)
     }
 
     fun setDialogContent(content: View?) {
-        mContentFrame.removeAllViews()
-        mContentFrame.addView(content)
+        mContentFrame?.removeAllViews()
+        mContentFrame?.addView(content)
     }
-
-    var dialogContent: View?
-        get() = if (mContentFrame.getChildCount() > 0) {
-            mContentFrame.getChildAt(0)
-        } else {
-            null
-        }
-        set(layoutRes) {
-            mContentFrame.removeAllViews()
-            getLayoutInflater().inflate(layoutRes, mContentFrame)
-        }
 }
