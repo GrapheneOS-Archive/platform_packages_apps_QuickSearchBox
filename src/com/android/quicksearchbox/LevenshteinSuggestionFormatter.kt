@@ -13,60 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import com.android.quicksearchbox.util.LevenshteinDistance;
-import com.android.quicksearchbox.util.LevenshteinDistance.Token;
-import com.google.common.annotations.VisibleForTesting;
-
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.util.Log;
+import com.google.common.annotations.VisibleForTesting
 
 /**
  * Suggestion formatter using the Levenshtein distance (minimum edit distance) to calculate the
  * formatting.
  */
-public class LevenshteinSuggestionFormatter extends SuggestionFormatter {
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.LevenshteinSuggestionFormatter";
-
-    public LevenshteinSuggestionFormatter(TextAppearanceFactory spanFactory) {
-        super(spanFactory);
-    }
-
+class LevenshteinSuggestionFormatter(spanFactory: TextAppearanceFactory?) : SuggestionFormatter(
+    spanFactory!!
+) {
     @Override
-    public Spanned formatSuggestion(String query, String suggestion) {
-        if (DBG) Log.d(TAG, "formatSuggestion('" + query + "', '" + suggestion + "')");
-        query = normalizeQuery(query);
-        final Token[] queryTokens = tokenize(query);
-        final Token[] suggestionTokens = tokenize(suggestion);
-        final int[] matches = findMatches(queryTokens, suggestionTokens);
-        if (DBG){
-            Log.d(TAG, "source = " + queryTokens);
-            Log.d(TAG, "target = " + suggestionTokens);
-            Log.d(TAG, "matches = " + matches);
+    override fun formatSuggestion(query: String, suggestion: String): Spanned {
+        var query = query
+        if (LevenshteinSuggestionFormatter.Companion.DBG) Log.d(
+            LevenshteinSuggestionFormatter.Companion.TAG,
+            "formatSuggestion('$query', '$suggestion')"
+        )
+        query = normalizeQuery(query)
+        val queryTokens: Array<Token?> = tokenize(query)
+        val suggestionTokens: Array<Token?> = tokenize(suggestion)
+        val matches = findMatches(queryTokens, suggestionTokens)
+        if (LevenshteinSuggestionFormatter.Companion.DBG) {
+            Log.d(LevenshteinSuggestionFormatter.Companion.TAG, "source = $queryTokens")
+            Log.d(LevenshteinSuggestionFormatter.Companion.TAG, "target = $suggestionTokens")
+            Log.d(LevenshteinSuggestionFormatter.Companion.TAG, "matches = $matches")
         }
-        final SpannableString str = new SpannableString(suggestion);
-
-        final int matchesLen = matches.length;
-        for (int i = 0; i < matchesLen; ++i) {
-            final Token t = suggestionTokens[i];
-            int sourceLen = 0;
-            int thisMatch = matches[i];
+        val str = SpannableString(suggestion)
+        val matchesLen = matches.size
+        for (i in 0 until matchesLen) {
+            val t: Token? = suggestionTokens[i]
+            var sourceLen = 0
+            val thisMatch = matches[i]
             if (thisMatch >= 0) {
-                sourceLen = queryTokens[thisMatch].length();
+                sourceLen = queryTokens[thisMatch].length()
             }
-            applySuggestedTextStyle(str, t.mStart + sourceLen, t.mEnd);
-            applyQueryTextStyle(str, t.mStart, t.mStart + sourceLen);
+            applySuggestedTextStyle(str, t.mStart + sourceLen, t.mEnd)
+            applyQueryTextStyle(str, t.mStart, t.mStart + sourceLen)
         }
-
-        return str;
+        return str
     }
 
-    private String normalizeQuery(String query) {
-        return query.toLowerCase();
+    private fun normalizeQuery(query: String): String {
+        return query.toLowerCase()
     }
 
     /**
@@ -75,51 +65,55 @@ public class LevenshteinSuggestionFormatter extends SuggestionFormatter {
      * @param source List of source tokens (i.e. user query)
      * @param target List of target tokens (i.e. suggestion)
      * @return The indices into source which target tokens correspond to. A non-negative value n at
-     *      position i means that target token i matches source token n. A negative value means that
-     *      the target token i does not match any source token.
+     * position i means that target token i matches source token n. A negative value means that
+     * the target token i does not match any source token.
      */
     @VisibleForTesting
-    int[] findMatches(Token[] source, Token[] target) {
-        final LevenshteinDistance table = new LevenshteinDistance(source, target);
-        table.calculate();
-        final int targetLen = target.length;
-        final int[] result = new int[targetLen];
-        LevenshteinDistance.EditOperation[] ops = table.getTargetOperations();
-        for (int i = 0; i < targetLen; ++i) {
+    fun findMatches(source: Array<Token?>?, target: Array<Token?>): IntArray {
+        val table = LevenshteinDistance(source, target)
+        table.calculate()
+        val targetLen = target.size
+        val result = IntArray(targetLen)
+        val ops: Array<EditOperation> = table.getTargetOperations()
+        for (i in 0 until targetLen) {
             if (ops[i].getType() == LevenshteinDistance.EDIT_UNCHANGED) {
-                result[i] = ops[i].getPosition();
+                result[i] = ops[i].getPosition()
             } else {
-                result[i] = -1;
+                result[i] = -1
             }
         }
-        return result;
+        return result
     }
 
     @VisibleForTesting
-    Token[] tokenize(final String seq) {
-        int pos = 0;
-        final int len = seq.length();
-        final char[] chars = seq.toCharArray();
+    fun tokenize(seq: String): Array<Token?> {
+        var pos = 0
+        val len: Int = seq.length()
+        val chars = seq.toCharArray()
         // There can't be more tokens than characters, make an array that is large enough
-        Token[] tokens = new Token[len];
-        int tokenCount = 0;
+        val tokens: Array<Token?> = arrayOfNulls<Token>(len)
+        var tokenCount = 0
         while (pos < len) {
             while (pos < len && (chars[pos] == ' ' || chars[pos] == '\t')) {
-                pos++;
+                pos++
             }
-            int start = pos;
+            val start = pos
             while (pos < len && !(chars[pos] == ' ' || chars[pos] == '\t')) {
-                pos++;
+                pos++
             }
-            int end = pos;
+            val end = pos
             if (start != end) {
-                tokens[tokenCount++] = new Token(chars, start, end);
+                tokens[tokenCount++] = Token(chars, start, end)
             }
         }
         // Create a token array of the right size and return
-        Token[] ret = new Token[tokenCount];
-        System.arraycopy(tokens, 0, ret, 0, tokenCount);
-        return ret;
+        val ret: Array<Token?> = arrayOfNulls<Token>(tokenCount)
+        System.arraycopy(tokens, 0, ret, 0, tokenCount)
+        return ret
     }
 
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.LevenshteinSuggestionFormatter"
+    }
 }
