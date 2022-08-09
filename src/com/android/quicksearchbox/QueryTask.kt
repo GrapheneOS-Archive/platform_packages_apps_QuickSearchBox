@@ -13,29 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import com.android.quicksearchbox.util.Consumer;
-import com.android.quicksearchbox.util.Consumers;
-import com.android.quicksearchbox.util.NamedTask;
-import com.android.quicksearchbox.util.NamedTaskExecutor;
-
-import android.os.Handler;
-import android.util.Log;
+import android.os.Handler
+import com.android.quicksearchbox.util.Consumer
+import com.android.quicksearchbox.util.NamedTask
+import com.android.quicksearchbox.util.NamedTaskExecutor
 
 /**
  * A task that gets suggestions from a corpus.
  */
-public class QueryTask<C extends SuggestionCursor> implements NamedTask {
-    private static final String TAG = "QSB.QueryTask";
-    private static final boolean DBG = false;
+class QueryTask<C : SuggestionCursor?>(
+    private val mQuery: String,
+    private val mQueryLimit: Int,
+    private val mProvider: SuggestionCursorProvider<C>,
+    handler: Handler,
+    consumer: Consumer<C>
+) : NamedTask {
+    private val mHandler: Handler
+    private val mConsumer: Consumer<C>
 
-    private final String mQuery;
-    private final int mQueryLimit;
-    private final SuggestionCursorProvider<C> mProvider;
-    private final Handler mHandler;
-    private final Consumer<C> mConsumer;
+    @get:Override
+    override val name: String
+        get() = mProvider.getName()
+
+    @Override
+    fun run() {
+        val cursor = mProvider.getSuggestions(mQuery, mQueryLimit)
+        if (QueryTask.Companion.DBG) Log.d(
+            QueryTask.Companion.TAG,
+            "Suggestions from $mProvider = $cursor"
+        )
+        Consumers.consumeCloseableAsync<C>(mHandler, mConsumer, cursor)
+    }
+
+    @Override
+    override fun toString(): String {
+        return "$mProvider[$mQuery]"
+    }
+
+    companion object {
+        private const val TAG = "QSB.QueryTask"
+        private const val DBG = false
+        @JvmStatic
+        fun <C : SuggestionCursor?> startQuery(
+            query: String?,
+            maxResults: Int,
+            provider: SuggestionCursorProvider<C>?,
+            executor: NamedTaskExecutor, handler: Handler?,
+            consumer: Consumer<C>?
+        ) {
+            val task = QueryTask<C>(
+                query, maxResults, provider, handler,
+                consumer
+            )
+            executor.execute(task)
+        }
+    }
 
     /**
      * Creates a new query task.
@@ -43,44 +77,12 @@ public class QueryTask<C extends SuggestionCursor> implements NamedTask {
      * @param query Query to run.
      * @param queryLimit The number of suggestions to ask each provider for.
      * @param provider The provider to ask for suggestions.
-     * @param handler Handler that {@link Consumer#consume} will
-     *        get called on. If null, the method is called on the query thread.
+     * @param handler Handler that [Consumer.consume] will
+     * get called on. If null, the method is called on the query thread.
      * @param consumer Consumer to notify when the suggestions have been returned.
      */
-    public QueryTask(String query, int queryLimit, SuggestionCursorProvider<C> provider,
-            Handler handler, Consumer<C> consumer) {
-        mQuery = query;
-        mQueryLimit = queryLimit;
-        mProvider = provider;
-        mHandler = handler;
-        mConsumer = consumer;
-    }
-
-    @Override
-    public String getName() {
-        return mProvider.getName();
-    }
-
-    @Override
-    public void run() {
-        final C cursor = mProvider.getSuggestions(mQuery, mQueryLimit);
-        if (DBG) Log.d(TAG, "Suggestions from " + mProvider + " = " + cursor);
-        Consumers.consumeCloseableAsync(mHandler, mConsumer, cursor);
-    }
-
-    @Override
-    public String toString() {
-        return mProvider + "[" + mQuery + "]";
-    }
-
-    public static <C extends SuggestionCursor> void startQuery(String query,
-            int maxResults,
-            SuggestionCursorProvider<C> provider,
-            NamedTaskExecutor executor, Handler handler,
-            Consumer<C> consumer) {
-
-        QueryTask<C> task = new QueryTask<C>(query, maxResults, provider, handler,
-                consumer);
-        executor.execute(task);
+    init {
+        mHandler = handler
+        mConsumer = consumer
     }
 }
