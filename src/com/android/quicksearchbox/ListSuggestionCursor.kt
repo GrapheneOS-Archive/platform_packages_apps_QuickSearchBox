@@ -13,102 +13,92 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import android.database.DataSetObservable;
-import android.database.DataSetObserver;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
+import com.google.common.annotations.VisibleForTesting
+import android.database.DataSetObservable
+import android.database.DataSetObserver
+import java.util.ArrayList
+import java.util.Collection
+import java.util.HashSet
 
 /**
  * A SuggestionCursor that is backed by a list of Suggestions.
  */
-public class ListSuggestionCursor extends AbstractSuggestionCursorWrapper {
+open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
+    AbstractSuggestionCursorWrapper(
+        userQuery!!
+    ) {
+    private val mDataSetObservable: DataSetObservable = DataSetObservable()
+    private val mSuggestions: ArrayList<ListSuggestionCursor.Entry>
+    private var mExtraColumns: HashSet<String>? = null
+    override var position = 0
+        private set
 
-    private static final int DEFAULT_CAPACITY = 16;
-
-    private final DataSetObservable mDataSetObservable = new DataSetObservable();
-
-    private final ArrayList<Entry> mSuggestions;
-
-    private HashSet<String> mExtraColumns;
-
-    private int mPos = 0;
-
-    public ListSuggestionCursor(String userQuery) {
-        this(userQuery, DEFAULT_CAPACITY);
+    constructor(userQuery: String?) : this(
+        userQuery,
+        ListSuggestionCursor.Companion.DEFAULT_CAPACITY
+    ) {
     }
 
     @VisibleForTesting
-    public ListSuggestionCursor(String userQuery, Suggestion...suggestions) {
-        this(userQuery, suggestions.length);
-        for (Suggestion suggestion : suggestions) {
-            add(suggestion);
+    constructor(userQuery: String?, vararg suggestions: Suggestion?) : this(
+        userQuery,
+        suggestions.size
+    ) {
+        for (suggestion in suggestions) {
+            add(suggestion)
         }
-    }
-
-    public ListSuggestionCursor(String userQuery, int capacity) {
-        super(userQuery);
-        mSuggestions = new ArrayList<Entry>(capacity);
     }
 
     /**
      * Adds a suggestion from another suggestion cursor.
      *
-     * @return {@code true} if the suggestion was added.
+     * @return `true` if the suggestion was added.
      */
-    public boolean add(Suggestion suggestion) {
-        mSuggestions.add(new Entry(suggestion));
-        return true;
+    open fun add(suggestion: Suggestion?): Boolean {
+        mSuggestions.add(ListSuggestionCursor.Entry(suggestion))
+        return true
     }
 
-    public void close() {
-        mSuggestions.clear();
+    override fun close() {
+        mSuggestions.clear()
     }
 
-    public int getPosition() {
-        return mPos;
+    override fun moveTo(pos: Int) {
+        position = pos
     }
 
-    public void moveTo(int pos) {
-        mPos = pos;
-    }
-
-    public boolean moveToNext() {
-        int size = mSuggestions.size();
-        if (mPos >= size) {
+    override fun moveToNext(): Boolean {
+        val size: Int = mSuggestions.size()
+        if (position >= size) {
             // Already past the end
-            return false;
+            return false
         }
-        mPos++;
-        return mPos < size;
+        position++
+        return position < size
     }
 
-    public void removeRow() {
-        mSuggestions.remove(mPos);
+    fun removeRow() {
+        mSuggestions.remove(position)
     }
 
-    public void replaceRow(Suggestion suggestion) {
-        mSuggestions.set(mPos, new Entry(suggestion));
+    fun replaceRow(suggestion: Suggestion?) {
+        mSuggestions.set(position, ListSuggestionCursor.Entry(suggestion))
     }
 
-    public int getCount() {
-        return mSuggestions.size();
+    override val count: Int
+        get() = mSuggestions.size()
+
+    @Override
+    override fun current(): Suggestion {
+        return mSuggestions.get(position).get()
     }
 
     @Override
-    protected Suggestion current() {
-        return mSuggestions.get(mPos).get();
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "{[" + getUserQuery() + "] " + mSuggestions + "}";
+    override fun toString(): String {
+        return getClass().getSimpleName()
+            .toString() + "{[" + getUserQuery() + "] " + mSuggestions + "}"
     }
 
     /**
@@ -116,65 +106,69 @@ public class ListSuggestionCursor extends AbstractSuggestionCursorWrapper {
      *
      * @param observer gets notified when the data set changes.
      */
-    public void registerDataSetObserver(DataSetObserver observer) {
-        mDataSetObservable.registerObserver(observer);
+    override fun registerDataSetObserver(observer: DataSetObserver?) {
+        mDataSetObservable.registerObserver(observer)
     }
 
     /**
-     * Unregister an observer that has previously been registered with 
-     * {@link #registerDataSetObserver(DataSetObserver)}
+     * Unregister an observer that has previously been registered with
+     * [.registerDataSetObserver]
      *
      * @param observer the observer to unregister.
      */
-    public void unregisterDataSetObserver(DataSetObserver observer) {
-        mDataSetObservable.unregisterObserver(observer);
+    override fun unregisterDataSetObserver(observer: DataSetObserver?) {
+        mDataSetObservable.unregisterObserver(observer)
     }
 
-    protected void notifyDataSetChanged() {
-        mDataSetObservable.notifyChanged();
+    protected fun notifyDataSetChanged() {
+        mDataSetObservable.notifyChanged()
     }
 
-    @Override
-    public SuggestionExtras getExtras() {
-        // override with caching to avoid re-parsing the extras
-        return mSuggestions.get(mPos).getExtras();
-    }
-
-   public Collection<String> getExtraColumns() {
-        if (mExtraColumns == null) {
-            mExtraColumns = new HashSet<String>();
-            for (Entry e : mSuggestions) {
-                SuggestionExtras extras = e.getExtras();
-                Collection<String> extraColumns = extras == null ? null
-                        : extras.getExtraColumnNames();
-                if (extraColumns != null) {
-                    for (String column : extras.getExtraColumnNames()) {
-                        mExtraColumns.add(column);
+    // override with caching to avoid re-parsing the extras
+    @get:Override
+    override val extras: SuggestionExtras
+        get() =// override with caching to avoid re-parsing the extras
+            mSuggestions.get(position).getExtras()
+    override val extraColumns: Collection<String>?
+        get() {
+            if (mExtraColumns == null) {
+                mExtraColumns = HashSet<String>()
+                for (e in mSuggestions) {
+                    val extras: SuggestionExtras = e.getExtras()
+                    val extraColumns: Collection<String>? =
+                        if (extras == null) null else extras.getExtraColumnNames()
+                    if (extraColumns != null) {
+                        for (column in extras.getExtraColumnNames()) {
+                            mExtraColumns.add(column)
+                        }
                     }
                 }
             }
+            return if (mExtraColumns.isEmpty()) null else mExtraColumns
         }
-        return mExtraColumns.isEmpty() ? null : mExtraColumns;
-    }
 
     /**
      * This class exists purely to cache the suggestion extras.
      */
-    private static class Entry {
-        private final Suggestion mSuggestion;
-        private SuggestionExtras mExtras;
-        public Entry(Suggestion s) {
-            mSuggestion = s;
+    private class Entry(private val mSuggestion: Suggestion) {
+        private var mExtras: SuggestionExtras? = null
+        fun get(): Suggestion {
+            return mSuggestion
         }
-        public Suggestion get() {
-            return mSuggestion;
-        }
-        public SuggestionExtras getExtras() {
+
+        fun getExtras(): SuggestionExtras? {
             if (mExtras == null) {
-                mExtras = mSuggestion.getExtras();
+                mExtras = mSuggestion.getExtras()
             }
-            return mExtras;
+            return mExtras
         }
     }
 
+    companion object {
+        private const val DEFAULT_CAPACITY = 16
+    }
+
+    init {
+        mSuggestions = ArrayList<ListSuggestionCursor.Entry>(capacity)
+    }
 }
