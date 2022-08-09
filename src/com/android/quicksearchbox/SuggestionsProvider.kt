@@ -26,6 +26,6 @@ interface SuggestionsProvider {
      * @param query The query.
      * @param source The source to query. Must be non-null.
      */
-    fun getSuggestions(query: String?, source: Source?): Suggestions?
+    fun getSuggestions(query: String, source: Source): Suggestions
     fun close()
 }

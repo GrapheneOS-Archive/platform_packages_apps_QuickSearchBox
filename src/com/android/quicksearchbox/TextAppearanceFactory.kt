@@ -21,8 +21,8 @@ import android.text.style.TextAppearanceSpan
 /**
  * Factory class for text appearances.
  */
-open class TextAppearanceFactory(context: Context) {
-    private val mContext: Context
+open class TextAppearanceFactory(context: Context?) {
+    private val mContext: Context?
     open fun createSuggestionQueryTextAppearance(): Array<Any> {
         return arrayOf(
             TextAppearanceSpan(mContext, R.style.SuggestionText1_Query)
