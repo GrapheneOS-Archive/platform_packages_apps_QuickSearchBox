@@ -15,11 +15,14 @@
  */
 package com.android.quicksearchbox
 
-import com.google.common.annotations.VisibleForTesting
 import android.app.SearchManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+
+import com.google.common.annotations.VisibleForTesting
+
+import kotlin.text.StringBuilder
 
 /**
  * Some utilities for suggestions.
@@ -27,11 +30,11 @@ import android.os.Bundle
 object SuggestionUtils {
     @JvmStatic
     fun getSuggestionIntent(suggestion: SuggestionCursor, appSearchData: Bundle?): Intent {
-        val action: String = suggestion.getSuggestionIntentAction()
-        val data: String = suggestion.getSuggestionIntentDataString()
-        val query: String = suggestion.getSuggestionQuery()
-        val userQuery: String = suggestion.getUserQuery()
-        val extraData: String = suggestion.getSuggestionIntentExtraData()
+        val action: String? = suggestion.suggestionIntentAction
+        val data: String? = suggestion.suggestionIntentDataString
+        val query: String? = suggestion.suggestionQuery
+        val userQuery: String? = suggestion.userQuery
+        val extraData: String? = suggestion.suggestionIntentExtraData
 
         // Now build the Intent
         val intent = Intent(action)
@@ -52,7 +55,7 @@ object SuggestionUtils {
         if (appSearchData != null) {
             intent.putExtra(SearchManager.APP_DATA, appSearchData)
         }
-        intent.setComponent(suggestion.getSuggestionIntentComponent())
+        intent.setComponent(suggestion.suggestionIntentComponent)
         return intent
     }
 
@@ -62,15 +65,12 @@ object SuggestionUtils {
      */
     @JvmStatic
     fun getSuggestionKey(suggestion: Suggestion): String {
-        val action: String =
-            SuggestionUtils.makeKeyComponent(suggestion.getSuggestionIntentAction())
-        val data: String =
-            SuggestionUtils.makeKeyComponent(SuggestionUtils.normalizeUrl(suggestion.getSuggestionIntentDataString()))
-        val query: String =
-            SuggestionUtils.makeKeyComponent(SuggestionUtils.normalizeUrl(suggestion.getSuggestionQuery()))
+        val action: String = makeKeyComponent(suggestion.suggestionIntentAction)
+        val data: String = makeKeyComponent(normalizeUrl(suggestion.suggestionIntentDataString))
+        val query: String = makeKeyComponent(normalizeUrl(suggestion.suggestionQuery))
         // calculating accurate size of string builder avoids an allocation vs starting with
         // the default size and having to expand.
-        val size: Int = action.length() + 2 + data.length() + query.length()
+        val size: Int = action.length + 2 + data.length + query.length
         return StringBuilder(size)
             .append(action)
             .append('#')
@@ -99,18 +99,17 @@ object SuggestionUtils {
         val normalized: String
         if (url != null) {
             val start: Int
-            val schemePos: Int = url.indexOf(SuggestionUtils.SCHEME_SEPARATOR)
+            val schemePos: Int = url.indexOf(SCHEME_SEPARATOR)
             if (schemePos == -1) {
                 // no scheme - add the default
-                normalized = SuggestionUtils.DEFAULT_SCHEME + SuggestionUtils.SCHEME_SEPARATOR + url
-                start =
-                    SuggestionUtils.DEFAULT_SCHEME.length() + SuggestionUtils.SCHEME_SEPARATOR.length()
+                normalized = DEFAULT_SCHEME + SCHEME_SEPARATOR + url
+                start = DEFAULT_SCHEME.length + SCHEME_SEPARATOR.length
             } else {
                 normalized = url
-                start = schemePos + SuggestionUtils.SCHEME_SEPARATOR.length()
+                start = schemePos + SCHEME_SEPARATOR.length
             }
-            var end: Int = normalized.length()
-            if (normalized.indexOf('/', start) === end - 1) {
+            var end: Int = normalized.length
+            if (normalized.indexOf('/', start) == end - 1) {
                 end--
             }
             return normalized.substring(0, end)
