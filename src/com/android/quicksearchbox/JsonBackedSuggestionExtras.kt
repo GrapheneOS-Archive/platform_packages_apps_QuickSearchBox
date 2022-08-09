@@ -28,7 +28,7 @@ class JsonBackedSuggestionExtras : SuggestionExtras {
     override val extraColumnNames: Collection<String>
 
     constructor(json: String?) {
-        mExtras = JSONObject(json)
+        mExtras = JSONObject(json!!)
         extraColumnNames = ArrayList<String>(mExtras.length())
         val it: Iterator<String> = mExtras.keys()
         while (it.hasNext()) {
@@ -38,8 +38,8 @@ class JsonBackedSuggestionExtras : SuggestionExtras {
 
     constructor(extras: SuggestionExtras) {
         mExtras = JSONObject()
-        extraColumnNames = extras.getExtraColumnNames()
-        for (column in extras.getExtraColumnNames()) {
+        extraColumnNames = extras.extraColumnNames
+        for (column in extras.extraColumnNames) {
             val value = extras.getExtra(column)
             mExtras.put(column, value ?: JSONObject.NULL)
         }
@@ -50,10 +50,10 @@ class JsonBackedSuggestionExtras : SuggestionExtras {
             if (mExtras.isNull(columnName)) {
                 null
             } else {
-                mExtras.getString(columnName)
+                mExtras.getString(columnName!!)
             }
         } catch (e: JSONException) {
-            Log.w(JsonBackedSuggestionExtras.Companion.TAG, "Could not extract JSON extra", e)
+            Log.w(TAG, "Could not extract JSON extra", e)
             null
         }
     }

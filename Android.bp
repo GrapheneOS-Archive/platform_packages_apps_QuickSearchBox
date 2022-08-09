@@ -54,6 +54,7 @@ android_app {
       "src/**/quicksearchbox/EventLogLogger.java",
       "src/**/quicksearchbox/Help.java",
       "src/**/quicksearchbox/IconLoader.java",
+      "src/**/quicksearchbox/JsonBackedSuggestionExtras.java",
       "src/**/quicksearchbox/LatencyTracker.java",
       "src/**/quicksearchbox/Logger.java",
       "src/**/quicksearchbox/QueryTask.java",
