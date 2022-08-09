@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox;
-
+package com.android.quicksearchbox
 
 /**
  * Basic SuggestionFormatter that does no formatting.
  */
-public class SuggestionNonFormatter extends SuggestionFormatter {
-
-    public SuggestionNonFormatter(TextAppearanceFactory spanFactory) {
-        super(spanFactory);
-    }
-
+class SuggestionNonFormatter(spanFactory: TextAppearanceFactory?) : SuggestionFormatter(
+    spanFactory!!
+) {
     @Override
-    public CharSequence formatSuggestion(String query, String suggestion) {
-        return suggestion;
+    override fun formatSuggestion(query: String, suggestion: String): CharSequence {
+        return suggestion
     }
-
 }
