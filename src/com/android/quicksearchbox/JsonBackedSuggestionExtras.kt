@@ -13,68 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import android.util.Log
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.ArrayList
 
 /**
- * SuggestionExtras taking values from a {@link JSONObject}.
+ * SuggestionExtras taking values from a [JSONObject].
  */
-public class JsonBackedSuggestionExtras implements SuggestionExtras {
-    private static final String TAG = "QSB.JsonBackedSuggestionExtras";
+class JsonBackedSuggestionExtras : SuggestionExtras {
+    private val mExtras: JSONObject
+    override val extraColumnNames: Collection<String>
 
-    private final JSONObject mExtras;
-    private final Collection<String> mColumns;
-
-    public JsonBackedSuggestionExtras(String json) throws JSONException {
-        mExtras = new JSONObject(json);
-        mColumns = new ArrayList<String>(mExtras.length());
-        Iterator<String> it = mExtras.keys();
+    constructor(json: String?) {
+        mExtras = JSONObject(json)
+        extraColumnNames = ArrayList<String>(mExtras.length())
+        val it: Iterator<String> = mExtras.keys()
         while (it.hasNext()) {
-            mColumns.add(it.next());
+            extraColumnNames.add(it.next())
         }
     }
 
-    public JsonBackedSuggestionExtras(SuggestionExtras extras) throws JSONException {
-        mExtras = new JSONObject();
-        mColumns = extras.getExtraColumnNames();
-        for (String column : extras.getExtraColumnNames()) {
-            String value = extras.getExtra(column);
-            mExtras.put(column, value == null ? JSONObject.NULL : value);
+    constructor(extras: SuggestionExtras) {
+        mExtras = JSONObject()
+        extraColumnNames = extras.getExtraColumnNames()
+        for (column in extras.getExtraColumnNames()) {
+            val value = extras.getExtra(column)
+            mExtras.put(column, value ?: JSONObject.NULL)
         }
     }
 
-    public String getExtra(String columnName) {
-        try {
+    override fun getExtra(columnName: String?): String? {
+        return try {
             if (mExtras.isNull(columnName)) {
-                return null;
+                null
             } else {
-                return mExtras.getString(columnName);
+                mExtras.getString(columnName)
             }
-        } catch (JSONException e) {
-            Log.w(TAG, "Could not extract JSON extra", e);
-            return null;
+        } catch (e: JSONException) {
+            Log.w(JsonBackedSuggestionExtras.Companion.TAG, "Could not extract JSON extra", e)
+            null
         }
-    }
-
-    public Collection<String> getExtraColumnNames() {
-        return mColumns;
     }
 
     @Override
-    public String toString() {
-        return mExtras.toString();
+    override fun toString(): String {
+        return mExtras.toString()
     }
 
-    public String toJsonString() {
-        return toString();
+    override fun toJsonString(): String? {
+        return toString()
     }
 
+    companion object {
+        private const val TAG = "QSB.JsonBackedSuggestionExtras"
+    }
 }
