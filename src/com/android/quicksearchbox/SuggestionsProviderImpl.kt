@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.os.Handler;
-import android.util.Log;
-
-import com.android.quicksearchbox.util.BatchingNamedTaskExecutor;
-import com.android.quicksearchbox.util.Consumer;
-import com.android.quicksearchbox.util.NamedTaskExecutor;
-import com.android.quicksearchbox.util.NoOpConsumer;
+import android.os.Handler
+import com.android.quicksearchbox.util.Consumer
+import com.android.quicksearchbox.util.NamedTaskExecutor
 
 /**
  * Suggestions provider implementation.
@@ -30,86 +25,84 @@ import com.android.quicksearchbox.util.NoOpConsumer;
  * The provider will only handle a single query at a time. If a new query comes
  * in, the old one is cancelled.
  */
-public class SuggestionsProviderImpl implements SuggestionsProvider {
-
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.SuggestionsProviderImpl";
-
-    private final Config mConfig;
-
-    private final NamedTaskExecutor mQueryExecutor;
-
-    private final Handler mPublishThread;
-
-    private final Logger mLogger;
-
-    public SuggestionsProviderImpl(Config config,
-            NamedTaskExecutor queryExecutor,
-            Handler publishThread,
-            Logger logger) {
-        mConfig = config;
-        mQueryExecutor = queryExecutor;
-        mPublishThread = publishThread;
-        mLogger = logger;
+class SuggestionsProviderImpl(
+    private val mConfig: Config,
+    private val mQueryExecutor: NamedTaskExecutor,
+    publishThread: Handler,
+    logger: Logger?
+) : SuggestionsProvider {
+    private val mPublishThread: Handler
+    private val mLogger: Logger?
+    @Override
+    override fun close() {
     }
 
     @Override
-    public void close() {
-    }
-
-    @Override
-    public Suggestions getSuggestions(String query, Source sourceToQuery) {
-        if (DBG) Log.d(TAG, "getSuggestions(" + query + ")");
-        final Suggestions suggestions = new Suggestions(query, sourceToQuery);
-        Log.i(TAG, "chars:" + query.length() + ",source:" + sourceToQuery);
-
-        Consumer<SourceResult> receiver;
+    override fun getSuggestions(query: String, sourceToQuery: Source): Suggestions {
+        if (SuggestionsProviderImpl.Companion.DBG) Log.d(
+            SuggestionsProviderImpl.Companion.TAG,
+            "getSuggestions($query)"
+        )
+        val suggestions = Suggestions(query, sourceToQuery)
+        Log.i(
+            SuggestionsProviderImpl.Companion.TAG,
+            "chars:" + query.length().toString() + ",source:" + sourceToQuery
+        )
+        val receiver: Consumer<SourceResult>
         if (shouldDisplayResults(query)) {
-            receiver = new SuggestionCursorReceiver(suggestions);
+            receiver = SuggestionsProviderImpl.SuggestionCursorReceiver(suggestions)
         } else {
-            receiver = new NoOpConsumer<SourceResult>();
-            suggestions.done();
+            receiver = NoOpConsumer<SourceResult>()
+            suggestions.done()
         }
-
-        int maxResults = mConfig.getMaxResultsPerSource();
-        QueryTask.startQuery(query, maxResults, sourceToQuery, mQueryExecutor,
-                mPublishThread, receiver);
-
-        return suggestions;
+        val maxResults: Int = mConfig.getMaxResultsPerSource()
+        QueryTask.startQuery(
+            query, maxResults, sourceToQuery, mQueryExecutor,
+            mPublishThread, receiver
+        )
+        return suggestions
     }
 
-    private boolean shouldDisplayResults(String query) {
-        if (query.length() == 0 && !mConfig.showSuggestionsForZeroQuery()) {
+    private fun shouldDisplayResults(query: String): Boolean {
+        return if (query.length() === 0 && !mConfig.showSuggestionsForZeroQuery()) {
             // Note that even though we don't display such results, it's
             // useful to run the query itself because it warms up the network
             // connection.
-            return false;
-        }
-        return true;
+            false
+        } else true
     }
 
-
-    private class SuggestionCursorReceiver implements Consumer<SourceResult> {
-        private final Suggestions mSuggestions;
-
-        public SuggestionCursorReceiver(Suggestions suggestions) {
-            mSuggestions = suggestions;
-        }
-
+    private inner class SuggestionCursorReceiver(private val mSuggestions: Suggestions) :
+        Consumer<SourceResult?> {
         @Override
-        public boolean consume(SourceResult cursor) {
-            if (DBG) {
-                Log.d(TAG, "SuggestionCursorReceiver.consume(" + cursor + ") corpus=" +
-                        cursor.getSource() + " count = " + cursor.getCount());
+        override fun consume(cursor: SourceResult): Boolean {
+            if (SuggestionsProviderImpl.Companion.DBG) {
+                Log.d(
+                    SuggestionsProviderImpl.Companion.TAG,
+                    "SuggestionCursorReceiver.consume(" + cursor + ") corpus=" +
+                            cursor.getSource() + " count = " + cursor.getCount()
+                )
             }
             // publish immediately
-            if (DBG) Log.d(TAG, "Publishing results");
-            mSuggestions.addResults(cursor);
+            if (SuggestionsProviderImpl.Companion.DBG) Log.d(
+                SuggestionsProviderImpl.Companion.TAG,
+                "Publishing results"
+            )
+            mSuggestions.addResults(cursor)
             if (cursor != null && mLogger != null) {
-                mLogger.logLatency(cursor);
+                mLogger.logLatency(cursor)
             }
-            return true;
+            return true
         }
+    }
 
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.SuggestionsProviderImpl"
+    }
+
+    init {
+        mPublishThread = publishThread
+        mLogger = logger
     }
 }
