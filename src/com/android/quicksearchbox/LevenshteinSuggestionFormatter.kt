@@ -15,7 +15,15 @@
  */
 package com.android.quicksearchbox
 
+import android.text.SpannableString
+import android.text.Spanned
+import android.util.Log
+
+import com.android.quicksearchbox.util.LevenshteinDistance
+import com.android.quicksearchbox.util.LevenshteinDistance.Token
 import com.google.common.annotations.VisibleForTesting
+
+import java.util.Locale
 
 /**
  * Suggestion formatter using the Levenshtein distance (minimum edit distance) to calculate the
@@ -25,20 +33,20 @@ class LevenshteinSuggestionFormatter(spanFactory: TextAppearanceFactory?) : Sugg
     spanFactory!!
 ) {
     @Override
-    override fun formatSuggestion(query: String, suggestion: String): Spanned {
-        var query = query
-        if (LevenshteinSuggestionFormatter.Companion.DBG) Log.d(
-            LevenshteinSuggestionFormatter.Companion.TAG,
-            "formatSuggestion('$query', '$suggestion')"
+    override fun formatSuggestion(query: String?, suggestion: String?): Spanned {
+        var mQuery = query
+        if (DBG) Log.d(
+            TAG,
+            "formatSuggestion('$mQuery', '$suggestion')"
         )
-        query = normalizeQuery(query)
-        val queryTokens: Array<Token?> = tokenize(query)
+        mQuery = normalizeQuery(mQuery)
+        val queryTokens: Array<Token?> = tokenize(mQuery)
         val suggestionTokens: Array<Token?> = tokenize(suggestion)
         val matches = findMatches(queryTokens, suggestionTokens)
-        if (LevenshteinSuggestionFormatter.Companion.DBG) {
-            Log.d(LevenshteinSuggestionFormatter.Companion.TAG, "source = $queryTokens")
-            Log.d(LevenshteinSuggestionFormatter.Companion.TAG, "target = $suggestionTokens")
-            Log.d(LevenshteinSuggestionFormatter.Companion.TAG, "matches = $matches")
+        if (DBG) {
+            Log.d(TAG, "source = $queryTokens")
+            Log.d(TAG, "target = $suggestionTokens")
+            Log.d(TAG, "matches = $matches")
         }
         val str = SpannableString(suggestion)
         val matchesLen = matches.size
@@ -47,16 +55,16 @@ class LevenshteinSuggestionFormatter(spanFactory: TextAppearanceFactory?) : Sugg
             var sourceLen = 0
             val thisMatch = matches[i]
             if (thisMatch >= 0) {
-                sourceLen = queryTokens[thisMatch].length()
+                sourceLen = queryTokens[thisMatch]!!.length
             }
-            applySuggestedTextStyle(str, t.mStart + sourceLen, t.mEnd)
+            applySuggestedTextStyle(str, t!!.mStart + sourceLen, t.mEnd)
             applyQueryTextStyle(str, t.mStart, t.mStart + sourceLen)
         }
         return str
     }
 
-    private fun normalizeQuery(query: String): String {
-        return query.toLowerCase()
+    private fun normalizeQuery(query: String?): String? {
+        return query?.lowercase(Locale.getDefault())
     }
 
     /**
@@ -74,10 +82,10 @@ class LevenshteinSuggestionFormatter(spanFactory: TextAppearanceFactory?) : Sugg
         table.calculate()
         val targetLen = target.size
         val result = IntArray(targetLen)
-        val ops: Array<EditOperation> = table.getTargetOperations()
+        val ops: Array<LevenshteinDistance.EditOperation> = table.targetOperations
         for (i in 0 until targetLen) {
-            if (ops[i].getType() == LevenshteinDistance.EDIT_UNCHANGED) {
-                result[i] = ops[i].getPosition()
+            if (ops[i].type == LevenshteinDistance.EDIT_UNCHANGED) {
+                result[i] = ops[i].position
             } else {
                 result[i] = -1
             }
@@ -86,9 +94,9 @@ class LevenshteinSuggestionFormatter(spanFactory: TextAppearanceFactory?) : Sugg
     }
 
     @VisibleForTesting
-    fun tokenize(seq: String): Array<Token?> {
+    fun tokenize(seq: String?): Array<Token?> {
         var pos = 0
-        val len: Int = seq.length()
+        val len: Int = seq!!.length
         val chars = seq.toCharArray()
         // There can't be more tokens than characters, make an array that is large enough
         val tokens: Array<Token?> = arrayOfNulls<Token>(len)
