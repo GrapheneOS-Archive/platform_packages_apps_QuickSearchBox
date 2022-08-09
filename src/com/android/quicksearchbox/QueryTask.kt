@@ -16,7 +16,9 @@
 package com.android.quicksearchbox
 
 import android.os.Handler
+import android.util.Log
 import com.android.quicksearchbox.util.Consumer
+import com.android.quicksearchbox.util.Consumers
 import com.android.quicksearchbox.util.NamedTask
 import com.android.quicksearchbox.util.NamedTaskExecutor
 
@@ -24,27 +26,29 @@ import com.android.quicksearchbox.util.NamedTaskExecutor
  * A task that gets suggestions from a corpus.
  */
 class QueryTask<C : SuggestionCursor?>(
-    private val mQuery: String,
+    private val mQuery: String?,
     private val mQueryLimit: Int,
-    private val mProvider: SuggestionCursorProvider<C>,
-    handler: Handler,
-    consumer: Consumer<C>
+    private val mProvider: SuggestionCursorProvider<C>?,
+    handler: Handler?,
+    consumer: Consumer<C>?
 ) : NamedTask {
-    private val mHandler: Handler
-    private val mConsumer: Consumer<C>
+
+    private val mHandler: Handler?
+
+    private val mConsumer: Consumer<C>?
 
     @get:Override
-    override val name: String
-        get() = mProvider.getName()
+    override val name: String?
+        get() = mProvider?.name
 
     @Override
-    fun run() {
-        val cursor = mProvider.getSuggestions(mQuery, mQueryLimit)
-        if (QueryTask.Companion.DBG) Log.d(
-            QueryTask.Companion.TAG,
+    override fun run() {
+        val cursor = mProvider?.getSuggestions(mQuery, mQueryLimit)
+        if (DBG) Log.d(
+            TAG,
             "Suggestions from $mProvider = $cursor"
         )
-        Consumers.consumeCloseableAsync<C>(mHandler, mConsumer, cursor)
+        Consumers.consumeCloseableAsync(mHandler, mConsumer, cursor)
     }
 
     @Override
@@ -55,6 +59,7 @@ class QueryTask<C : SuggestionCursor?>(
     companion object {
         private const val TAG = "QSB.QueryTask"
         private const val DBG = false
+
         @JvmStatic
         fun <C : SuggestionCursor?> startQuery(
             query: String?,
@@ -63,7 +68,7 @@ class QueryTask<C : SuggestionCursor?>(
             executor: NamedTaskExecutor, handler: Handler?,
             consumer: Consumer<C>?
         ) {
-            val task = QueryTask<C>(
+            val task = QueryTask(
                 query, maxResults, provider, handler,
                 consumer
             )
