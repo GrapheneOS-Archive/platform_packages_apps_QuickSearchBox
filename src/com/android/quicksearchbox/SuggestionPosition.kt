@@ -21,7 +21,7 @@ package com.android.quicksearchbox
  */
 class SuggestionPosition @JvmOverloads constructor(
     val cursor: SuggestionCursor,
-    val position: Int = cursor.getPosition()
+    val position: Int = cursor.position
 ) : AbstractSuggestionWrapper() {
 
     /**
