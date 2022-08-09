@@ -13,49 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox;
-
+package com.android.quicksearchbox
 
 /**
- * A pointer to a suggestion in a {@link SuggestionCursor}.
+ * A pointer to a suggestion in a [SuggestionCursor].
  *
  */
-public class SuggestionPosition extends AbstractSuggestionWrapper {
-
-    private final SuggestionCursor mCursor;
-
-    private final int mPosition;
-
-    public SuggestionPosition(SuggestionCursor cursor) {
-        this(cursor, cursor.getPosition());
-    }
-
-    public SuggestionPosition(SuggestionCursor cursor, int suggestionPos) {
-        mCursor = cursor;
-        mPosition = suggestionPos;
-    }
-
-    public SuggestionCursor getCursor() {
-        return mCursor;
-    }
+class SuggestionPosition @JvmOverloads constructor(
+    val cursor: SuggestionCursor,
+    val position: Int = cursor.getPosition()
+) : AbstractSuggestionWrapper() {
 
     /**
      * Gets the suggestion cursor, moved to point to the right suggestion.
      */
     @Override
-    protected Suggestion current() {
-        mCursor.moveTo(mPosition);
-        return mCursor;
-    }
-
-    public int getPosition() {
-        return mPosition;
+    override fun current(): Suggestion {
+        cursor.moveTo(position)
+        return cursor
     }
 
     @Override
-    public String toString() {
-        return mCursor + ":" + mPosition;
+    override fun toString(): String {
+        return cursor.toString() + ":" + position
     }
-
 }
