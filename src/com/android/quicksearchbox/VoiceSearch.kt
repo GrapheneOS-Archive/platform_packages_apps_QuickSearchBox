@@ -13,94 +13,95 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
-import android.app.SearchManager;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ComponentInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ResolveInfo;
-import android.os.Bundle;
-import android.speech.RecognizerIntent;
-import android.util.Log;
+import android.app.SearchManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ComponentInfo
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
+import android.content.pm.ResolveInfo
+import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.util.Log
 
 /**
  * Voice Search integration.
  */
-public class VoiceSearch {
+class VoiceSearch(context: Context) {
+    private val mContext: Context
+    protected val context: Context
+        protected get() = mContext
 
-    private static final String TAG = "QSB.VoiceSearch";
-
-    private final Context mContext;
-
-    public VoiceSearch(Context context) {
-        mContext = context;
+    fun shouldShowVoiceSearch(): Boolean {
+        return isVoiceSearchAvailable
     }
 
-    protected Context getContext() {
-        return mContext;
+    protected fun createVoiceSearchIntent(): Intent {
+        return Intent(RecognizerIntent.ACTION_WEB_SEARCH)
     }
 
-    public boolean shouldShowVoiceSearch() {
-        return isVoiceSearchAvailable();
-    }
-
-    protected Intent createVoiceSearchIntent() {
-        return new Intent(RecognizerIntent.ACTION_WEB_SEARCH);
-    }
-
-    private ResolveInfo getResolveInfo() {
-        Intent intent = createVoiceSearchIntent();
-        ResolveInfo ri = mContext.getPackageManager().
-                resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        return ri;
-    }
-
-    public boolean isVoiceSearchAvailable() {
-        return getResolveInfo() != null;
-    }
-
-    public Intent createVoiceWebSearchIntent(Bundle appData) {
-        if (!isVoiceSearchAvailable()) return null;
-        Intent intent = createVoiceSearchIntent();
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-        if (appData != null) {
-            intent.putExtra(SearchManager.APP_DATA, appData);
+    private val resolveInfo: ResolveInfo?
+        private get() {
+            val intent: Intent = createVoiceSearchIntent()
+            return mContext.getPackageManager()
+                .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
         }
-        return intent;
+    val isVoiceSearchAvailable: Boolean
+        get() = resolveInfo != null
+
+    fun createVoiceWebSearchIntent(appData: Bundle?): Intent? {
+        if (!isVoiceSearchAvailable) return null
+        val intent: Intent = createVoiceSearchIntent()
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH
+        )
+        if (appData != null) {
+            intent.putExtra(SearchManager.APP_DATA, appData)
+        }
+        return intent
     }
 
     /**
      * Create an intent to launch the voice search help screen, if any exists.
      * @return The intent, or null.
      */
-    public Intent createVoiceSearchHelpIntent() {
-        return null;
+    fun createVoiceSearchHelpIntent(): Intent? {
+        return null
     }
 
     /**
-     * Gets the {@code versionCode} of the currently installed voice search package.
+     * Gets the `versionCode` of the currently installed voice search package.
      *
-     * @return The {@code versionCode} of voiceSearch, or 0 if none is installed.
+     * @return The `versionCode` of voiceSearch, or 0 if none is installed.
      */
-    public int getVersion() {
-        ResolveInfo ri = getResolveInfo();
-        if (ri == null) return 0;
-        ComponentInfo ci = ri.activityInfo != null ? ri.activityInfo : ri.serviceInfo;
-        try {
-            return getContext().getPackageManager().getPackageInfo(ci.packageName, 0).versionCode;
-        } catch (NameNotFoundException e) {
-            Log.e(TAG, "Cannot find voice search package " + ci.packageName, e);
-            return 0;
+    val version: Int
+        get() {
+            val ri: ResolveInfo = resolveInfo ?: return 0
+            val ci: ComponentInfo = if (ri.activityInfo != null) ri.activityInfo else ri.serviceInfo
+            return try {
+                context.getPackageManager().getPackageInfo(ci.packageName, 0).versionCode
+            } catch (e: NameNotFoundException) {
+                Log.e(
+                    VoiceSearch.Companion.TAG,
+                    "Cannot find voice search package " + ci.packageName,
+                    e
+                )
+                0
+            }
         }
+    val component: ComponentName
+        get() = createVoiceSearchIntent().resolveActivity(context.getPackageManager())
+
+    companion object {
+        private const val TAG = "QSB.VoiceSearch"
     }
 
-    public ComponentName getComponent() {
-        return createVoiceSearchIntent().resolveActivity(getContext().getPackageManager());
+    init {
+        mContext = context
     }
 }
