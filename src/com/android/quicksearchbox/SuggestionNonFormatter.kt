@@ -22,7 +22,7 @@ class SuggestionNonFormatter(spanFactory: TextAppearanceFactory?) : SuggestionFo
     spanFactory!!
 ) {
     @Override
-    override fun formatSuggestion(query: String, suggestion: String): CharSequence {
+    override fun formatSuggestion(query: String?, suggestion: String?): CharSequence? {
         return suggestion
     }
 }
