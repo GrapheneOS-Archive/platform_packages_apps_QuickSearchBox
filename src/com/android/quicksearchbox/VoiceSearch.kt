@@ -31,9 +31,11 @@ import android.util.Log
  * Voice Search integration.
  */
 class VoiceSearch(context: Context) {
+
     private val mContext: Context
+
     protected val context: Context
-        protected get() = mContext
+        get() = mContext
 
     fun shouldShowVoiceSearch(): Boolean {
         return isVoiceSearchAvailable
@@ -44,7 +46,8 @@ class VoiceSearch(context: Context) {
     }
 
     private val resolveInfo: ResolveInfo?
-        private get() {
+        @Suppress("DEPRECATION")
+        get() {
             val intent: Intent = createVoiceSearchIntent()
             return mContext.getPackageManager()
                 .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
@@ -79,15 +82,16 @@ class VoiceSearch(context: Context) {
      *
      * @return The `versionCode` of voiceSearch, or 0 if none is installed.
      */
-    val version: Int
+    val version: Long
+        @Suppress("DEPRECATION")
         get() {
             val ri: ResolveInfo = resolveInfo ?: return 0
             val ci: ComponentInfo = if (ri.activityInfo != null) ri.activityInfo else ri.serviceInfo
             return try {
-                context.getPackageManager().getPackageInfo(ci.packageName, 0).versionCode
+                context.getPackageManager().getPackageInfo(ci.packageName, 0).getLongVersionCode()
             } catch (e: NameNotFoundException) {
                 Log.e(
-                    VoiceSearch.Companion.TAG,
+                    TAG,
                     "Cannot find voice search package " + ci.packageName,
                     e
                 )
