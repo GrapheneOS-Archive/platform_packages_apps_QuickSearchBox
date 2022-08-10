@@ -16,10 +16,22 @@
 package com.android.quicksearchbox
 
 import android.content.ContentResolver
-import com.android.quicksearchbox.util.NamedTask
-import com.android.quicksearchbox.util.NamedTaskExecutor
-import com.android.quicksearchbox.util.NowOrLater
-import com.android.quicksearchbox.util.Util
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
+import android.content.res.Resources
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Handler
+import android.text.TextUtils
+import android.util.Log
+import androidx.core.content.ContextCompat
+
+import com.android.quicksearchbox.util.*
+
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
 
 /**
  * Loads icons from other packages.
@@ -27,73 +39,77 @@ import com.android.quicksearchbox.util.Util
  * Code partly stolen from [ContentResolver] and android.app.SuggestionsAdapter.
  */
 class PackageIconLoader(
-    context: Context, packageName: String, uiThread: Handler,
+    context: Context, packageName: String?, uiThread: Handler,
     iconLoaderExecutor: NamedTaskExecutor
 ) : IconLoader {
+
     private val mContext: Context
 
-    @get:Override
-    val name: String
+    private val mPackageName: String?
+
     private var mPackageContext: Context? = null
+
     private val mUiThread: Handler
+
     private val mIconLoaderExecutor: NamedTaskExecutor
+
     private fun ensurePackageContext(): Boolean {
         if (mPackageContext == null) {
             mPackageContext = try {
                 mContext.createPackageContext(
-                    name,
+                    mPackageName,
                     Context.CONTEXT_RESTRICTED
                 )
             } catch (ex: PackageManager.NameNotFoundException) {
                 // This should only happen if the app has just be uninstalled
-                Log.e(PackageIconLoader.Companion.TAG, "Application not found " + name)
+                Log.e(TAG, "Application not found " + mPackageName)
                 return false
             }
         }
         return true
     }
 
-    override fun getIcon(drawableId: String): NowOrLater<Drawable> {
-        if (PackageIconLoader.Companion.DBG) Log.d(
-            PackageIconLoader.Companion.TAG,
+    override fun getIcon(drawableId: String?): NowOrLater<Drawable?>? {
+        if (DBG) Log.d(
+            TAG,
             "getIcon($drawableId)"
         )
-        if (TextUtils.isEmpty(drawableId) || "0".equals(drawableId)) {
+        if (TextUtils.isEmpty(drawableId) || "0" == drawableId) {
             return Now<Drawable>(null)
         }
         if (!ensurePackageContext()) {
             return Now<Drawable>(null)
         }
-        var drawable: NowOrLater<Drawable>
+        var drawable: NowOrLater<Drawable?>?
         try {
             // First, see if it's just an integer
-            val resourceId: Int = Integer.parseInt(drawableId)
+            val resourceId: Int = drawableId!!.toInt()
             // If so, find it by resource ID
-            val icon: Drawable = mPackageContext.getResources().getDrawable(resourceId)
-            drawable = Now<Drawable>(icon)
+            val icon: Drawable? = ContextCompat.getDrawable(mPackageContext!!, resourceId)
+            drawable = Now(icon)
         } catch (nfe: NumberFormatException) {
             // It's not an integer, use it as a URI
             val uri: Uri = Uri.parse(drawableId)
             if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())) {
                 // load all resources synchronously, to reduce UI flickering
-                drawable = Now<Drawable>(getDrawable(uri))
+                drawable = Now(getDrawable(uri))
             } else {
-                drawable = PackageIconLoader.IconLaterTask(uri)
+                drawable = IconLaterTask(uri)
             }
         } catch (nfe: Resources.NotFoundException) {
             // It was an integer, but it couldn't be found, bail out
-            Log.w(PackageIconLoader.Companion.TAG, "Icon resource not found: $drawableId")
-            drawable = Now<Drawable>(null)
+            Log.w(TAG, "Icon resource not found: $drawableId")
+            drawable = Now(null)
         }
         return drawable
     }
 
     override fun getIconUri(drawableId: String?): Uri? {
-        if (TextUtils.isEmpty(drawableId) || "0".equals(drawableId)) {
+        if (TextUtils.isEmpty(drawableId) || "0" == drawableId) {
             return null
         }
         return if (!ensurePackageContext()) null else try {
-            val resourceId: Int = Integer.parseInt(drawableId)
+            val resourceId: Int = drawableId!!.toInt()
             Util.getResourceUri(mPackageContext, resourceId)
         } catch (nfe: NumberFormatException) {
             Uri.parse(drawableId)
@@ -107,19 +123,20 @@ class PackageIconLoader(
      */
     private fun getDrawable(uri: Uri): Drawable? {
         return try {
-            val scheme: String = uri.getScheme()
+            val scheme: String? = uri.getScheme()
             if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(scheme)) {
                 // Load drawables through Resources, to get the source density information
-                val r: PackageIconLoader.OpenResourceIdResult = getResourceId(uri)
+                val r: OpenResourceIdResult = getResourceId(uri)
                 try {
-                    r.r.getDrawable(r.id)
+                    ContextCompat.getDrawable(mPackageContext!!, r.id)
                 } catch (ex: Resources.NotFoundException) {
                     throw FileNotFoundException("Resource does not exist: $uri")
                 }
             } else {
                 // Let the ContentResolver handle content and file URIs.
-                val stream: InputStream = mPackageContext.getContentResolver().openInputStream(uri)
-                    ?: throw FileNotFoundException("Failed to open $uri")
+                val stream: InputStream =
+                    mPackageContext!!.getContentResolver().openInputStream(uri)
+                        ?: throw FileNotFoundException("Failed to open $uri")
                 try {
                     Drawable.createFromStream(stream, null)
                 } finally {
@@ -127,7 +144,7 @@ class PackageIconLoader(
                         stream.close()
                     } catch (ex: IOException) {
                         Log.e(
-                            PackageIconLoader.Companion.TAG,
+                            TAG,
                             "Error closing icon stream for $uri",
                             ex
                         )
@@ -136,8 +153,8 @@ class PackageIconLoader(
             }
         } catch (fnfe: FileNotFoundException) {
             Log.w(
-                PackageIconLoader.Companion.TAG,
-                "Icon not found: " + uri + ", " + fnfe.getMessage()
+                TAG,
+                "Icon not found: " + uri + ", " + fnfe.message
             )
             null
         }
@@ -158,37 +175,38 @@ class PackageIconLoader(
      * Resolves an android.resource URI to a [Resources] and a resource id.
      */
     @Throws(FileNotFoundException::class)
-    private fun getResourceId(uri: Uri): PackageIconLoader.OpenResourceIdResult {
-        val authority: String = uri.getAuthority()
-        val r: Resources
-        r = if (TextUtils.isEmpty(authority)) {
+    private fun getResourceId(uri: Uri): OpenResourceIdResult {
+        val authority: String? = uri.getAuthority()
+        val r: Resources? = if (TextUtils.isEmpty(authority)) {
             throw FileNotFoundException("No authority: $uri")
         } else {
             try {
-                mPackageContext.getPackageManager().getResourcesForApplication(authority)
+                mPackageContext?.getPackageManager()?.getResourcesForApplication(authority!!)
             } catch (ex: NameNotFoundException) {
                 throw FileNotFoundException("Failed to get resources: $ex")
             }
         }
         val path: List<String> =
             uri.getPathSegments() ?: throw FileNotFoundException("No path: $uri")
-        val len: Int = path.size()
-        val id: Int
-        id = if (len == 1) {
-            try {
-                Integer.parseInt(path[0])
-            } catch (e: NumberFormatException) {
-                throw FileNotFoundException("Single path segment is not a resource ID: $uri")
+        val id: Int = when (path.size) {
+            1 -> {
+                try {
+                    Integer.parseInt(path[0])
+                } catch (e: NumberFormatException) {
+                    throw FileNotFoundException("Single path segment is not a resource ID: $uri")
+                }
             }
-        } else if (len == 2) {
-            r.getIdentifier(path[1], path[0], authority)
-        } else {
-            throw FileNotFoundException("More than two path segments: $uri")
+            2 -> {
+                r!!.getIdentifier(path[1], path[0], authority)
+            }
+            else -> {
+                throw FileNotFoundException("More than two path segments: $uri")
+            }
         }
         if (id == 0) {
             throw FileNotFoundException("No resource found for: $uri")
         }
-        val res: PackageIconLoader.OpenResourceIdResult = PackageIconLoader.OpenResourceIdResult()
+        val res = OpenResourceIdResult()
         res.r = r
         res.id = id
         return res
@@ -198,29 +216,33 @@ class PackageIconLoader(
         private val mUri: Uri
 
         @Override
-        protected override fun create() {
+        override fun create() {
             mIconLoaderExecutor.execute(this)
         }
 
         @Override
-        fun run() {
+        override fun run() {
             val icon: Drawable? = icon
-            mUiThread.post(object : Runnable() {
-                fun run() {
+            mUiThread.post(object : Runnable {
+                override fun run() {
                     store(icon)
                 }
             })
         }
 
+        @get:Override
+        override val name: String?
+            get() = mPackageName
+
         // we're making a call into another package, which could throw any exception.
         // Make sure it doesn't crash QSB
         private val icon: Drawable?
-            private get() = try {
+            get() = try {
                 getDrawable(mUri)
             } catch (t: Throwable) {
                 // we're making a call into another package, which could throw any exception.
                 // Make sure it doesn't crash QSB
-                Log.e(PackageIconLoader.Companion.TAG, "Failed to load icon $mUri", t)
+                Log.e(TAG, "Failed to load icon $mUri", t)
                 null
             }
 
@@ -244,7 +266,7 @@ class PackageIconLoader(
      */
     init {
         mContext = context
-        name = packageName
+        mPackageName = packageName
         mUiThread = uiThread
         mIconLoaderExecutor = iconLoaderExecutor
     }

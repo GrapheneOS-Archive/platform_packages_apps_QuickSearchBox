@@ -85,6 +85,7 @@ android_app {
     static_libs: [
             "guava",
             "android-common",
+            "androidx.core_core",
             "kotlinx_coroutines",
     ],
     certificate: "shared",
