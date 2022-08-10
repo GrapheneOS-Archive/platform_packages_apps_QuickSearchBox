@@ -15,12 +15,12 @@
  */
 package com.android.quicksearchbox
 
-import com.google.common.annotations.VisibleForTesting
 import android.database.DataSetObservable
 import android.database.DataSetObserver
-import java.util.ArrayList
-import java.util.Collection
-import java.util.HashSet
+import com.google.common.annotations.VisibleForTesting
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+
 
 /**
  * A SuggestionCursor that is backed by a list of Suggestions.
@@ -30,16 +30,17 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
         userQuery!!
     ) {
     private val mDataSetObservable: DataSetObservable = DataSetObservable()
-    private val mSuggestions: ArrayList<ListSuggestionCursor.Entry>
+
+    private val mSuggestions: ArrayList<Entry>
+
     private var mExtraColumns: HashSet<String>? = null
+
     override var position = 0
-        private set
 
     constructor(userQuery: String?) : this(
         userQuery,
-        ListSuggestionCursor.Companion.DEFAULT_CAPACITY
-    ) {
-    }
+        DEFAULT_CAPACITY
+    )
 
     @VisibleForTesting
     constructor(userQuery: String?, vararg suggestions: Suggestion?) : this(
@@ -47,7 +48,7 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
         suggestions.size
     ) {
         for (suggestion in suggestions) {
-            add(suggestion)
+            add(suggestion!!)
         }
     }
 
@@ -56,8 +57,8 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
      *
      * @return `true` if the suggestion was added.
      */
-    open fun add(suggestion: Suggestion?): Boolean {
-        mSuggestions.add(ListSuggestionCursor.Entry(suggestion))
+    open fun add(suggestion: Suggestion): Boolean {
+        mSuggestions.add(Entry(suggestion))
         return true
     }
 
@@ -70,7 +71,7 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
     }
 
     override fun moveToNext(): Boolean {
-        val size: Int = mSuggestions.size()
+        val size: Int = mSuggestions.size
         if (position >= size) {
             // Already past the end
             return false
@@ -80,15 +81,15 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
     }
 
     fun removeRow() {
-        mSuggestions.remove(position)
+        mSuggestions.removeAt(position)
     }
 
-    fun replaceRow(suggestion: Suggestion?) {
-        mSuggestions.set(position, ListSuggestionCursor.Entry(suggestion))
+    fun replaceRow(suggestion: Suggestion) {
+        mSuggestions.set(position, Entry(suggestion))
     }
 
     override val count: Int
-        get() = mSuggestions.size()
+        get() = mSuggestions.size
 
     @Override
     override fun current(): Suggestion {
@@ -97,8 +98,7 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
 
     @Override
     override fun toString(): String {
-        return getClass().getSimpleName()
-            .toString() + "{[" + getUserQuery() + "] " + mSuggestions + "}"
+        return this::class.simpleName.toString() + "{[" + userQuery + "] " + mSuggestions + "}"
     }
 
     /**
@@ -126,25 +126,26 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
 
     // override with caching to avoid re-parsing the extras
     @get:Override
-    override val extras: SuggestionExtras
-        get() =// override with caching to avoid re-parsing the extras
-            mSuggestions.get(position).getExtras()
+    override val extras: SuggestionExtras?
+        // override with caching to avoid re-parsing the extras
+        get() = mSuggestions.get(position).getExtras()
+
     override val extraColumns: Collection<String>?
         get() {
             if (mExtraColumns == null) {
                 mExtraColumns = HashSet<String>()
                 for (e in mSuggestions) {
-                    val extras: SuggestionExtras = e.getExtras()
+                    val extras: SuggestionExtras? = e.getExtras()
                     val extraColumns: Collection<String>? =
-                        if (extras == null) null else extras.getExtraColumnNames()
+                        if (extras == null) null else extras.extraColumnNames
                     if (extraColumns != null) {
-                        for (column in extras.getExtraColumnNames()) {
-                            mExtraColumns.add(column)
+                        for (column in extras!!.extraColumnNames) {
+                            mExtraColumns?.add(column)
                         }
                     }
                 }
             }
-            return if (mExtraColumns.isEmpty()) null else mExtraColumns
+            return if (mExtraColumns!!.isEmpty()) null else mExtraColumns
         }
 
     /**
@@ -158,7 +159,7 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
 
         fun getExtras(): SuggestionExtras? {
             if (mExtras == null) {
-                mExtras = mSuggestion.getExtras()
+                mExtras = mSuggestion.extras
             }
             return mExtras
         }
@@ -169,6 +170,6 @@ open class ListSuggestionCursor(userQuery: String?, capacity: Int) :
     }
 
     init {
-        mSuggestions = ArrayList<ListSuggestionCursor.Entry>(capacity)
+        mSuggestions = ArrayList<Entry>(capacity)
     }
 }

@@ -57,6 +57,7 @@ android_app {
       "src/**/quicksearchbox/JsonBackedSuggestionExtras.java",
       "src/**/quicksearchbox/LatencyTracker.java",
       "src/**/quicksearchbox/LevenshteinSuggestionFormatter.java",
+      "src/**/quicksearchbox/ListSuggestionCursor.java",
       "src/**/quicksearchbox/Logger.java",
       "src/**/quicksearchbox/QueryTask.java",
       "src/**/quicksearchbox/Source.java",
