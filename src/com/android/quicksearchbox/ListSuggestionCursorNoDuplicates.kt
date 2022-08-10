@@ -13,38 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
-
-import android.util.Log;
-
-import java.util.HashSet;
+import android.util.Log
 
 /**
  * A SuggestionCursor that is backed by a list of SuggestionPosition objects
  * and doesn't allow duplicate suggestions.
  */
-public class ListSuggestionCursorNoDuplicates extends ListSuggestionCursor {
-
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.ListSuggestionCursorNoDuplicates";
-
-    private final HashSet<String> mSuggestionKeys;
-
-    public ListSuggestionCursorNoDuplicates(String userQuery) {
-        super(userQuery);
-        mSuggestionKeys = new HashSet<String>();
-    }
+class ListSuggestionCursorNoDuplicates(userQuery: String?) : ListSuggestionCursor(userQuery) {
+    private val mSuggestionKeys: HashSet<String>
 
     @Override
-    public boolean add(Suggestion suggestion) {
-        String key = SuggestionUtils.getSuggestionKey(suggestion);
-        if (mSuggestionKeys.add(key)) {
-            return super.add(suggestion);
+    override fun add(suggestion: Suggestion): Boolean {
+        val key = SuggestionUtils.getSuggestionKey(suggestion)
+        return if (mSuggestionKeys.add(key)) {
+            super.add(suggestion)
         } else {
-            if (DBG) Log.d(TAG, "Rejecting duplicate " + key);
-            return false;
+            if (DBG) Log.d(
+                TAG,
+                "Rejecting duplicate $key"
+            )
+            false
         }
     }
 
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.ListSuggestionCursorNoDuplicates"
+    }
+
+    init {
+        mSuggestionKeys = HashSet<String>()
+    }
 }
