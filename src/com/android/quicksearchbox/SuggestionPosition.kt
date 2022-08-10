@@ -16,16 +16,25 @@
 package com.android.quicksearchbox
 
 /**
- * Provides a set of suggestion results for a query..
+ * A pointer to a suggestion in a [SuggestionCursor].
  *
  */
-interface SuggestionsProvider {
+class SuggestionPosition @JvmOverloads constructor(
+    val cursor: SuggestionCursor,
+    val position: Int = cursor.position
+) : AbstractSuggestionWrapper() {
+
     /**
-     * Gets suggestions for a query.
-     *
-     * @param query The query.
-     * @param source The source to query. Must be non-null.
+     * Gets the suggestion cursor, moved to point to the right suggestion.
      */
-    fun getSuggestions(query: String, source: Source): Suggestions
-    fun close()
+    @Override
+    override fun current(): Suggestion {
+        cursor.moveTo(position)
+        return cursor
+    }
+
+    @Override
+    override fun toString(): String {
+        return cursor.toString() + ":" + position
+    }
 }
