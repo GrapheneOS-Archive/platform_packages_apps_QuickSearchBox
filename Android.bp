@@ -68,9 +68,11 @@ android_app {
       "src/**/quicksearchbox/SuggestionFilter.java",
       "src/**/quicksearchbox/SuggestionFormatter.java",
       "src/**/quicksearchbox/SuggestionNonFormatter.java",
+      "src/**/quicksearchbox/SuggestionPosition.java",
       "src/**/quicksearchbox/Suggestions.java",
       "src/**/quicksearchbox/SearchSettings.java",
       "src/**/quicksearchbox/SuggestionsProvider.java",
+      "src/**/quicksearchbox/SuggestionsProviderImpl.java",
       "src/**/quicksearchbox/TextAppearanceFactory.java",
     ],
     static_libs: [

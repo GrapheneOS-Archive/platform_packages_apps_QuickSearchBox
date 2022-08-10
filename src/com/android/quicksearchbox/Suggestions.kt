@@ -84,21 +84,21 @@ class Suggestions(val query: String, val source: Source) {
      * Adds a list of corpus results. Must be called on the UI thread, or before this
      * object is seen by the UI thread.
      */
-    fun addResults(result: SourceResult) {
+    fun addResults(result: SourceResult?) {
         if (isClosed) {
-            result.close()
+            result?.close()
             return
         }
         if (DBG) {
             Log.d(
                 TAG, "addResults[" + hashCode().toString() + "] source:" +
-                        result.source?.name.toString() + " results:" + result.count
+                        result?.source?.name.toString() + " results:" + result?.count
             )
         }
-        if (query != result.userQuery) {
+        if (query != result?.userQuery) {
             throw IllegalArgumentException(
                 "Got result for wrong query: "
-                        + query + " != " + result.userQuery
+                        + query + " != " + result?.userQuery
             )
         }
         mResult = result
