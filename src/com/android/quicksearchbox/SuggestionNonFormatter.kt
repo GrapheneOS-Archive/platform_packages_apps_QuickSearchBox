@@ -16,16 +16,13 @@
 package com.android.quicksearchbox
 
 /**
- * Provides a set of suggestion results for a query..
- *
+ * Basic SuggestionFormatter that does no formatting.
  */
-interface SuggestionsProvider {
-    /**
-     * Gets suggestions for a query.
-     *
-     * @param query The query.
-     * @param source The source to query. Must be non-null.
-     */
-    fun getSuggestions(query: String, source: Source): Suggestions
-    fun close()
+class SuggestionNonFormatter(spanFactory: TextAppearanceFactory?) : SuggestionFormatter(
+    spanFactory!!
+) {
+    @Override
+    override fun formatSuggestion(query: String?, suggestion: String?): CharSequence? {
+        return suggestion
+    }
 }
