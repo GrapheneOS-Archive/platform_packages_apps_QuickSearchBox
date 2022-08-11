@@ -13,54 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-import android.database.DataSetObservable;
-import android.os.Handler;
+import android.database.DataSetObservable
+import android.os.Handler
 
 /**
- * A version of {@link DataSetObservable} that performs callbacks on given {@link Handler}.
+ * A version of [DataSetObservable] that performs callbacks on given [Handler].
  */
-public class AsyncDataSetObservable extends DataSetObservable {
-
-    private final Handler mHandler;
-
-    private final Runnable mChangedRunnable = new Runnable() {
-        public void run() {
-            AsyncDataSetObservable.super.notifyChanged();
+class AsyncDataSetObservable(handler: Handler?) : DataSetObservable() {
+    private val mHandler: Handler?
+    private val mChangedRunnable: Runnable = object : Runnable() {
+        fun run() {
+            super@AsyncDataSetObservable.notifyChanged()
         }
-    };
-
-    private final Runnable mInvalidatedRunnable = new Runnable() {
-        public void run() {
-            AsyncDataSetObservable.super.notifyInvalidated();
+    }
+    private val mInvalidatedRunnable: Runnable = object : Runnable() {
+        fun run() {
+            super@AsyncDataSetObservable.notifyInvalidated()
         }
-    };
+    }
+
+    @Override
+    fun notifyChanged() {
+        if (mHandler == null) {
+            super.notifyChanged()
+        } else {
+            mHandler.post(mChangedRunnable)
+        }
+    }
+
+    @Override
+    fun notifyInvalidated() {
+        if (mHandler == null) {
+            super.notifyInvalidated()
+        } else {
+            mHandler.post(mInvalidatedRunnable)
+        }
+    }
 
     /**
      * @param handler Handler to run callbacks on.
      */
-    public AsyncDataSetObservable(Handler handler) {
-        mHandler = handler;
+    init {
+        mHandler = handler
     }
-
-    @Override
-    public void notifyChanged() {
-        if (mHandler == null) {
-            super.notifyChanged();
-        } else {
-            mHandler.post(mChangedRunnable);
-        }
-    }
-
-    @Override
-    public void notifyInvalidated() {
-        if (mHandler == null) {
-            super.notifyInvalidated();
-        } else {
-            mHandler.post(mInvalidatedRunnable);
-        }
-    }
-
 }
