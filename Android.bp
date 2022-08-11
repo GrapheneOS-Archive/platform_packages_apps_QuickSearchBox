@@ -63,6 +63,7 @@ android_app {
       "src/**/quicksearchbox/QsbApplication.java",
       "src/**/quicksearchbox/QsbApplicationWrapper.java",
       "src/**/quicksearchbox/QueryTask.java",
+      "src/**/quicksearchbox/ResultFilter.java",
       "src/**/quicksearchbox/Source.java",
       "src/**/quicksearchbox/SourceResult.java",
       "src/**/quicksearchbox/Suggestion.java",

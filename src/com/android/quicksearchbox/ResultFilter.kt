@@ -20,6 +20,6 @@ package com.android.quicksearchbox
  */
 class ResultFilter : SuggestionFilter {
     override fun accept(s: Suggestion?): Boolean {
-        return !s!!.isWebSearchSuggestion()
+        return !s!!.isWebSearchSuggestion
     }
 }
