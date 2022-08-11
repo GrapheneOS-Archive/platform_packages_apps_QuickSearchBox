@@ -25,8 +25,8 @@ import android.os.Handler
  * Abstract implementation of a source that is not backed by a searchable activity.
  */
 abstract class AbstractInternalSource(
-    context: Context,
-    uiThread: Handler,
+    context: Context?,
+    uiThread: Handler?,
     iconLoader: NamedTaskExecutor
 ) : AbstractSource(context, uiThread, iconLoader) {
     @get:Override
@@ -43,7 +43,7 @@ abstract class AbstractInternalSource(
 
     @get:Override
     override val iconPackage: String
-        get() = context.getPackageName()
+        get() = context!!.getPackageName()
 
     @get:Override
     override val queryThreshold: Int
@@ -51,12 +51,12 @@ abstract class AbstractInternalSource(
 
     @get:Override
     override val sourceIcon: Drawable
-        get() = context.getResources().getDrawable(sourceIconResource, null)
+        get() = context?.getResources()!!.getDrawable(sourceIconResource, null)
 
     @get:Override
     override val sourceIconUri: Uri
         get() = Uri.parse(
-            "android.resource://" + context.getPackageName()
+            "android.resource://" + context!!.getPackageName()
                 .toString() + "/" + sourceIconResource
         )
     protected abstract val sourceIconResource: Int

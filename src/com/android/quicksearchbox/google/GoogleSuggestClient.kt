@@ -50,7 +50,7 @@ import java.util.Locale
  * Use network-based Google Suggests to provide search suggestions.
  */
 class GoogleSuggestClient(
-    context: Context, uiThread: Handler,
+    context: Context?, uiThread: Handler?,
     iconLoader: NamedTaskExecutor, config: Config
 ) : AbstractGoogleSource(context, uiThread, iconLoader) {
     private var mSuggestUri: String?
@@ -58,7 +58,7 @@ class GoogleSuggestClient(
 
     @get:Override
     override val intentComponent: ComponentName
-        get() = ComponentName(context, com.android.quicksearchbox.google.GoogleSearch::class.java)
+        get() = ComponentName(context!!, GoogleSearch::class.java)
 
     @Override
     override fun queryInternal(query: String?): SourceResult? {
@@ -79,7 +79,7 @@ class GoogleSuggestClient(
             return null
         }
         if (!isNetworkConnected) {
-            Log.i(GoogleSuggestClient.Companion.LOG_TAG, "Not connected to network.")
+            Log.i(LOG_TAG, "Not connected to network.")
             return null
         }
         var connection: HttpURLConnection? = null
@@ -87,21 +87,21 @@ class GoogleSuggestClient(
             val encodedQuery: String = URLEncoder.encode(query, "UTF-8")
             if (mSuggestUri == null) {
                 val l: Locale = Locale.getDefault()
-                val language: String = com.android.quicksearchbox.google.GoogleSearch.getLanguage(l)
-                mSuggestUri = context.getResources().getString(
+                val language: String = GoogleSearch.getLanguage(l)
+                mSuggestUri = context?.getResources()!!.getString(
                     R.string.google_suggest_base,
                     language
                 )
             }
             val suggestUri = mSuggestUri + encodedQuery
-            if (GoogleSuggestClient.Companion.DBG) Log.d(
-                GoogleSuggestClient.Companion.LOG_TAG,
+            if (DBG) Log.d(
+                LOG_TAG,
                 "Sending request: $suggestUri"
             )
             val url: URL = URI.create(suggestUri).toURL()
             connection = url.openConnection() as HttpURLConnection
             connection.setConnectTimeout(mConnectTimeout)
-            connection.setRequestProperty("User-Agent", GoogleSuggestClient.Companion.USER_AGENT)
+            connection.setRequestProperty("User-Agent", USER_AGENT)
             connection.setRequestMethod("GET")
             connection.setDoInput(true)
             connection.connect()
@@ -123,23 +123,23 @@ class GoogleSuggestClient(
                 val results = JSONArray(sb.toString())
                 val suggestions: JSONArray = results.getJSONArray(1)
                 val popularity: JSONArray = results.getJSONArray(2)
-                if (GoogleSuggestClient.Companion.DBG) Log.d(
-                    GoogleSuggestClient.Companion.LOG_TAG,
+                if (DBG) Log.d(
+                    LOG_TAG,
                     "Got " + suggestions.length().toString() + " results"
                 )
                 return GoogleSuggestCursor(this, query, suggestions, popularity)
             } else {
-                if (GoogleSuggestClient.Companion.DBG) Log.d(
-                    GoogleSuggestClient.Companion.LOG_TAG,
+                if (DBG) Log.d(
+                    LOG_TAG,
                     "Request failed " + connection.getResponseMessage()
                 )
             }
         } catch (e: UnsupportedEncodingException) {
-            Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error", e)
+            Log.w(LOG_TAG, "Error", e)
         } catch (e: IOException) {
-            Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error", e)
+            Log.w(LOG_TAG, "Error", e)
         } catch (e: JSONException) {
-            Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error", e)
+            Log.w(LOG_TAG, "Error", e)
         } finally {
             if (connection != null) connection.disconnect()
         }
@@ -159,7 +159,7 @@ class GoogleSuggestClient(
     private val activeNetworkCapabilities: NetworkCapabilities?
         get() {
             val connectivityManager =
-                context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val activeNetwork = connectivityManager.getActiveNetwork()
             return connectivityManager.getNetworkCapabilities(activeNetwork)
         }
@@ -185,7 +185,7 @@ class GoogleSuggestClient(
             get() = try {
                 mSuggestions.getString(position)
             } catch (e: JSONException) {
-                Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error parsing response: $e")
+                Log.w(LOG_TAG, "Error parsing response: $e")
                 null
             }
 
@@ -194,7 +194,7 @@ class GoogleSuggestClient(
             get() = try {
                 mPopularity.getString(position)
             } catch (e: JSONException) {
-                Log.w(GoogleSuggestClient.Companion.LOG_TAG, "Error parsing response: $e")
+                Log.w(LOG_TAG, "Error parsing response: $e")
                 null
             }
 
