@@ -13,82 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-import java.util.ArrayList;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.ArrayList
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 
 /**
  * A consumer that consumes a fixed number of values. When the expected number of values
  * has been consumed, further values are rejected.
  */
-public class BarrierConsumer<A> implements Consumer<A> {
-
-    private final Lock mLock = new ReentrantLock();
-    private final Condition mNotFull = mLock.newCondition();
-
-    private final int mExpectedCount;
+class BarrierConsumer<A>(private val mExpectedCount: Int) : Consumer<A> {
+    private val mLock: Lock = ReentrantLock()
+    private val mNotFull: Condition = mLock.newCondition()
 
     // Set to null when getValues() returns.
-    private ArrayList<A> mValues;
+    private var mValues: ArrayList<A>?
+
+    /**
+     * Blocks until the expected number of results is available, or until the thread is
+     * interrupted. This method should not be called multiple times.
+     *
+     * @return A list of values, never `null`.
+     */
+    val values: ArrayList<A>?
+        get() {
+            mLock.lock()
+            return try {
+                try {
+                    while (!isFull) {
+                        mNotFull.await()
+                    }
+                } catch (ex: InterruptedException) {
+                    // Return the values that we've gotten so far
+                }
+                val values = mValues
+                mValues = null // mark that getValues() has returned
+                values
+            } finally {
+                mLock.unlock()
+            }
+        }
+
+    override fun consume(value: A): Boolean {
+        mLock.lock()
+        return try {
+            // Do nothing if getValues() has already returned,
+            // or enough values have already been consumed
+            if (mValues == null || isFull) {
+                return false
+            }
+            mValues.add(value)
+            if (isFull) {
+                // Wake up any thread waiting in getValues()
+                mNotFull.signal()
+            }
+            true
+        } finally {
+            mLock.unlock()
+        }
+    }
+
+    private val isFull: Boolean
+        private get() = mValues.size() === mExpectedCount
 
     /**
      * Constructs a new BarrierConsumer.
      *
      * @param expectedCount The number of values to consume.
      */
-    public BarrierConsumer(int expectedCount) {
-        mExpectedCount = expectedCount;
-        mValues = new ArrayList<A>(expectedCount);
-    }
-
-    /**
-     * Blocks until the expected number of results is available, or until the thread is
-     * interrupted. This method should not be called multiple times.
-     *
-     * @return A list of values, never {@code null}.
-     */
-    public ArrayList<A> getValues() {
-        mLock.lock();
-        try {
-            try {
-                while (!isFull()) {
-                    mNotFull.await();
-                }
-            } catch (InterruptedException ex) {
-                // Return the values that we've gotten so far
-            }
-            ArrayList<A> values = mValues;
-            mValues = null;  // mark that getValues() has returned
-            return values;
-        } finally {
-            mLock.unlock();
-        }
-    }
-
-    public boolean consume(A value) {
-        mLock.lock();
-        try {
-            // Do nothing if getValues() has already returned,
-            // or enough values have already been consumed
-            if (mValues == null || isFull()) {
-                return false;
-            }
-            mValues.add(value);
-            if (isFull()) {
-                // Wake up any thread waiting in getValues()
-                mNotFull.signal();
-            }
-            return true;
-        } finally {
-            mLock.unlock();
-        }
-    }
-
-    private boolean isFull() {
-        return mValues.size() == mExpectedCount;
+    init {
+        mValues = ArrayList<A>(mExpectedCount)
     }
 }
