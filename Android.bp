@@ -60,6 +60,8 @@ android_app {
       "src/**/quicksearchbox/ListSuggestionCursor.java",
       "src/**/quicksearchbox/ListSuggestionCursorNoDuplicates.java",
       "src/**/quicksearchbox/Logger.java",
+      "src/**/quicksearchbox/QsbApplication.java",
+      "src/**/quicksearchbox/QsbApplicationWrapper.java",
       "src/**/quicksearchbox/QueryTask.java",
       "src/**/quicksearchbox/Source.java",
       "src/**/quicksearchbox/SourceResult.java",

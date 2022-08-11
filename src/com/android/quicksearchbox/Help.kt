@@ -25,8 +25,8 @@ import android.view.MenuItem
 /**
  * Handles app help.
  */
-class Help(context: Context, config: Config) {
-    private val mContext: Context
+class Help(context: Context?, config: Config) {
+    private val mContext: Context?
     private val mConfig: Config
     fun addHelpMenuItem(menu: Menu, activityName: String?) {
         addHelpMenuItem(menu, activityName, false)
