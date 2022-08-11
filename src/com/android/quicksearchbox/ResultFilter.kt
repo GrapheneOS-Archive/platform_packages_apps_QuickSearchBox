@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox;
+package com.android.quicksearchbox
 
 /**
- * {@link SuggestionFilter} that accepts only results (not web suggestions).
+ * [SuggestionFilter] that accepts only results (not web suggestions).
  */
-public class ResultFilter implements SuggestionFilter {
-
-    public ResultFilter() {
+class ResultFilter : SuggestionFilter {
+    override fun accept(s: Suggestion?): Boolean {
+        return !s!!.isWebSearchSuggestion()
     }
-
-    public boolean accept(Suggestion s) {
-        return !s.isWebSearchSuggestion();
-    }
-
 }
