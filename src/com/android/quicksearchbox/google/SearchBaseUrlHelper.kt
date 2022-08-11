@@ -32,11 +32,11 @@ import java.util.Locale
  * Helper to build the base URL for all search requests.
  */
 class SearchBaseUrlHelper(
-    context: Context, helper: HttpHelper,
+    context: Context?, helper: HttpHelper,
     searchSettings: SearchSettings, prefs: SharedPreferences
 ) : SharedPreferences.OnSharedPreferenceChangeListener {
     private val mHttpHelper: HttpHelper
-    private val mContext: Context
+    private val mContext: Context?
     private val mSearchSettings: SearchSettings
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -64,8 +64,8 @@ class SearchBaseUrlHelper(
     /**
      * @return the base url for searches.
      */
-    val searchBaseUrl: String
-        get() = mContext.getResources().getString(
+    val searchBaseUrl: String?
+        get() = mContext?.getResources()?.getString(
             R.string.google_search_base_pattern,
             searchDomain, GoogleSearch.getLanguage(Locale.getDefault())
         )// This is required to deal with the case wherein getSearchDomain
@@ -100,7 +100,7 @@ class SearchBaseUrlHelper(
                 // We have no choice in this case but to use the default search domain.
                 domain = defaultBaseDomain
             }
-            if (domain.startsWith(".")) {
+            if (domain?.startsWith(".") == true) {
                 if (DBG) Log.d(
                     TAG,
                     "Prepending www to $domain"
@@ -135,8 +135,8 @@ class SearchBaseUrlHelper(
         }
     }
 
-    private val defaultBaseDomain: String
-        get() = mContext.getResources().getString(R.string.default_search_domain)
+    private val defaultBaseDomain: String?
+        get() = mContext?.getResources()?.getString(R.string.default_search_domain)
 
     private fun setSearchBaseDomain(domain: String?) {
         if (DBG) Log.d(
