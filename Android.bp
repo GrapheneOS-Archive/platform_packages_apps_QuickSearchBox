@@ -57,6 +57,8 @@ android_app {
       "src/**/quicksearchbox/JsonBackedSuggestionExtras.java",
       "src/**/quicksearchbox/LatencyTracker.java",
       "src/**/quicksearchbox/LevenshteinSuggestionFormatter.java",
+      "src/**/quicksearchbox/ListSuggestionCursor.java",
+      "src/**/quicksearchbox/ListSuggestionCursorNoDuplicates.java",
       "src/**/quicksearchbox/Logger.java",
       "src/**/quicksearchbox/QueryTask.java",
       "src/**/quicksearchbox/Source.java",
@@ -83,6 +85,7 @@ android_app {
     static_libs: [
             "guava",
             "android-common",
+            "androidx.core_core",
             "kotlinx_coroutines",
     ],
     certificate: "shared",
