@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,29 @@
 package com.android.quicksearchbox
 
 import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.Process
+import android.view.ContextThemeWrapper
 import com.android.quicksearchbox.google.GoogleSource
 import com.android.quicksearchbox.google.GoogleSuggestClient
 import com.android.quicksearchbox.google.SearchBaseUrlHelper
-import com.android.quicksearchbox.util.Factory
-import com.android.quicksearchbox.util.HttpHelper
-import com.android.quicksearchbox.util.NamedTaskExecutor
+import com.android.quicksearchbox.ui.DefaultSuggestionViewFactory
+import com.android.quicksearchbox.ui.SuggestionViewFactory
+import com.android.quicksearchbox.util.*
+import com.google.common.util.concurrent.ThreadFactoryBuilder
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+
 
 class QsbApplication(context: Context?) {
-    private val mContext: Context
-    private var mVersionCode = 0
+    private val mContext: Context?
+
+    private var mVersionCode: Long = 0
     private var mUiThreadHandler: Handler? = null
     private var mConfig: Config? = null
     private var mSettings: SearchSettings? = null
@@ -41,18 +54,19 @@ class QsbApplication(context: Context?) {
     private var mIconLoaderExecutor: NamedTaskExecutor? = null
     private var mHttpHelper: HttpHelper? = null
     private var mSearchBaseUrlHelper: SearchBaseUrlHelper? = null
-    protected val context: Context
-        protected get() = mContext
+    protected val context: Context?
+        get() = mContext
 
     // The current package should always exist, how else could we
     // run code from it?
-    val versionCode: Int
+    val versionCode: Long
+        @Suppress("DEPRECATION")
         get() {
-            if (mVersionCode == 0) {
+            if (mVersionCode == 0L) {
                 mVersionCode = try {
-                    val pm: PackageManager = context.getPackageManager()
-                    val pkgInfo: PackageInfo = pm.getPackageInfo(context.getPackageName(), 0)
-                    pkgInfo.versionCode
+                    val pm: PackageManager? = context?.getPackageManager()
+                    val pkgInfo: PackageInfo? = pm?.getPackageInfo(context!!.getPackageName(), 0)
+                    pkgInfo!!.getLongVersionCode()
                 } catch (ex: PackageManager.NameNotFoundException) {
                     // The current package should always exist, how else could we
                     // run code from it?
@@ -93,7 +107,7 @@ class QsbApplication(context: Context?) {
         }
 
     fun runOnUiThread(action: Runnable?) {
-        mainThreadHandler.post(action)
+        mainThreadHandler?.post(action!!)
     }
 
     @get:Synchronized
@@ -148,7 +162,7 @@ class QsbApplication(context: Context?) {
         return SearchSettingsImpl(context, config)
     }
 
-    protected fun createExecutorFactory(numThreads: Int): Factory<Executor> {
+    protected fun createExecutorFactory(numThreads: Int): Factory<Executor?> {
         val threadFactory: ThreadFactory? = queryThreadFactory
         return object : Factory<Executor?> {
             @Override
@@ -182,7 +196,7 @@ class QsbApplication(context: Context?) {
      * May only be called from the main thread.
      */
     protected val queryThreadFactory: ThreadFactory?
-        protected get() {
+        get() {
             checkThread()
             if (mQueryThreadFactory == null) {
                 mQueryThreadFactory = createQueryThreadFactory()
@@ -192,7 +206,7 @@ class QsbApplication(context: Context?) {
 
     protected fun createQueryThreadFactory(): ThreadFactory {
         val nameFormat = "QSB #%d"
-        val priority: Int = config.getQueryThreadPriority()
+        val priority: Int = config!!.queryThreadPriority
         return ThreadFactoryBuilder()
             .setNameFormat(nameFormat)
             .setThreadFactory(PriorityThreadFactory(priority))
@@ -327,8 +341,8 @@ class QsbApplication(context: Context?) {
 
     protected fun createHttpHelper(): HttpHelper {
         return JavaNetHttpHelper(
-            PassThroughRewriter(),
-            config.getUserAgent()
+            JavaNetHttpHelper.PassThroughRewriter(),
+            config?.userAgent
         )
     }
 
@@ -361,8 +375,8 @@ class QsbApplication(context: Context?) {
             get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
 
         @JvmStatic
-        operator fun get(context: Context): QsbApplication {
-            return (context.getApplicationContext() as QsbApplicationWrapper).app
+        operator fun get(context: Context?): QsbApplication {
+            return (context?.getApplicationContext() as QsbApplicationWrapper).app
         }
     }
 
