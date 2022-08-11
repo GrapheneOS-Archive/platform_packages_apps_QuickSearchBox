@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
+import android.app.Application
 
-import android.app.Application;
-
-public class QsbApplicationWrapper extends Application {
-
-    private QsbApplication mApp;
-
+class QsbApplicationWrapper : Application() {
+    private var mApp: QsbApplication? = null
     @Override
-    public void onTerminate() {
-        synchronized (this) {
+    fun onTerminate() {
+        synchronized(this) {
             if (mApp != null) {
-                mApp.close();
+                mApp!!.close()
             }
         }
-        super.onTerminate();
+        super.onTerminate()
     }
 
-    public synchronized QsbApplication getApp() {
-        if (mApp == null) {
-            mApp = createQsbApplication();
+    @get:Synchronized
+    val app: QsbApplication?
+        get() {
+            if (mApp == null) {
+                mApp = createQsbApplication()
+            }
+            return mApp
         }
-        return mApp;
-    }
 
-    protected QsbApplication createQsbApplication() {
-        return new QsbApplication(this);
+    protected fun createQsbApplication(): QsbApplication {
+        return QsbApplication(this)
     }
-
 }
