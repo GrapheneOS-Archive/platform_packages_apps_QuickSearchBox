@@ -27,12 +27,12 @@ import java.util.HashSet
  * All the methods in this class return fixed default values. Subclasses may
  * make these values server-side settable.
  */
-class Config(context: Context) {
-    private val mContext: Context
+class Config(context: Context?) {
+    private val mContext: Context?
     private val mDefaultCorpora: HashSet<String>? = null
     private val mHiddenCorpora: HashSet<String>? = null
     private val mDefaultCorporaSuggestUris: HashSet<String>? = null
-    protected val context: Context
+    protected val context: Context?
         get() = mContext
 
     /**
@@ -44,7 +44,7 @@ class Config(context: Context) {
     fun close() {}
     private fun loadResourceStringSet(res: Int): HashSet<String> {
         val set: HashSet<String> = HashSet<String>()
-        val items: Array<String> = mContext.getResources().getStringArray(res)
+        val items: Array<String> = mContext?.getResources()!!.getStringArray(res)
         for (item in items) {
             set.add(item)
         }
@@ -62,16 +62,16 @@ class Config(context: Context) {
      */
     val numSuggestionsAboveKeyboard: Int
         get() =// Get the list of default corpora from a resource, which allows vendor overlays.
-            mContext.getResources().getInteger(R.integer.num_suggestions_above_keyboard)
+            mContext?.getResources()!!.getInteger(R.integer.num_suggestions_above_keyboard)
 
     /**
      * The maximum number of suggestions to promote.
      */
     val maxPromotedSuggestions: Int
-        get() = mContext.getResources().getInteger(R.integer.max_promoted_suggestions)
+        get() = mContext?.getResources()!!.getInteger(R.integer.max_promoted_suggestions)
 
     val maxPromotedResults: Int
-        get() = mContext.getResources().getInteger(R.integer.max_promoted_results)
+        get() = mContext?.getResources()!!.getInteger(R.integer.max_promoted_results)
 
     /**
      * The number of results to ask each source for.
@@ -83,13 +83,13 @@ class Config(context: Context) {
      * The maximum number of shortcuts to show for the web source in All mode.
      */
     val maxShortcutsPerWebSource: Int
-        get() = mContext.getResources().getInteger(R.integer.max_shortcuts_per_web_source)
+        get() = mContext?.getResources()!!.getInteger(R.integer.max_shortcuts_per_web_source)
 
     /**
      * The maximum number of shortcuts to show for each non-web source in All mode.
      */
     val maxShortcutsPerNonWebSource: Int
-        get() = mContext.getResources().getInteger(R.integer.max_shortcuts_per_non_web_source)
+        get() = mContext?.getResources()!!.getInteger(R.integer.max_shortcuts_per_non_web_source)
 
     /**
      * Gets the maximum number of shortcuts that will be shown from the given source.
@@ -191,20 +191,20 @@ class Config(context: Context) {
 
     fun showSuggestionsForZeroQuery(): Boolean {
         // Get the list of default corpora from a resource, which allows vendor overlays.
-        return mContext.getResources().getBoolean(R.bool.show_zero_query_suggestions)
+        return mContext?.getResources()!!.getBoolean(R.bool.show_zero_query_suggestions)
     }
 
     fun showShortcutsForZeroQuery(): Boolean {
         // Get the list of default corpora from a resource, which allows vendor overlays.
-        return mContext.getResources().getBoolean(R.bool.show_zero_query_shortcuts)
+        return mContext?.getResources()!!.getBoolean(R.bool.show_zero_query_shortcuts)
     }
 
     fun showScrollingSuggestions(): Boolean {
-        return mContext.getResources().getBoolean(R.bool.show_scrolling_suggestions)
+        return mContext?.getResources()!!.getBoolean(R.bool.show_scrolling_suggestions)
     }
 
     fun showScrollingResults(): Boolean {
-        return mContext.getResources().getBoolean(R.bool.show_scrolling_results)
+        return mContext?.getResources()!!.getBoolean(R.bool.show_scrolling_results)
     }
 
     @Suppress("UNUSED_PARAMETER")
