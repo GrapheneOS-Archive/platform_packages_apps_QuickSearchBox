@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.quicksearchbox.util
 
 import android.database.DataSetObservable
@@ -23,19 +24,19 @@ import android.os.Handler
  */
 class AsyncDataSetObservable(handler: Handler?) : DataSetObservable() {
     private val mHandler: Handler?
-    private val mChangedRunnable: Runnable = object : Runnable() {
-        fun run() {
+    private val mChangedRunnable: Runnable = object : Runnable {
+        override fun run() {
             super@AsyncDataSetObservable.notifyChanged()
         }
     }
-    private val mInvalidatedRunnable: Runnable = object : Runnable() {
-        fun run() {
+    private val mInvalidatedRunnable: Runnable = object : Runnable {
+        override fun run() {
             super@AsyncDataSetObservable.notifyInvalidated()
         }
     }
 
     @Override
-    fun notifyChanged() {
+    override fun notifyChanged() {
         if (mHandler == null) {
             super.notifyChanged()
         } else {
@@ -44,7 +45,7 @@ class AsyncDataSetObservable(handler: Handler?) : DataSetObservable() {
     }
 
     @Override
-    fun notifyInvalidated() {
+    override fun notifyInvalidated() {
         if (mHandler == null) {
             super.notifyInvalidated()
         } else {
