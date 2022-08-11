@@ -18,9 +18,11 @@ package com.android.quicksearchbox
 import android.app.Application
 
 class QsbApplicationWrapper : Application() {
+
     private var mApp: QsbApplication? = null
+
     @Override
-    fun onTerminate() {
+    override fun onTerminate() {
         synchronized(this) {
             if (mApp != null) {
                 mApp!!.close()
@@ -30,12 +32,12 @@ class QsbApplicationWrapper : Application() {
     }
 
     @get:Synchronized
-    val app: QsbApplication?
+    val app: QsbApplication
         get() {
             if (mApp == null) {
                 mApp = createQsbApplication()
             }
-            return mApp
+            return mApp!!
         }
 
     protected fun createQsbApplication(): QsbApplication {
