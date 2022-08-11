@@ -30,11 +30,11 @@ import android.util.Log
 /**
  * Voice Search integration.
  */
-class VoiceSearch(context: Context) {
+class VoiceSearch(context: Context?) {
 
-    private val mContext: Context
+    private val mContext: Context?
 
-    protected val context: Context
+    protected val context: Context?
         get() = mContext
 
     fun shouldShowVoiceSearch(): Boolean {
@@ -49,8 +49,8 @@ class VoiceSearch(context: Context) {
         @Suppress("DEPRECATION")
         get() {
             val intent: Intent = createVoiceSearchIntent()
-            return mContext.getPackageManager()
-                .resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            return mContext?.getPackageManager()
+                ?.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
         }
     val isVoiceSearchAvailable: Boolean
         get() = resolveInfo != null
@@ -88,7 +88,7 @@ class VoiceSearch(context: Context) {
             val ri: ResolveInfo = resolveInfo ?: return 0
             val ci: ComponentInfo = if (ri.activityInfo != null) ri.activityInfo else ri.serviceInfo
             return try {
-                context.getPackageManager().getPackageInfo(ci.packageName, 0).getLongVersionCode()
+                context!!.getPackageManager().getPackageInfo(ci.packageName, 0).getLongVersionCode()
             } catch (e: NameNotFoundException) {
                 Log.e(
                     TAG,
@@ -99,7 +99,7 @@ class VoiceSearch(context: Context) {
             }
         }
     val component: ComponentName
-        get() = createVoiceSearchIntent().resolveActivity(context.getPackageManager())
+        get() = createVoiceSearchIntent().resolveActivity(context!!.getPackageManager())
 
     companion object {
         private const val TAG = "QSB.VoiceSearch"

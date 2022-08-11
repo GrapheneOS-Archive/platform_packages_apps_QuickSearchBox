@@ -39,24 +39,24 @@ import java.io.InputStream
  * Code partly stolen from [ContentResolver] and android.app.SuggestionsAdapter.
  */
 class PackageIconLoader(
-    context: Context, packageName: String?, uiThread: Handler,
+    context: Context?, packageName: String?, uiThread: Handler?,
     iconLoaderExecutor: NamedTaskExecutor
 ) : IconLoader {
 
-    private val mContext: Context
+    private val mContext: Context?
 
     private val mPackageName: String?
 
     private var mPackageContext: Context? = null
 
-    private val mUiThread: Handler
+    private val mUiThread: Handler?
 
     private val mIconLoaderExecutor: NamedTaskExecutor
 
     private fun ensurePackageContext(): Boolean {
         if (mPackageContext == null) {
             mPackageContext = try {
-                mContext.createPackageContext(
+                mContext?.createPackageContext(
                     mPackageName,
                     Context.CONTEXT_RESTRICTED
                 )
@@ -223,7 +223,7 @@ class PackageIconLoader(
         @Override
         override fun run() {
             val icon: Drawable? = icon
-            mUiThread.post(object : Runnable {
+            mUiThread?.post(object : Runnable {
                 override fun run() {
                     store(icon)
                 }
