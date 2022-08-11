@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2009 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,215 +13,190 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox
 
-package com.android.quicksearchbox;
+import android.content.Context
+import com.android.quicksearchbox.google.GoogleSource
+import com.android.quicksearchbox.google.GoogleSuggestClient
+import com.android.quicksearchbox.google.SearchBaseUrlHelper
+import com.android.quicksearchbox.util.Factory
+import com.android.quicksearchbox.util.HttpHelper
+import com.android.quicksearchbox.util.NamedTaskExecutor
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Process;
-import android.view.ContextThemeWrapper;
+class QsbApplication(context: Context?) {
+    private val mContext: Context
+    private var mVersionCode = 0
+    private var mUiThreadHandler: Handler? = null
+    private var mConfig: Config? = null
+    private var mSettings: SearchSettings? = null
+    private var mSourceTaskExecutor: NamedTaskExecutor? = null
+    private var mQueryThreadFactory: ThreadFactory? = null
+    private var mSuggestionsProvider: SuggestionsProvider? = null
+    private var mSuggestionViewFactory: SuggestionViewFactory? = null
+    private var mGoogleSource: GoogleSource? = null
+    private var mVoiceSearch: VoiceSearch? = null
+    private var mLogger: Logger? = null
+    private var mSuggestionFormatter: SuggestionFormatter? = null
+    private var mTextAppearanceFactory: TextAppearanceFactory? = null
+    private var mIconLoaderExecutor: NamedTaskExecutor? = null
+    private var mHttpHelper: HttpHelper? = null
+    private var mSearchBaseUrlHelper: SearchBaseUrlHelper? = null
+    protected val context: Context
+        protected get() = mContext
 
-import com.android.quicksearchbox.google.GoogleSource;
-import com.android.quicksearchbox.google.GoogleSuggestClient;
-import com.android.quicksearchbox.google.SearchBaseUrlHelper;
-import com.android.quicksearchbox.ui.DefaultSuggestionViewFactory;
-import com.android.quicksearchbox.ui.SuggestionViewFactory;
-import com.android.quicksearchbox.util.Factory;
-import com.android.quicksearchbox.util.HttpHelper;
-import com.android.quicksearchbox.util.JavaNetHttpHelper;
-import com.android.quicksearchbox.util.NamedTaskExecutor;
-import com.android.quicksearchbox.util.PerNameExecutor;
-import com.android.quicksearchbox.util.PriorityThreadFactory;
-import com.android.quicksearchbox.util.SingleThreadNamedTaskExecutor;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-public class QsbApplication {
-    private final Context mContext;
-
-    private int mVersionCode;
-    private Handler mUiThreadHandler;
-    private Config mConfig;
-    private SearchSettings mSettings;
-    private NamedTaskExecutor mSourceTaskExecutor;
-    private ThreadFactory mQueryThreadFactory;
-    private SuggestionsProvider mSuggestionsProvider;
-    private SuggestionViewFactory mSuggestionViewFactory;
-    private GoogleSource mGoogleSource;
-    private VoiceSearch mVoiceSearch;
-    private Logger mLogger;
-    private SuggestionFormatter mSuggestionFormatter;
-    private TextAppearanceFactory mTextAppearanceFactory;
-    private NamedTaskExecutor mIconLoaderExecutor;
-    private HttpHelper mHttpHelper;
-    private SearchBaseUrlHelper mSearchBaseUrlHelper;
-
-    public QsbApplication(Context context) {
-        // the application context does not use the theme from the <application> tag
-        mContext = new ContextThemeWrapper(context, R.style.Theme_QuickSearchBox);
-    }
-
-    public static boolean isFroyoOrLater() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO;
-    }
-
-    public static boolean isHoneycombOrLater() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
-    }
-
-    public static QsbApplication get(Context context) {
-        return ((QsbApplicationWrapper) context.getApplicationContext()).getApp();
-    }
-
-    protected Context getContext() {
-        return mContext;
-    }
-
-    public int getVersionCode() {
-        if (mVersionCode == 0) {
-            try {
-                PackageManager pm = getContext().getPackageManager();
-                PackageInfo pkgInfo = pm.getPackageInfo(getContext().getPackageName(), 0);
-                mVersionCode = pkgInfo.versionCode;
-            } catch (PackageManager.NameNotFoundException ex) {
-                // The current package should always exist, how else could we
-                // run code from it?
-                throw new RuntimeException(ex);
+    // The current package should always exist, how else could we
+    // run code from it?
+    val versionCode: Int
+        get() {
+            if (mVersionCode == 0) {
+                mVersionCode = try {
+                    val pm: PackageManager = context.getPackageManager()
+                    val pkgInfo: PackageInfo = pm.getPackageInfo(context.getPackageName(), 0)
+                    pkgInfo.versionCode
+                } catch (ex: PackageManager.NameNotFoundException) {
+                    // The current package should always exist, how else could we
+                    // run code from it?
+                    throw RuntimeException(ex)
+                }
             }
+            return mVersionCode
         }
-        return mVersionCode;
+
+    protected fun checkThread() {
+        if (Looper.myLooper() !== Looper.getMainLooper()) {
+            throw IllegalStateException(
+                "Accessed Application object from thread "
+                        + Thread.currentThread().getName()
+            )
+        }
     }
 
-    protected void checkThread() {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            throw new IllegalStateException("Accessed Application object from thread "
-                    + Thread.currentThread().getName());
-        }
-    }
-
-    protected void close() {
-        checkThread();
+    fun close() {
+        checkThread()
         if (mConfig != null) {
-            mConfig.close();
-            mConfig = null;
+            mConfig!!.close()
+            mConfig = null
         }
         if (mSuggestionsProvider != null) {
-            mSuggestionsProvider.close();
-            mSuggestionsProvider = null;
+            mSuggestionsProvider!!.close()
+            mSuggestionsProvider = null
         }
     }
 
-    public synchronized Handler getMainThreadHandler() {
-        if (mUiThreadHandler == null) {
-            mUiThreadHandler = new Handler(Looper.getMainLooper());
+    @get:Synchronized
+    val mainThreadHandler: Handler?
+        get() {
+            if (mUiThreadHandler == null) {
+                mUiThreadHandler = Handler(Looper.getMainLooper())
+            }
+            return mUiThreadHandler
         }
-        return mUiThreadHandler;
+
+    fun runOnUiThread(action: Runnable?) {
+        mainThreadHandler.post(action)
     }
 
-    public void runOnUiThread(Runnable action) {
-        getMainThreadHandler().post(action);
-    }
-
-    public synchronized NamedTaskExecutor getIconLoaderExecutor() {
-        if (mIconLoaderExecutor == null) {
-            mIconLoaderExecutor = createIconLoaderExecutor();
+    @get:Synchronized
+    val iconLoaderExecutor: NamedTaskExecutor?
+        get() {
+            if (mIconLoaderExecutor == null) {
+                mIconLoaderExecutor = createIconLoaderExecutor()
+            }
+            return mIconLoaderExecutor
         }
-        return mIconLoaderExecutor;
-    }
 
-    protected NamedTaskExecutor createIconLoaderExecutor() {
-        ThreadFactory iconThreadFactory = new PriorityThreadFactory(
-                    Process.THREAD_PRIORITY_BACKGROUND);
-        return new PerNameExecutor(SingleThreadNamedTaskExecutor.factory(iconThreadFactory));
+    protected fun createIconLoaderExecutor(): NamedTaskExecutor {
+        val iconThreadFactory: ThreadFactory = PriorityThreadFactory(
+            Process.THREAD_PRIORITY_BACKGROUND
+        )
+        return PerNameExecutor(SingleThreadNamedTaskExecutor.factory(iconThreadFactory))
     }
 
     /**
      * Indicates that construction of the QSB UI is now complete.
      */
-    public void onStartupComplete() {
-    }
+    fun onStartupComplete() {}
 
     /**
      * Gets the QSB configuration object.
      * May be called from any thread.
      */
-    public synchronized Config getConfig() {
-        if (mConfig == null) {
-            mConfig = createConfig();
-        }
-        return mConfig;
-    }
-
-    protected Config createConfig() {
-        return new Config(getContext());
-    }
-
-    public synchronized SearchSettings getSettings() {
-        if (mSettings == null) {
-            mSettings = createSettings();
-            mSettings.upgradeSettingsIfNeeded();
-        }
-        return mSettings;
-    }
-
-    protected SearchSettings createSettings() {
-        return new SearchSettingsImpl(getContext(), getConfig());
-    }
-
-    protected Factory<Executor> createExecutorFactory(final int numThreads) {
-        final ThreadFactory threadFactory = getQueryThreadFactory();
-        return new Factory<Executor>() {
-            @Override
-            public Executor create() {
-                return Executors.newFixedThreadPool(numThreads, threadFactory);
+    @get:Synchronized
+    val config: Config?
+        get() {
+            if (mConfig == null) {
+                mConfig = createConfig()
             }
-        };
+            return mConfig
+        }
+
+    protected fun createConfig(): Config {
+        return Config(context)
+    }
+
+    @get:Synchronized
+    val settings: SearchSettings?
+        get() {
+            if (mSettings == null) {
+                mSettings = createSettings()
+                mSettings!!.upgradeSettingsIfNeeded()
+            }
+            return mSettings
+        }
+
+    protected fun createSettings(): SearchSettings {
+        return SearchSettingsImpl(context, config)
+    }
+
+    protected fun createExecutorFactory(numThreads: Int): Factory<Executor> {
+        val threadFactory: ThreadFactory? = queryThreadFactory
+        return object : Factory<Executor?> {
+            @Override
+            override fun create(): Executor {
+                return Executors.newFixedThreadPool(numThreads, threadFactory)
+            }
+        }
     }
 
     /**
-    /**
+     * / **
      * Gets the source task executor.
      * May only be called from the main thread.
      */
-    public NamedTaskExecutor getSourceTaskExecutor() {
-        checkThread();
-        if (mSourceTaskExecutor == null) {
-            mSourceTaskExecutor = createSourceTaskExecutor();
+    val sourceTaskExecutor: NamedTaskExecutor?
+        get() {
+            checkThread()
+            if (mSourceTaskExecutor == null) {
+                mSourceTaskExecutor = createSourceTaskExecutor()
+            }
+            return mSourceTaskExecutor
         }
-        return mSourceTaskExecutor;
-    }
 
-    protected NamedTaskExecutor createSourceTaskExecutor() {
-        ThreadFactory queryThreadFactory = getQueryThreadFactory();
-        return new PerNameExecutor(SingleThreadNamedTaskExecutor.factory(queryThreadFactory));
+    protected fun createSourceTaskExecutor(): NamedTaskExecutor {
+        val queryThreadFactory: ThreadFactory? = queryThreadFactory
+        return PerNameExecutor(SingleThreadNamedTaskExecutor.factory(queryThreadFactory))
     }
 
     /**
      * Gets the query thread factory.
      * May only be called from the main thread.
      */
-    protected ThreadFactory getQueryThreadFactory() {
-        checkThread();
-        if (mQueryThreadFactory == null) {
-            mQueryThreadFactory = createQueryThreadFactory();
+    protected val queryThreadFactory: ThreadFactory?
+        protected get() {
+            checkThread()
+            if (mQueryThreadFactory == null) {
+                mQueryThreadFactory = createQueryThreadFactory()
+            }
+            return mQueryThreadFactory
         }
-        return mQueryThreadFactory;
-    }
 
-    protected ThreadFactory createQueryThreadFactory() {
-        String nameFormat = "QSB #%d";
-        int priority = getConfig().getQueryThreadPriority();
-        return new ThreadFactoryBuilder()
-                .setNameFormat(nameFormat)
-                .setThreadFactory(new PriorityThreadFactory(priority))
-                .build();
+    protected fun createQueryThreadFactory(): ThreadFactory {
+        val nameFormat = "QSB #%d"
+        val priority: Int = config.getQueryThreadPriority()
+        return ThreadFactoryBuilder()
+            .setNameFormat(nameFormat)
+            .setThreadFactory(PriorityThreadFactory(priority))
+            .build()
     }
 
     /**
@@ -229,136 +204,170 @@ public class QsbApplication {
      *
      * May only be called from the main thread.
      */
-    protected SuggestionsProvider getSuggestionsProvider() {
-        checkThread();
-        if (mSuggestionsProvider == null) {
-            mSuggestionsProvider = createSuggestionsProvider();
+    val suggestionsProvider: SuggestionsProvider?
+        get() {
+            checkThread()
+            if (mSuggestionsProvider == null) {
+                mSuggestionsProvider = createSuggestionsProvider()
+            }
+            return mSuggestionsProvider
         }
-        return mSuggestionsProvider;
-    }
 
-    protected SuggestionsProvider createSuggestionsProvider() {
-        return new SuggestionsProviderImpl(getConfig(),
-              getSourceTaskExecutor(),
-              getMainThreadHandler(),
-              getLogger());
+    protected fun createSuggestionsProvider(): SuggestionsProvider {
+        return SuggestionsProviderImpl(
+            config!!,
+            sourceTaskExecutor!!,
+            mainThreadHandler,
+            logger
+        )
     }
 
     /**
      * Gets the default suggestion view factory.
      * May only be called from the main thread.
      */
-    public SuggestionViewFactory getSuggestionViewFactory() {
-        checkThread();
-        if (mSuggestionViewFactory == null) {
-            mSuggestionViewFactory = createSuggestionViewFactory();
+    val suggestionViewFactory: SuggestionViewFactory?
+        get() {
+            checkThread()
+            if (mSuggestionViewFactory == null) {
+                mSuggestionViewFactory = createSuggestionViewFactory()
+            }
+            return mSuggestionViewFactory
         }
-        return mSuggestionViewFactory;
-    }
 
-    protected SuggestionViewFactory createSuggestionViewFactory() {
-        return new DefaultSuggestionViewFactory(getContext());
+    protected fun createSuggestionViewFactory(): SuggestionViewFactory {
+        return DefaultSuggestionViewFactory(context)
     }
 
     /**
      * Gets the Google source.
      * May only be called from the main thread.
      */
-    public GoogleSource getGoogleSource() {
-        checkThread();
-        if (mGoogleSource == null) {
-            mGoogleSource = createGoogleSource();
+    val googleSource: GoogleSource?
+        get() {
+            checkThread()
+            if (mGoogleSource == null) {
+                mGoogleSource = createGoogleSource()
+            }
+            return mGoogleSource
         }
-        return mGoogleSource;
-    }
 
-    protected GoogleSource createGoogleSource() {
-        return new GoogleSuggestClient(getContext(), getMainThreadHandler(),
-                getIconLoaderExecutor(), getConfig());
+    protected fun createGoogleSource(): GoogleSource {
+        return GoogleSuggestClient(
+            context, mainThreadHandler,
+            iconLoaderExecutor!!, config!!
+        )
     }
 
     /**
      * Gets Voice Search utilities.
      */
-    public VoiceSearch getVoiceSearch() {
-        checkThread();
-        if (mVoiceSearch == null) {
-            mVoiceSearch = createVoiceSearch();
+    val voiceSearch: VoiceSearch?
+        get() {
+            checkThread()
+            if (mVoiceSearch == null) {
+                mVoiceSearch = createVoiceSearch()
+            }
+            return mVoiceSearch
         }
-        return mVoiceSearch;
-    }
 
-    protected VoiceSearch createVoiceSearch() {
-        return new VoiceSearch(getContext());
+    protected fun createVoiceSearch(): VoiceSearch {
+        return VoiceSearch(context)
     }
 
     /**
      * Gets the event logger.
      * May only be called from the main thread.
      */
-    public Logger getLogger() {
-        checkThread();
-        if (mLogger == null) {
-            mLogger = createLogger();
-        }
-        return mLogger;
-    }
-
-    protected Logger createLogger() {
-        return new EventLogLogger(getContext(), getConfig());
-    }
-
-    public SuggestionFormatter getSuggestionFormatter() {
-        if (mSuggestionFormatter == null) {
-            mSuggestionFormatter = createSuggestionFormatter();
-        }
-        return mSuggestionFormatter;
-    }
-
-    protected SuggestionFormatter createSuggestionFormatter() {
-        return new LevenshteinSuggestionFormatter(getTextAppearanceFactory());
-    }
-
-    public TextAppearanceFactory getTextAppearanceFactory() {
-        if (mTextAppearanceFactory == null) {
-            mTextAppearanceFactory = createTextAppearanceFactory();
-        }
-        return mTextAppearanceFactory;
-    }
-
-    protected TextAppearanceFactory createTextAppearanceFactory() {
-        return new TextAppearanceFactory(getContext());
-    }
-
-    public synchronized HttpHelper getHttpHelper() {
-        if (mHttpHelper == null) {
-            mHttpHelper = createHttpHelper();
-        }
-        return mHttpHelper;
-    }
-
-    protected HttpHelper createHttpHelper() {
-        return new JavaNetHttpHelper(
-                new JavaNetHttpHelper.PassThroughRewriter(),
-                getConfig().getUserAgent());
-    }
-
-    public synchronized SearchBaseUrlHelper getSearchBaseUrlHelper() {
-        if (mSearchBaseUrlHelper == null) {
-            mSearchBaseUrlHelper = createSearchBaseUrlHelper();
+    val logger: Logger?
+        get() {
+            checkThread()
+            if (mLogger == null) {
+                mLogger = createLogger()
+            }
+            return mLogger
         }
 
-        return mSearchBaseUrlHelper;
+    protected fun createLogger(): Logger {
+        return EventLogLogger(context, config!!)
     }
 
-    protected SearchBaseUrlHelper createSearchBaseUrlHelper() {
+    val suggestionFormatter: SuggestionFormatter?
+        get() {
+            if (mSuggestionFormatter == null) {
+                mSuggestionFormatter = createSuggestionFormatter()
+            }
+            return mSuggestionFormatter
+        }
+
+    protected fun createSuggestionFormatter(): SuggestionFormatter {
+        return LevenshteinSuggestionFormatter(textAppearanceFactory)
+    }
+
+    val textAppearanceFactory: TextAppearanceFactory?
+        get() {
+            if (mTextAppearanceFactory == null) {
+                mTextAppearanceFactory = createTextAppearanceFactory()
+            }
+            return mTextAppearanceFactory
+        }
+
+    protected fun createTextAppearanceFactory(): TextAppearanceFactory {
+        return TextAppearanceFactory(context)
+    }
+
+    @get:Synchronized
+    val httpHelper: HttpHelper?
+        get() {
+            if (mHttpHelper == null) {
+                mHttpHelper = createHttpHelper()
+            }
+            return mHttpHelper
+        }
+
+    protected fun createHttpHelper(): HttpHelper {
+        return JavaNetHttpHelper(
+            PassThroughRewriter(),
+            config.getUserAgent()
+        )
+    }
+
+    @get:Synchronized
+    val searchBaseUrlHelper: SearchBaseUrlHelper?
+        get() {
+            if (mSearchBaseUrlHelper == null) {
+                mSearchBaseUrlHelper = createSearchBaseUrlHelper()
+            }
+            return mSearchBaseUrlHelper
+        }
+
+    protected fun createSearchBaseUrlHelper(): SearchBaseUrlHelper {
         // This cast to "SearchSettingsImpl" is somewhat ugly.
-        return new SearchBaseUrlHelper(getContext(), getHttpHelper(),
-                getSettings(), ((SearchSettingsImpl)getSettings()).getSearchPreferences());
+        return SearchBaseUrlHelper(
+            context, httpHelper!!,
+            settings!!, (settings as SearchSettingsImpl?)!!.searchPreferences
+        )
     }
 
-    public Help getHelp() {
-        // No point caching this, it's super cheap.
-        return new Help(getContext(), getConfig());
+    // No point caching this, it's super cheap.
+    val help: Help
+        get() =// No point caching this, it's super cheap.
+            Help(context, config!!)
+
+    companion object {
+        val isFroyoOrLater: Boolean
+            get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO
+        val isHoneycombOrLater: Boolean
+            get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB
+
+        @JvmStatic
+        operator fun get(context: Context): QsbApplication {
+            return (context.getApplicationContext() as QsbApplicationWrapper).app
+        }
+    }
+
+    init {
+        // the application context does not use the theme from the <application> tag
+        mContext = ContextThemeWrapper(context, R.style.Theme_QuickSearchBox)
     }
 }
