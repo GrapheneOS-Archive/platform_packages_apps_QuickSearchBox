@@ -22,24 +22,25 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.util.Log
+
 import com.android.common.SharedPreferencesCompat
 
 /**
  * Manages user settings.
  */
-class SearchSettingsImpl(context: Context, config: Config) : SearchSettings {
-    private val mContext: Context
-    protected val config: Config
-    protected val context: Context
-        protected get() = mContext
+class SearchSettingsImpl(context: Context?, config: Config?) : SearchSettings {
+    private val mContext: Context?
+    protected val config: Config?
+    protected val context: Context?
+        get() = mContext
 
     @Override
     override fun upgradeSettingsIfNeeded() {
     }
 
     val searchPreferences: SharedPreferences
-        get() = context.getSharedPreferences(
-            SearchSettingsImpl.Companion.PREFERENCES_NAME,
+        get() = context!!.getSharedPreferences(
+            PREFERENCES_NAME,
             Context.MODE_PRIVATE
         )
 
@@ -70,15 +71,15 @@ class SearchSettingsImpl(context: Context, config: Config) : SearchSettings {
     override fun broadcastSettingsChanged() {
         // We use a message broadcast since the listeners could be in multiple processes.
         val intent = Intent(SearchManager.INTENT_ACTION_SEARCH_SETTINGS_CHANGED)
-        Log.i(SearchSettingsImpl.Companion.TAG, "Broadcasting: $intent")
-        context.sendBroadcast(intent)
+        Log.i(TAG, "Broadcasting: $intent")
+        context?.sendBroadcast(intent)
     }
 
     @Override
     override fun getNextVoiceSearchHintIndex(size: Int): Int {
         val i = getAndIncrementIntPreference(
             searchPreferences,
-            SearchSettingsImpl.Companion.NEXT_VOICE_SEARCH_HINT_INDEX_PREF
+            NEXT_VOICE_SEARCH_HINT_INDEX_PREF
         )
         return i % size
     }
@@ -93,7 +94,7 @@ class SearchSettingsImpl(context: Context, config: Config) : SearchSettings {
     @Override
     override fun resetVoiceSearchHintFirstSeenTime() {
         storeLong(
-            SearchSettingsImpl.Companion.FIRST_VOICE_HINT_DISPLAY_TIME,
+            FIRST_VOICE_HINT_DISPLAY_TIME,
             System.currentTimeMillis()
         )
     }
@@ -104,36 +105,36 @@ class SearchSettingsImpl(context: Context, config: Config) : SearchSettings {
         return if (currentVoiceSearchVersion != 0) {
             val currentTime: Long = System.currentTimeMillis()
             val lastVoiceSearchVersion: Int = prefs.getInt(
-                SearchSettingsImpl.Companion.LAST_SEEN_VOICE_SEARCH_VERSION,
+                LAST_SEEN_VOICE_SEARCH_VERSION,
                 0
             )
             var firstHintTime: Long = prefs.getLong(
-                SearchSettingsImpl.Companion.FIRST_VOICE_HINT_DISPLAY_TIME,
+                FIRST_VOICE_HINT_DISPLAY_TIME,
                 0
             )
             if (firstHintTime == 0L || currentVoiceSearchVersion != lastVoiceSearchVersion) {
                 SharedPreferencesCompat.apply(
                     prefs.edit()
                         .putInt(
-                            SearchSettingsImpl.Companion.LAST_SEEN_VOICE_SEARCH_VERSION,
+                            LAST_SEEN_VOICE_SEARCH_VERSION,
                             currentVoiceSearchVersion
                         )
                         .putLong(
-                            SearchSettingsImpl.Companion.FIRST_VOICE_HINT_DISPLAY_TIME,
+                            FIRST_VOICE_HINT_DISPLAY_TIME,
                             currentTime
                         )
                 )
                 firstHintTime = currentTime
             }
-            if (currentTime - firstHintTime > getConfig().getVoiceSearchHintActivePeriod()) {
+            if (currentTime - firstHintTime > config!!.voiceSearchHintActivePeriod) {
                 if (DBG) Log.d(TAG, "Voice search hint period expired; not showing hints.")
                 return true
             } else {
                 false
             }
         } else {
-            if (SearchSettingsImpl.Companion.DBG) Log.d(
-                SearchSettingsImpl.Companion.TAG,
+            if (DBG) Log.d(
+                TAG,
                 "Could not determine voice search version; not showing hints."
             )
             true
@@ -148,18 +149,18 @@ class SearchSettingsImpl(context: Context, config: Config) : SearchSettings {
     override fun shouldUseGoogleCom(): Boolean {
         // Note that this preserves the old behaviour of using google.com
         // for searches, with the gl= parameter set.
-        return searchPreferences.getBoolean(SearchSettingsImpl.Companion.USE_GOOGLE_COM_PREF, true)
+        return searchPreferences.getBoolean(USE_GOOGLE_COM_PREF, true)
     }
 
     @Override
     override fun setUseGoogleCom(useGoogleCom: Boolean) {
-        storeBoolean(SearchSettingsImpl.Companion.USE_GOOGLE_COM_PREF, useGoogleCom)
+        storeBoolean(USE_GOOGLE_COM_PREF, useGoogleCom)
     }
 
     @get:Override
     override val searchBaseDomainApplyTime: Long
         get() = searchPreferences.getLong(
-            SearchSettingsImpl.Companion.SEARCH_BASE_DOMAIN_APPLY_TIME,
+            SEARCH_BASE_DOMAIN_APPLY_TIME,
             -1
         )
 
@@ -169,19 +170,16 @@ class SearchSettingsImpl(context: Context, config: Config) : SearchSettings {
     // calling this function.
     @get:Override
     @set:Override
-    override var searchBaseDomain: String
-        get() = searchPreferences.getString(
-            SearchSettingsImpl.Companion.SEARCH_BASE_DOMAIN_PREF,
-            null
-        )
+    override var searchBaseDomain: String?
+        get() = searchPreferences.getString(SEARCH_BASE_DOMAIN_PREF, null)
         set(searchBaseUrl) {
             val sharedPrefEditor: Editor = searchPreferences.edit()
             sharedPrefEditor.putString(
-                SearchSettingsImpl.Companion.SEARCH_BASE_DOMAIN_PREF,
+                SEARCH_BASE_DOMAIN_PREF,
                 searchBaseUrl
             )
             sharedPrefEditor.putLong(
-                SearchSettingsImpl.Companion.SEARCH_BASE_DOMAIN_APPLY_TIME,
+                SEARCH_BASE_DOMAIN_APPLY_TIME,
                 System.currentTimeMillis()
             )
             SharedPreferencesCompat.apply(sharedPrefEditor)
