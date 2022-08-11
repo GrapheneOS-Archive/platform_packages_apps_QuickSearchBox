@@ -30,13 +30,13 @@ import android.util.Log
 /**
  * Abstract suggestion source implementation.
  */
-abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: NamedTaskExecutor) :
+abstract class AbstractSource(context: Context?, uiThread: Handler?, iconLoader: NamedTaskExecutor) :
     Source {
-    private val mContext: Context
-    private val mUiThread: Handler
+    private val mContext: Context?
+    private val mUiThread: Handler?
     private var mIconLoader: IconLoader? = null
     private val mIconLoaderExecutor: NamedTaskExecutor
-    protected val context: Context
+    protected val context: Context?
         get() = mContext
     protected val iconLoader: IconLoader?
         get() {
@@ -76,7 +76,7 @@ abstract class AbstractSource(context: Context, uiThread: Handler, iconLoader: N
 
     protected fun createVoiceWebSearchIntent(appData: Bundle?): Intent? {
         return QsbApplication.get(mContext).voiceSearch
-            .createVoiceWebSearchIntent(appData)
+            ?.createVoiceWebSearchIntent(appData)
     }
 
     override fun getRoot(): Source {
