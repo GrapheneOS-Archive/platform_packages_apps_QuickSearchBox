@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,52 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-
-import java.util.HashMap;
+import java.util.HashMap
 
 /**
  * Uses a separate executor for each task name.
  */
-public class PerNameExecutor implements NamedTaskExecutor {
-
-    private final Factory<NamedTaskExecutor> mExecutorFactory;
-    private HashMap<String, NamedTaskExecutor> mExecutors;
-
-    /**
-     * @param executorFactory Used to run the commands.
-     */
-    public PerNameExecutor(Factory<NamedTaskExecutor> executorFactory) {
-        mExecutorFactory = executorFactory;
-    }
-
-    public synchronized void cancelPendingTasks() {
-        if (mExecutors == null) return;
-        for (NamedTaskExecutor executor : mExecutors.values()) {
-            executor.cancelPendingTasks();
+class PerNameExecutor
+/**
+ * @param executorFactory Used to run the commands.
+ */(private val mExecutorFactory: Factory<NamedTaskExecutor>) : NamedTaskExecutor {
+    private var mExecutors: HashMap<String, NamedTaskExecutor>? = null
+    @Synchronized
+    override fun cancelPendingTasks() {
+        if (mExecutors == null) return
+        for (executor in mExecutors.values()) {
+            executor.cancelPendingTasks()
         }
     }
 
-    public synchronized void close() {
-        if (mExecutors == null) return;
-        for (NamedTaskExecutor executor : mExecutors.values()) {
-            executor.close();
+    @Synchronized
+    override fun close() {
+        if (mExecutors == null) return
+        for (executor in mExecutors.values()) {
+            executor.close()
         }
     }
 
-    public synchronized void execute(NamedTask task) {
+    @Synchronized
+    override fun execute(task: NamedTask?) {
         if (mExecutors == null) {
-            mExecutors = new HashMap<String, NamedTaskExecutor>();
+            mExecutors = HashMap<String, NamedTaskExecutor>()
         }
-        String name = task.getName();
-        NamedTaskExecutor executor = mExecutors.get(name);
+        val name: String = task.getName()
+        var executor: NamedTaskExecutor = mExecutors.get(name)
         if (executor == null) {
-            executor = mExecutorFactory.create();
-            mExecutors.put(name, executor);
+            executor = mExecutorFactory.create()
+            mExecutors.put(name, executor)
         }
-        executor.execute(task);
+        executor.execute(task)
     }
-
 }
