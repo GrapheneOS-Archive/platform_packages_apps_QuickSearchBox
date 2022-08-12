@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.quicksearchbox.util
 
 import android.util.Log
-import java.util.ArrayList
-import java.util.List
 
 /**
  * Executes NamedTasks in batches of a given size.  Tasks are queued until
@@ -26,11 +25,11 @@ import java.util.List
  */
 class BatchingNamedTaskExecutor(private val mExecutor: NamedTaskExecutor) : NamedTaskExecutor {
     /** Queue of tasks waiting to be dispatched to mExecutor  */
-    private val mQueuedTasks: ArrayList<NamedTask> = ArrayList<NamedTask>()
+    private val mQueuedTasks: ArrayList<NamedTask?> = arrayListOf()
     override fun execute(task: NamedTask?) {
         synchronized(mQueuedTasks) {
-            if (BatchingNamedTaskExecutor.Companion.DBG) Log.d(
-                BatchingNamedTaskExecutor.Companion.TAG,
+            if (DBG) Log.d(
+                TAG,
                 "Queuing $task"
             )
             mQueuedTasks.add(task)
@@ -38,8 +37,8 @@ class BatchingNamedTaskExecutor(private val mExecutor: NamedTaskExecutor) : Name
     }
 
     private fun dispatch(task: NamedTask?) {
-        if (BatchingNamedTaskExecutor.Companion.DBG) Log.d(
-            BatchingNamedTaskExecutor.Companion.TAG,
+        if (DBG) Log.d(
+            TAG,
             "Dispatching $task"
         )
         mExecutor.execute(task)
@@ -50,14 +49,15 @@ class BatchingNamedTaskExecutor(private val mExecutor: NamedTaskExecutor) : Name
      * @param batchSize the maximum number of entries to execute.
      */
     fun executeNextBatch(batchSize: Int) {
-        var batch = arrayOfNulls<NamedTask>(0)
+        var batch = arrayOfNulls<NamedTask?>(0)
         synchronized(mQueuedTasks) {
-            val count: Int = Math.min(mQueuedTasks.size(), batchSize)
-            val nextTasks: List<NamedTask> = mQueuedTasks.subList(0, count)
+            val count: Int = Math.min(mQueuedTasks.size, batchSize)
+            val nextTasks: ArrayList<NamedTask?> =
+                mQueuedTasks.subList(0, count) as ArrayList<NamedTask?>
             batch = nextTasks.toArray(batch)
             nextTasks.clear()
-            if (BatchingNamedTaskExecutor.Companion.DBG) Log.d(
-                BatchingNamedTaskExecutor.Companion.TAG,
+            if (DBG) Log.d(
+                TAG,
                 "Dispatching batch of $count"
             )
         }
@@ -67,7 +67,7 @@ class BatchingNamedTaskExecutor(private val mExecutor: NamedTaskExecutor) : Name
     }
 
     /**
-     * Cancel any unstarted tasks running in this executor.  This instance
+     * Cancel any un-started tasks running in this executor.  This instance
      * should not be re-used after calling this method.
      */
     override fun cancelPendingTasks() {
