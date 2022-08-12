@@ -13,29 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox.util;
+
+package com.android.quicksearchbox.util
 
 /**
- * A {@link NowOrLater} object that is always ready now.
+ * A [NowOrLater] object that is always ready now.
  */
-public class Now<C> implements NowOrLater<C> {
-
-    private final C mValue;
-
-    public Now(C value) {
-        mValue = value;
+class Now<C>(override val now: C) : NowOrLater<C> {
+    override fun getLater(consumer: Consumer<in C>?) {
+        consumer!!.consume(now)
     }
 
-    public void getLater(Consumer<? super C> consumer) {
-        consumer.consume(getNow());
+    override fun haveNow(): Boolean {
+        return true
     }
-
-    public C getNow() {
-        return mValue;
-    }
-
-    public boolean haveNow() {
-        return true;
-    }
-
 }
