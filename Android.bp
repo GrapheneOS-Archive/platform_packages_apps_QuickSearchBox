@@ -45,6 +45,7 @@ android_app {
       "src/**/quicksearchbox/util/Now.java",
       "src/**/quicksearchbox/util/NowOrLater.java",
       "src/**/quicksearchbox/util/NowOrLaterWrapper.java",
+      "src/**/quicksearchbox/util/PerNameExecutor.java",
       "src/**/quicksearchbox/util/QuietlyClosable.java",
       "src/**/quicksearchbox/AbstractInternalSource.java",
       "src/**/quicksearchbox/AbstractSource.java",

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.quicksearchbox.util
 
-import java.util.HashMap
+import kotlin.collections.HashMap
 
 /**
  * Uses a separate executor for each task name.
- */
-class PerNameExecutor
-/**
  * @param executorFactory Used to run the commands.
- */(private val mExecutorFactory: Factory<NamedTaskExecutor>) : NamedTaskExecutor {
+ */
+class PerNameExecutor(private val mExecutorFactory: Factory<NamedTaskExecutor>) :
+    NamedTaskExecutor {
     private var mExecutors: HashMap<String, NamedTaskExecutor>? = null
+
     @Synchronized
     override fun cancelPendingTasks() {
         if (mExecutors == null) return
-        for (executor in mExecutors.values()) {
+        for (executor in mExecutors!!.values) {
             executor.cancelPendingTasks()
         }
     }
@@ -36,7 +37,7 @@ class PerNameExecutor
     @Synchronized
     override fun close() {
         if (mExecutors == null) return
-        for (executor in mExecutors.values()) {
+        for (executor in mExecutors!!.values) {
             executor.close()
         }
     }
@@ -46,11 +47,11 @@ class PerNameExecutor
         if (mExecutors == null) {
             mExecutors = HashMap<String, NamedTaskExecutor>()
         }
-        val name: String = task.getName()
-        var executor: NamedTaskExecutor = mExecutors.get(name)
+        val name: String? = task?.name
+        var executor: NamedTaskExecutor? = mExecutors?.get(name)
         if (executor == null) {
             executor = mExecutorFactory.create()
-            mExecutors.put(name, executor)
+            mExecutors?.put(name!!, executor)
         }
         executor.execute(task)
     }
