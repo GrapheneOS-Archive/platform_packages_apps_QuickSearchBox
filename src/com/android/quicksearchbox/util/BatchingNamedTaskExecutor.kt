@@ -13,81 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.util.Log
+import java.util.ArrayList
+import java.util.List
 
 /**
  * Executes NamedTasks in batches of a given size.  Tasks are queued until
  * executeNextBatch is called.
+ * @param executor A SourceTaskExecutor for actually executing the tasks.
  */
-public class BatchingNamedTaskExecutor implements NamedTaskExecutor {
-
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.BatchingNamedTaskExecutor";
-
-    private final NamedTaskExecutor mExecutor;
-
-    /** Queue of tasks waiting to be dispatched to mExecutor **/
-    private final ArrayList<NamedTask> mQueuedTasks = new ArrayList<NamedTask>();
-
-    /**
-     * Creates a new BatchingSourceTaskExecutor.
-     *
-     * @param executor A SourceTaskExecutor for actually executing the tasks.
-     */
-    public BatchingNamedTaskExecutor(NamedTaskExecutor executor) {
-        mExecutor = executor;
-    }
-
-    public void execute(NamedTask task) {
-        synchronized (mQueuedTasks) {
-            if (DBG) Log.d(TAG, "Queuing " + task);
-            mQueuedTasks.add(task);
+class BatchingNamedTaskExecutor(private val mExecutor: NamedTaskExecutor) : NamedTaskExecutor {
+    /** Queue of tasks waiting to be dispatched to mExecutor  */
+    private val mQueuedTasks: ArrayList<NamedTask> = ArrayList<NamedTask>()
+    override fun execute(task: NamedTask?) {
+        synchronized(mQueuedTasks) {
+            if (BatchingNamedTaskExecutor.Companion.DBG) Log.d(
+                BatchingNamedTaskExecutor.Companion.TAG,
+                "Queuing $task"
+            )
+            mQueuedTasks.add(task)
         }
     }
 
-    private void dispatch(NamedTask task) {
-        if (DBG) Log.d(TAG, "Dispatching " + task);
-        mExecutor.execute(task);
+    private fun dispatch(task: NamedTask?) {
+        if (BatchingNamedTaskExecutor.Companion.DBG) Log.d(
+            BatchingNamedTaskExecutor.Companion.TAG,
+            "Dispatching $task"
+        )
+        mExecutor.execute(task)
     }
 
     /**
      * Instructs the executor to submit the next batch of results.
      * @param batchSize the maximum number of entries to execute.
      */
-    public void executeNextBatch(int batchSize) {
-        NamedTask[] batch = new NamedTask[0];
-        synchronized (mQueuedTasks) {
-            int count = Math.min(mQueuedTasks.size(), batchSize);
-            List<NamedTask> nextTasks = mQueuedTasks.subList(0, count);
-            batch = nextTasks.toArray(batch);
-            nextTasks.clear();
-            if (DBG) Log.d(TAG, "Dispatching batch of " + count);
+    fun executeNextBatch(batchSize: Int) {
+        var batch = arrayOfNulls<NamedTask>(0)
+        synchronized(mQueuedTasks) {
+            val count: Int = Math.min(mQueuedTasks.size(), batchSize)
+            val nextTasks: List<NamedTask> = mQueuedTasks.subList(0, count)
+            batch = nextTasks.toArray(batch)
+            nextTasks.clear()
+            if (BatchingNamedTaskExecutor.Companion.DBG) Log.d(
+                BatchingNamedTaskExecutor.Companion.TAG,
+                "Dispatching batch of $count"
+            )
         }
-
-        for (NamedTask task : batch) {
-            dispatch(task);
+        for (task in batch) {
+            dispatch(task)
         }
     }
 
     /**
-     * Cancel any unstarted tasks running in this executor.  This instance 
+     * Cancel any unstarted tasks running in this executor.  This instance
      * should not be re-used after calling this method.
      */
-    public void cancelPendingTasks() {
-        synchronized (mQueuedTasks) {
-            mQueuedTasks.clear();
-        }
+    override fun cancelPendingTasks() {
+        synchronized(mQueuedTasks) { mQueuedTasks.clear() }
     }
 
-    public void close() {
-        cancelPendingTasks();
-        mExecutor.close();
+    override fun close() {
+        cancelPendingTasks()
+        mExecutor.close()
+    }
+
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.BatchingNamedTaskExecutor"
     }
 }
