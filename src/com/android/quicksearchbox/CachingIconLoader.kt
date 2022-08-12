@@ -46,7 +46,7 @@ class CachingIconLoader(private val mWrapped: IconLoader) : IconLoader {
             }
         }
         if (drawableState != null) {
-            return object : NowOrLaterWrapper<Drawable.ConstantState?, Drawable?>(drawableState) {
+            return object : NowOrLaterWrapper<Drawable.ConstantState?, Drawable?>(drawableState!!) {
                 @Override
                 override operator fun get(value: Drawable.ConstantState?): Drawable? {
                     return if (value == null) null else value.newDrawable()

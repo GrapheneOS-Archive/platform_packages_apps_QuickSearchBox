@@ -29,7 +29,7 @@ abstract class NowOrLaterWrapper<A, B>(private val mWrapped: NowOrLater<A>) : No
     }
 
     override val now: B
-        get() = get(mWrapped.getNow())
+        get() = get(mWrapped.now)
 
     override fun haveNow(): Boolean {
         return mWrapped.haveNow()
