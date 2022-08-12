@@ -14,39 +14,31 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
 /**
- * {@link NowOrLater} class that converts from one type to another.
+ * [NowOrLater] class that converts from one type to another.
  */
-public abstract class NowOrLaterWrapper<A, B> implements NowOrLater<B> {
-
-    private final NowOrLater<A> mWrapped;
-
-    public NowOrLaterWrapper(NowOrLater<A> wrapped) {
-        mWrapped = wrapped;
+abstract class NowOrLaterWrapper<A, B>(private val mWrapped: NowOrLater<A>) : NowOrLater<B> {
+    override fun getLater(consumer: Consumer<in B>?) {
+        mWrapped.getLater(object : Consumer<A> {
+            override fun consume(value: A): Boolean {
+                return consumer!!.consume(get(value))
+            }
+        })
     }
 
-    public void getLater(final Consumer<? super B> consumer) {
-        mWrapped.getLater(new Consumer<A>(){
-            public boolean consume(A value) {
-                return consumer.consume(get(value));
-            }});
-    }
+    override val now: B
+        get() = get(mWrapped.getNow())
 
-    public B getNow() {
-        return get(mWrapped.getNow());
-    }
-
-    public boolean haveNow() {
-        return mWrapped.haveNow();
+    override fun haveNow(): Boolean {
+        return mWrapped.haveNow()
     }
 
     /**
-     * Perform the appropriate conversion. This will be called once for every call to 
-     * {@link #getLater(Consumer)} or {@link #getNow()}. The thread that it's called on will depend
+     * Perform the appropriate conversion. This will be called once for every call to
+     * [.getLater] or [.getNow]. The thread that it's called on will depend
      * on the behaviour of the wrapped object and the caller.
      */
-    public abstract B get(A value);
-
+    abstract operator fun get(value: A): B
 }
