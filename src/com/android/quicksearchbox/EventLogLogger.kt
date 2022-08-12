@@ -25,21 +25,21 @@ import kotlin.text.StringBuilder
 /**
  * Logs events to [EventLog].
  */
-class EventLogLogger(context: Context, config: Config) : Logger {
-    private val mContext: Context
+class EventLogLogger(context: Context?, config: Config) : Logger {
+    private val mContext: Context?
     protected val config: Config
     private val mPackageName: String
     private val mRandom: Random
-    protected val context: Context
+    protected val context: Context?
         get() = mContext
-    protected val versionCode: Int
+    protected val versionCode: Long
         get() = QsbApplication.get(context).versionCode
 
     @Override
     override fun logStart(onCreateLatency: Int, latency: Int, intentSource: String?) {
         // TODO: Add more info to startMethod
         EventLogTags.writeQsbStart(
-            mPackageName, versionCode, intentSource,
+            mPackageName, versionCode.toInt(), intentSource,
             latency, null, null, onCreateLatency
         )
     }
@@ -100,7 +100,7 @@ class EventLogLogger(context: Context, config: Config) : Logger {
     init {
         mContext = context
         this.config = config
-        mPackageName = mContext.getPackageName()
+        mPackageName = mContext!!.getPackageName()
         mRandom = Random()
     }
 }

@@ -33,8 +33,8 @@ import com.android.quicksearchbox.util.NamedTaskExecutor
  * Special source implementation for Google suggestions.
  */
 abstract class AbstractGoogleSource(
-    context: Context,
-    uiThread: Handler,
+    context: Context?,
+    uiThread: Handler?,
     iconLoader: NamedTaskExecutor
 ) : AbstractInternalSource(context, uiThread, iconLoader),
     com.android.quicksearchbox.google.GoogleSource {
@@ -70,11 +70,11 @@ abstract class AbstractGoogleSource(
 
     @get:Override
     override val hint: CharSequence
-        get() = context.getString(R.string.google_search_hint)
+        get() = context!!.getString(R.string.google_search_hint)
 
     @get:Override
     override val label: CharSequence
-        get() = context.getString(R.string.google_search_label)
+        get() = context!!.getString(R.string.google_search_label)
 
     @get:Override
     override val name: String
@@ -82,7 +82,7 @@ abstract class AbstractGoogleSource(
 
     @get:Override
     override val settingsDescription: CharSequence
-        get() = context.getString(R.string.google_search_description)
+        get() = context!!.getString(R.string.google_search_description)
 
     @get:Override
     override val sourceIconResource: Int
