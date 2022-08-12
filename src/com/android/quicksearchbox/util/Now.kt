@@ -19,8 +19,8 @@ package com.android.quicksearchbox.util
 /**
  * A [NowOrLater] object that is always ready now.
  */
-class Now<C>(override val now: C) : NowOrLater<C> {
-    override fun getLater(consumer: Consumer<in C>?) {
+class Now<C>(override val now: C?) : NowOrLater<C?> {
+    override fun getLater(consumer: Consumer<in C?>?) {
         consumer!!.consume(now)
     }
 

@@ -42,6 +42,7 @@ android_app {
       "src/**/quicksearchbox/util/NamedTask.java",
       "src/**/quicksearchbox/util/NamedTaskExecutor.java",
       "src/**/quicksearchbox/util/NoOpConsumer.java",
+      "src/**/quicksearchbox/util/Now.java",
       "src/**/quicksearchbox/util/NowOrLater.java",
       "src/**/quicksearchbox/util/QuietlyClosable.java",
       "src/**/quicksearchbox/AbstractInternalSource.java",
