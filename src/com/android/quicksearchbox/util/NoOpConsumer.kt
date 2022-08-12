@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.quicksearchbox.util;
-
-import com.android.quicksearchbox.util.Consumer;
+package com.android.quicksearchbox.util
 
 /**
-  * A Consumer that does nothing with the objects it receives.
-  */
-public class NoOpConsumer<A> implements Consumer<A> {
-    public boolean consume(A result) {
+ * A Consumer that does nothing with the objects it receives.
+ */
+class NoOpConsumer<A> : Consumer<A> {
+    override fun consume(result: A): Boolean {
         // Tell the caller that we haven't taken ownership of this result.
-        return false;
+        return false
     }
 }
-
