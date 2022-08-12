@@ -64,7 +64,7 @@ class BarrierConsumer<A>(private val mExpectedCount: Int) : Consumer<A> {
             if (mValues == null || isFull) {
                 return false
             }
-            mValues.add(value)
+            mValues?.add(value)
             if (isFull) {
                 // Wake up any thread waiting in getValues()
                 mNotFull.signal()
@@ -76,7 +76,7 @@ class BarrierConsumer<A>(private val mExpectedCount: Int) : Consumer<A> {
     }
 
     private val isFull: Boolean
-        private get() = mValues.size() === mExpectedCount
+        get() = mValues!!.size == mExpectedCount
 
     /**
      * Constructs a new BarrierConsumer.

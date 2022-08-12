@@ -34,6 +34,7 @@ android_app {
       "src/**/quicksearchbox/google/GoogleSuggestionProvider.java",
       "src/**/quicksearchbox/google/SearchBaseUrlHelper.java",
       "src/**/quicksearchbox/util/AsyncDataSetObservable.java",
+      "src/**/quicksearchbox/util/BarrierConsumer.java",
       "src/**/quicksearchbox/util/Consumer.java",
       "src/**/quicksearchbox/util/Factory.java",
       "src/**/quicksearchbox/util/HttpHelper.java",
