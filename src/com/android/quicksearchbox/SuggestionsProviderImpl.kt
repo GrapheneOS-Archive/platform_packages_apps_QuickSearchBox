@@ -31,11 +31,11 @@ import com.android.quicksearchbox.util.NoOpConsumer
 class SuggestionsProviderImpl(
     private val mConfig: Config,
     private val mQueryExecutor: NamedTaskExecutor,
-    publishThread: Handler,
+    publishThread: Handler?,
     logger: Logger?
 ) : SuggestionsProvider {
 
-    private val mPublishThread: Handler
+    private val mPublishThread: Handler?
 
     private val mLogger: Logger?
 
