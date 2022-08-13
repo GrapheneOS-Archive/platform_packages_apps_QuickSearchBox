@@ -58,7 +58,7 @@ class SuggestionsProviderImpl(
         if (shouldDisplayResults(query)) {
             receiver = SuggestionCursorReceiver(suggestions)
         } else {
-            receiver = NoOpConsumer<SourceResult>()
+            receiver = NoOpConsumer()
             suggestions.done()
         }
         val maxResults: Int = mConfig.maxResultsPerSource
