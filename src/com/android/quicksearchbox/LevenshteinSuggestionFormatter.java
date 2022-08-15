@@ -24,6 +24,8 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.util.Log;
 
+import java.util.Arrays;
+
 /**
  * Suggestion formatter using the Levenshtein distance (minumum edit distance) to calculate the
  * formatting.
@@ -44,9 +46,9 @@ public class LevenshteinSuggestionFormatter extends SuggestionFormatter {
         final Token[] suggestionTokens = tokenize(suggestion);
         final int[] matches = findMatches(queryTokens, suggestionTokens);
         if (DBG){
-            Log.d(TAG, "source = " + queryTokens);
-            Log.d(TAG, "target = " + suggestionTokens);
-            Log.d(TAG, "matches = " + matches);
+            Log.d(TAG, "source = " + Arrays.toString(queryTokens));
+            Log.d(TAG, "target = " + Arrays.toString(suggestionTokens));
+            Log.d(TAG, "matches = " + Arrays.toString(matches));
         }
         final SpannableString str = new SpannableString(suggestion);
 
