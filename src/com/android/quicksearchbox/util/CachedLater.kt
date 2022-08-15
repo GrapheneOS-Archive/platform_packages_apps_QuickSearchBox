@@ -14,57 +14,50 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.util.Log
 
 /**
  * Abstract base class for a one-place cache that holds a value that is produced
  * asynchronously.
  *
  * @param <A> The type of the data held in the cache.
- */
-public abstract class CachedLater<A> implements NowOrLater<A> {
-
-    private static final String TAG = "QSB.AsyncCache";
-    private static final boolean DBG = false;
-
-    private final Object mLock = new Object();
-
-    private A mValue;
-
-    private boolean mCreating;
-    private boolean mValid;
-
-    private List<Consumer<? super A>> mWaitingConsumers;
+</A> */
+abstract class CachedLater<A> : NowOrLater<A> {
+    private val mLock: Object = Object()
+    private var mValue: A? = null
+    private var mCreating = false
+    private var mValid = false
+    private var mWaitingConsumers: List<Consumer<in A>>? = null
 
     /**
      * Creates the object to store in the cache. This method must call
-     * {@link #store} when it's done.
+     * [.store] when it's done.
      * This method must not block.
      */
-    protected abstract void create();
+    protected abstract fun create()
 
     /**
      * Saves a new value to the cache.
      */
-    protected void store(A value) {
-        if (DBG) Log.d(TAG, "store()");
-        List<Consumer<? super A>> waitingConsumers;
-        synchronized (mLock) {
-            mValue = value;
-            mValid = true;
-            mCreating = false;
-            waitingConsumers = mWaitingConsumers;
-            mWaitingConsumers = null;
+    protected fun store(value: A) {
+        if (CachedLater.Companion.DBG) Log.d(CachedLater.Companion.TAG, "store()")
+        var waitingConsumers: List<Consumer<in A>>?
+        synchronized(mLock) {
+            mValue = value
+            mValid = true
+            mCreating = false
+            waitingConsumers = mWaitingConsumers
+            mWaitingConsumers = null
         }
         if (waitingConsumers != null) {
-            for (Consumer<? super A> consumer : waitingConsumers) {
-                if (DBG) Log.d(TAG, "Calling consumer: " + consumer);
-                consumer.consume(value);
+            for (consumer in waitingConsumers!!) {
+                if (CachedLater.Companion.DBG) Log.d(
+                    CachedLater.Companion.TAG,
+                    "Calling consumer: $consumer"
+                )
+                consumer.consume(value)
             }
         }
     }
@@ -73,39 +66,48 @@ public abstract class CachedLater<A> implements NowOrLater<A> {
      * Gets the value.
      *
      * @param consumer A consumer that will be given the cached value.
-     *        The consumer may be called synchronously, or asynchronously on
-     *        an unspecified thread.
+     * The consumer may be called synchronously, or asynchronously on
+     * an unspecified thread.
      */
-    public void getLater(Consumer<? super A> consumer) {
-        if (DBG) Log.d(TAG, "getLater()");
-        boolean valid;
-        A value;
-        synchronized (mLock) {
-            valid = mValid;
-            value = mValue;
+    override fun getLater(consumer: Consumer<in A>?) {
+        if (CachedLater.Companion.DBG) Log.d(CachedLater.Companion.TAG, "getLater()")
+        var valid: Boolean
+        var value: A?
+        synchronized(mLock) {
+            valid = mValid
+            value = mValue
             if (!valid) {
                 if (mWaitingConsumers == null) {
-                    mWaitingConsumers = new ArrayList<Consumer<? super A>>();
+                    mWaitingConsumers = ArrayList<Consumer<in A>>()
                 }
-                mWaitingConsumers.add(consumer);
+                mWaitingConsumers.add(consumer)
             }
         }
         if (valid) {
-            if (DBG) Log.d(TAG, "valid, calling consumer synchronously");
-            consumer.consume(value);
+            if (CachedLater.Companion.DBG) Log.d(
+                CachedLater.Companion.TAG,
+                "valid, calling consumer synchronously"
+            )
+            consumer!!.consume(value)
         } else {
-            boolean create = false;
-            synchronized (mLock) {
+            var create = false
+            synchronized(mLock) {
                 if (!mCreating) {
-                    mCreating = true;
-                    create = true;
+                    mCreating = true
+                    create = true
                 }
             }
             if (create) {
-                if (DBG) Log.d(TAG, "not valid, calling create()");
-                create();
+                if (CachedLater.Companion.DBG) Log.d(
+                    CachedLater.Companion.TAG,
+                    "not valid, calling create()"
+                )
+                create()
             } else {
-                if (DBG) Log.d(TAG, "not valid, already creating");
+                if (CachedLater.Companion.DBG) Log.d(
+                    CachedLater.Companion.TAG,
+                    "not valid, already creating"
+                )
             }
         }
     }
@@ -113,27 +115,31 @@ public abstract class CachedLater<A> implements NowOrLater<A> {
     /**
      * Clears the cache.
      */
-    public void clear() {
-        if (DBG) Log.d(TAG, "clear()");
-        synchronized (mLock) {
-            mValue = null;
-            mValid = false;
+    fun clear() {
+        if (CachedLater.Companion.DBG) Log.d(CachedLater.Companion.TAG, "clear()")
+        synchronized(mLock) {
+            mValue = null
+            mValid = false
         }
     }
 
-    public boolean haveNow() {
-        synchronized (mLock) {
-            return mValid;
-        }
+    override fun haveNow(): Boolean {
+        synchronized(mLock) { return mValid }
     }
 
-    public synchronized A getNow() {
-        synchronized (mLock) {
-            if (!haveNow()) {
-                throw new IllegalStateException("getNow() called when haveNow() is false");
+    @get:Synchronized
+    override val now: A
+        get() {
+            synchronized(mLock) {
+                if (!haveNow()) {
+                    throw IllegalStateException("getNow() called when haveNow() is false")
+                }
+                return mValue
             }
-            return mValue;
         }
-    }
 
+    companion object {
+        private const val TAG = "QSB.AsyncCache"
+        private const val DBG = false
+    }
 }
