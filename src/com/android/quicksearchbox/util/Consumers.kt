@@ -14,71 +14,75 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
-import android.os.Handler;
+import android.os.Handler
 
-/**
- * Consumer utilities.
- */
-public class Consumers {
+/** Consumer utilities. */
+object Consumers {
+  @JvmStatic
+  fun <A : QuietlyCloseable?> consumeCloseable(consumer: Consumer<A?>, value: A?) {
+    var accepted = false
+    accepted =
+      try {
+        consumer.consume(value)
+      } finally {
+        if (!accepted && value != null) value.close()
+      }
+  }
 
-    private Consumers() {}
-
-    public static <A extends QuietlyCloseable> void consumeCloseable(Consumer<A> consumer,
-            A value) {
-        boolean accepted = false;
-        try {
-            accepted = consumer.consume(value);
-        } finally {
-            if (!accepted && value != null) value.close();
+  @JvmStatic
+  fun <A> consumeAsync(handler: Handler?, consumer: Consumer<A>, value: A) {
+    if (handler == null) {
+      consumer.consume(value)
+    } else {
+      handler.post(
+        object : Runnable() {
+          fun run() {
+            consumer.consume(value)
+          }
         }
+      )
     }
+  }
 
-    public static <A> void consumeAsync(Handler handler,
-            final Consumer<A> consumer, final A value) {
-        if (handler == null) {
-            consumer.consume(value);
-        } else {
-            handler.post(new Runnable() {
-                public void run() {
-                    consumer.consume(value);
-                }
-            });
+  @JvmStatic
+  fun <A : QuietlyCloseable?> consumeCloseableAsync(
+    handler: Handler?,
+    consumer: Consumer<A>?,
+    value: A
+  ) {
+    if (handler == null) {
+      Consumers.consumeCloseable<A>(consumer, value)
+    } else {
+      handler.post(
+        object : Runnable() {
+          fun run() {
+            Consumers.consumeCloseable<A>(consumer, value)
+          }
         }
+      )
     }
+  }
 
-    public static <A extends QuietlyCloseable> void consumeCloseableAsync(Handler handler,
-            final Consumer<A> consumer, final A value) {
-        if (handler == null) {
-            consumeCloseable(consumer, value);
-        } else {
-            handler.post(new Runnable() {
-                public void run() {
-                    consumeCloseable(consumer, value);
-                }
-            });
-        }
+  fun <A> createAsyncConsumer(handler: Handler?, consumer: Consumer<A>?): Consumer<A> {
+    return object : Consumer<A> {
+      override fun consume(value: A): Boolean {
+        Consumers.consumeAsync<A>(handler, consumer, value)
+        return true
+      }
     }
+  }
 
-    public static <A> Consumer<A> createAsyncConsumer(
-            final Handler handler, final Consumer<A> consumer) {
-        return new Consumer<A>() {
-            public boolean consume(A value) {
-                consumeAsync(handler, consumer, value);
-                return true;
-            }
-        };
+  fun <A : QuietlyCloseable?> createAsyncCloseableConsumer(
+    handler: Handler?,
+    consumer: Consumer<A>?
+  ): Consumer<A> {
+    return object : Consumer<A> {
+      override fun consume(value: A): Boolean {
+        Consumers.consumeCloseableAsync<A>(handler, consumer, value)
+        return true
+      }
     }
-
-    public static <A extends QuietlyCloseable> Consumer<A> createAsyncCloseableConsumer(
-            final Handler handler, final Consumer<A> consumer) {
-        return new Consumer<A>() {
-            public boolean consume(A value) {
-                consumeCloseableAsync(handler, consumer, value);
-                return true;
-            }
-        };
-    }
-
+  }
 }
