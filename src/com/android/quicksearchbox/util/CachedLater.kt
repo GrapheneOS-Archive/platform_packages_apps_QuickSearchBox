@@ -18,18 +18,21 @@ package com.android.quicksearchbox.util
 
 import android.util.Log
 
+import kotlin.collections.ArrayList
+import kotlin.collections.MutableList
+
 /**
  * Abstract base class for a one-place cache that holds a value that is produced
  * asynchronously.
  *
  * @param <A> The type of the data held in the cache.
-</A> */
+ */
 abstract class CachedLater<A> : NowOrLater<A> {
-    private val mLock: Object = Object()
+    private val mLock: Any = Any()
     private var mValue: A? = null
     private var mCreating = false
     private var mValid = false
-    private var mWaitingConsumers: List<Consumer<in A>>? = null
+    private var mWaitingConsumers: MutableList<Consumer<in A>>? = null
 
     /**
      * Creates the object to store in the cache. This method must call
@@ -42,8 +45,8 @@ abstract class CachedLater<A> : NowOrLater<A> {
      * Saves a new value to the cache.
      */
     protected fun store(value: A) {
-        if (CachedLater.Companion.DBG) Log.d(CachedLater.Companion.TAG, "store()")
-        var waitingConsumers: List<Consumer<in A>>?
+        if (DBG) Log.d(TAG, "store()")
+        var waitingConsumers: MutableList<Consumer<in A>>?
         synchronized(mLock) {
             mValue = value
             mValid = true
@@ -53,11 +56,11 @@ abstract class CachedLater<A> : NowOrLater<A> {
         }
         if (waitingConsumers != null) {
             for (consumer in waitingConsumers!!) {
-                if (CachedLater.Companion.DBG) Log.d(
-                    CachedLater.Companion.TAG,
+                if (DBG) Log.d(
+                    TAG,
                     "Calling consumer: $consumer"
                 )
-                consumer.consume(value)
+                consumer.consume(value!!)
             }
         }
     }
@@ -70,7 +73,7 @@ abstract class CachedLater<A> : NowOrLater<A> {
      * an unspecified thread.
      */
     override fun getLater(consumer: Consumer<in A>?) {
-        if (CachedLater.Companion.DBG) Log.d(CachedLater.Companion.TAG, "getLater()")
+        if (DBG) Log.d(TAG, "getLater()")
         var valid: Boolean
         var value: A?
         synchronized(mLock) {
@@ -78,17 +81,17 @@ abstract class CachedLater<A> : NowOrLater<A> {
             value = mValue
             if (!valid) {
                 if (mWaitingConsumers == null) {
-                    mWaitingConsumers = ArrayList<Consumer<in A>>()
+                    mWaitingConsumers = mutableListOf()
                 }
-                mWaitingConsumers.add(consumer)
+                mWaitingConsumers?.add(consumer!!)
             }
         }
         if (valid) {
-            if (CachedLater.Companion.DBG) Log.d(
-                CachedLater.Companion.TAG,
+            if (DBG) Log.d(
+                TAG,
                 "valid, calling consumer synchronously"
             )
-            consumer!!.consume(value)
+            consumer!!.consume(value!!)
         } else {
             var create = false
             synchronized(mLock) {
@@ -98,14 +101,14 @@ abstract class CachedLater<A> : NowOrLater<A> {
                 }
             }
             if (create) {
-                if (CachedLater.Companion.DBG) Log.d(
-                    CachedLater.Companion.TAG,
+                if (DBG) Log.d(
+                    TAG,
                     "not valid, calling create()"
                 )
                 create()
             } else {
-                if (CachedLater.Companion.DBG) Log.d(
-                    CachedLater.Companion.TAG,
+                if (DBG) Log.d(
+                    TAG,
                     "not valid, already creating"
                 )
             }
@@ -116,7 +119,7 @@ abstract class CachedLater<A> : NowOrLater<A> {
      * Clears the cache.
      */
     fun clear() {
-        if (CachedLater.Companion.DBG) Log.d(CachedLater.Companion.TAG, "clear()")
+        if (DBG) Log.d(TAG, "clear()")
         synchronized(mLock) {
             mValue = null
             mValid = false
@@ -134,7 +137,7 @@ abstract class CachedLater<A> : NowOrLater<A> {
                 if (!haveNow()) {
                     throw IllegalStateException("getNow() called when haveNow() is false")
                 }
-                return mValue
+                return mValue!!
             }
         }
 
