@@ -17,6 +17,14 @@
 package com.android.quicksearchbox.util
 
 import android.os.Build
+import android.util.Log
+
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 
 /** Simple HTTP client API. */
 class JavaNetHttpHelper(rewriter: HttpHelper.UrlRewriter, userAgent: String) : HttpHelper {
@@ -34,8 +42,8 @@ class JavaNetHttpHelper(rewriter: HttpHelper.UrlRewriter, userAgent: String) : H
    * @throws HttpException If the response has a status code other than 200.
    */
   @Throws(IOException::class, HttpHelper.HttpException::class)
-  override operator fun get(request: HttpHelper.GetRequest): String {
-    return get(request.getUrl(), request.getHeaders())
+  override operator fun get(request: HttpHelper.GetRequest?): String? {
+    return get(request?.url, request?.headers)
   }
 
   /**
@@ -48,10 +56,10 @@ class JavaNetHttpHelper(rewriter: HttpHelper.UrlRewriter, userAgent: String) : H
    * @throws HttpException If the response has a status code other than 200.
    */
   @Throws(IOException::class, HttpHelper.HttpException::class)
-  override operator fun get(url: String, requestHeaders: Map<String, String>): String {
+  override operator fun get(url: String?, requestHeaders: MutableMap<String, String>?): String? {
     var c: HttpURLConnection? = null
     return try {
-      c = createConnection(url, requestHeaders)
+      c = createConnection(url!!, requestHeaders)
       c.setRequestMethod("GET")
       c.connect()
       getResponseFrom(c)
@@ -64,23 +72,24 @@ class JavaNetHttpHelper(rewriter: HttpHelper.UrlRewriter, userAgent: String) : H
 
   @Override
   @Throws(IOException::class, HttpHelper.HttpException::class)
-  override fun post(request: HttpHelper.PostRequest): String {
-    return post(request.getUrl(), request.getHeaders(), request.getContent())
+  override fun post(request: HttpHelper.PostRequest?): String? {
+    return post(request?.url, request?.headers, request?.content)
   }
 
   @Throws(IOException::class, HttpHelper.HttpException::class)
-  override fun post(url: String, requestHeaders: Map<String, String>, content: String): String {
-    var requestHeaders: Map<String, String>? = requestHeaders
+  override fun post(
+    url: String?,
+    requestHeaders: MutableMap<String, String>?,
+    content: String?
+  ): String? {
+    var mRequestHeaders: MutableMap<String, String>? = requestHeaders
     var c: HttpURLConnection? = null
     return try {
-      if (requestHeaders == null) {
-        requestHeaders = HashMap<String, String>()
+      if (mRequestHeaders == null) {
+        mRequestHeaders = mutableMapOf()
       }
-      requestHeaders.put(
-        "Content-Length",
-        Integer.toString(if (content == null) 0 else content.length())
-      )
-      c = createConnection(url, requestHeaders)
+      mRequestHeaders.put("Content-Length", Integer.toString(content?.length ?: 0))
+      c = createConnection(url!!, mRequestHeaders)
       c.setDoOutput(content != null)
       c.setRequestMethod("POST")
       c.connect()
@@ -100,19 +109,17 @@ class JavaNetHttpHelper(rewriter: HttpHelper.UrlRewriter, userAgent: String) : H
   @Throws(IOException::class, HttpHelper.HttpException::class)
   private fun createConnection(url: String, headers: Map<String, String>?): HttpURLConnection {
     val u = URL(mRewriter.rewrite(url))
-    if (JavaNetHttpHelper.Companion.DBG)
-      Log.d(JavaNetHttpHelper.Companion.TAG, "URL=$url rewritten='$u'")
+    if (DBG) Log.d(TAG, "URL=$url rewritten='$u'")
     val c: HttpURLConnection = u.openConnection() as HttpURLConnection
     if (headers != null) {
-      for (e in headers.entrySet()) {
-        val name: String = e.getKey()
-        val value: String = e.getValue()
-        if (JavaNetHttpHelper.Companion.DBG)
-          Log.d(JavaNetHttpHelper.Companion.TAG, "  $name: $value")
+      for (e in headers.entries) {
+        val name: String = e.key
+        val value: String = e.value
+        if (DBG) Log.d(TAG, "  $name: $value")
         c.addRequestProperty(name, value)
       }
     }
-    c.addRequestProperty(JavaNetHttpHelper.Companion.USER_AGENT_HEADER, mUserAgent)
+    c.addRequestProperty(USER_AGENT_HEADER, mUserAgent)
     if (mConnectTimeout != 0) {
       c.setConnectTimeout(mConnectTimeout)
     }
@@ -123,26 +130,19 @@ class JavaNetHttpHelper(rewriter: HttpHelper.UrlRewriter, userAgent: String) : H
   }
 
   @Throws(IOException::class, HttpHelper.HttpException::class)
-  private fun getResponseFrom(c: HttpURLConnection?): String {
-    if (c.getResponseCode() !== HttpURLConnection.HTTP_OK) {
+  private fun getResponseFrom(c: HttpURLConnection): String {
+    if (c.getResponseCode() != HttpURLConnection.HTTP_OK) {
       throw HttpHelper.HttpException(c.getResponseCode(), c.getResponseMessage())
     }
-    if (JavaNetHttpHelper.Companion.DBG) {
+    if (DBG) {
       Log.d(
-        JavaNetHttpHelper.Companion.TAG,
-        "Content-Type: " +
-          c.getContentType().toString() +
-          " (assuming " +
-          JavaNetHttpHelper.Companion.DEFAULT_CHARSET.toString() +
-          ")"
+        TAG,
+        "Content-Type: " + c.getContentType().toString() + " (assuming " + DEFAULT_CHARSET + ")"
       )
     }
-    val reader =
-      BufferedReader(
-        InputStreamReader(c.getInputStream(), JavaNetHttpHelper.Companion.DEFAULT_CHARSET)
-      )
+    val reader = BufferedReader(InputStreamReader(c.getInputStream(), DEFAULT_CHARSET))
     val string: StringBuilder = StringBuilder()
-    val chars = CharArray(JavaNetHttpHelper.Companion.BUFFER_SIZE)
+    val chars = CharArray(BUFFER_SIZE)
     var bytes: Int
     while (reader.read(chars).also { bytes = it } != -1) {
       string.append(chars, 0, bytes)
