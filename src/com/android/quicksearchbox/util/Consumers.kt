@@ -21,25 +21,24 @@ import android.os.Handler
 /** Consumer utilities. */
 object Consumers {
   @JvmStatic
-  fun <A : QuietlyCloseable?> consumeCloseable(consumer: Consumer<A?>, value: A?) {
+  fun <A : QuietlyCloseable?> consumeCloseable(consumer: Consumer<A>?, value: A?) {
     var accepted = false
-    accepted =
-      try {
-        consumer.consume(value)
-      } finally {
-        if (!accepted && value != null) value.close()
-      }
+    try {
+      accepted = consumer!!.consume(value!!)
+    } finally {
+      if (!accepted && value != null) value.close()
+    }
   }
 
   @JvmStatic
-  fun <A> consumeAsync(handler: Handler?, consumer: Consumer<A>, value: A) {
+  fun <A> consumeAsync(handler: Handler?, consumer: Consumer<A?>?, value: A?) {
     if (handler == null) {
-      consumer.consume(value)
+      consumer?.consume(value)
     } else {
       handler.post(
-        object : Runnable() {
-          fun run() {
-            consumer.consume(value)
+        object : Runnable {
+          override fun run() {
+            consumer?.consume(value)
           }
         }
       )
@@ -50,25 +49,25 @@ object Consumers {
   fun <A : QuietlyCloseable?> consumeCloseableAsync(
     handler: Handler?,
     consumer: Consumer<A>?,
-    value: A
+    value: A?
   ) {
     if (handler == null) {
-      Consumers.consumeCloseable<A>(consumer, value)
+      consumeCloseable(consumer, value)
     } else {
       handler.post(
-        object : Runnable() {
-          fun run() {
-            Consumers.consumeCloseable<A>(consumer, value)
+        object : Runnable {
+          override fun run() {
+            consumeCloseable(consumer, value)
           }
         }
       )
     }
   }
 
-  fun <A> createAsyncConsumer(handler: Handler?, consumer: Consumer<A>?): Consumer<A> {
-    return object : Consumer<A> {
-      override fun consume(value: A): Boolean {
-        Consumers.consumeAsync<A>(handler, consumer, value)
+  fun <A> createAsyncConsumer(handler: Handler?, consumer: Consumer<A?>?): Consumer<A?> {
+    return object : Consumer<A?> {
+      override fun consume(value: A?): Boolean {
+        consumeAsync(handler, consumer, value)
         return true
       }
     }
@@ -77,10 +76,10 @@ object Consumers {
   fun <A : QuietlyCloseable?> createAsyncCloseableConsumer(
     handler: Handler?,
     consumer: Consumer<A>?
-  ): Consumer<A> {
-    return object : Consumer<A> {
-      override fun consume(value: A): Boolean {
-        Consumers.consumeCloseableAsync<A>(handler, consumer, value)
+  ): Consumer<A?> {
+    return object : Consumer<A?> {
+      override fun consume(value: A?): Boolean {
+        consumeCloseableAsync(handler, consumer, value)
         return true
       }
     }
