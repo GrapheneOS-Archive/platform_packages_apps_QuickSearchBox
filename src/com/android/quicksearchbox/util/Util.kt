@@ -13,78 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.quicksearchbox.util
 
-package com.android.quicksearchbox.util;
-
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.net.Uri;
-import android.util.Log;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import android.content.ContentResolver
 
 /**
  * General utilities.
  */
-public class Util {
-
-    private static final String TAG = "QSB.Util";
-
-    public static <A> Set<A> setOfFirstN(List<A> list, int n) {
-        int end = Math.min(list.size(), n);
-        HashSet<A> set = new HashSet<A>(end);
-        for (int i = 0; i < end; i++) {
-            set.add(list.get(i));
+object Util {
+    private const val TAG = "QSB.Util"
+    fun <A> setOfFirstN(list: List<A>, n: Int): Set<A> {
+        val end: Int = Math.min(list.size(), n)
+        val set: HashSet<A> = HashSet<A>(end)
+        for (i in 0 until end) {
+            set.add(list[i])
         }
-        return set;
+        return set
     }
 
-    public static Uri getResourceUri(Context packageContext, int res) {
-        try {
-            Resources resources = packageContext.getResources();
-            return getResourceUri(resources, packageContext.getPackageName(), res);
-        } catch (Resources.NotFoundException e) {
-            Log.e(TAG, "Resource not found: " + res + " in " + packageContext.getPackageName());
-            return null;
+    fun getResourceUri(packageContext: Context, res: Int): Uri? {
+        return try {
+            val resources: Resources = packageContext.getResources()
+            getResourceUri(resources, packageContext.getPackageName(), res)
+        } catch (e: Resources.NotFoundException) {
+            Log.e(Util.TAG, "Resource not found: " + res + " in " + packageContext.getPackageName())
+            null
         }
     }
 
-    public static Uri getResourceUri(Context context, ApplicationInfo appInfo, int res) {
-        try {
-            Resources resources = context.getPackageManager().getResourcesForApplication(appInfo);
-            return getResourceUri(resources, appInfo.packageName, res);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Resources not found for " + appInfo.packageName);
-            return null;
-        } catch (Resources.NotFoundException e) {
-            Log.e(TAG, "Resource not found: " + res + " in " + appInfo.packageName);
-            return null;
+    fun getResourceUri(context: Context, appInfo: ApplicationInfo, res: Int): Uri? {
+        return try {
+            val resources: Resources =
+                context.getPackageManager().getResourcesForApplication(appInfo)
+            getResourceUri(resources, appInfo.packageName, res)
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.e(Util.TAG, "Resources not found for " + appInfo.packageName)
+            null
+        } catch (e: Resources.NotFoundException) {
+            Log.e(Util.TAG, "Resource not found: " + res + " in " + appInfo.packageName)
+            null
         }
     }
 
-    private static Uri getResourceUri(Resources resources, String appPkg, int res)
-            throws Resources.NotFoundException {
-        String resPkg = resources.getResourcePackageName(res);
-        String type = resources.getResourceTypeName(res);
-        String name = resources.getResourceEntryName(res);
-        return makeResourceUri(appPkg, resPkg, type, name);
+    @Throws(Resources.NotFoundException::class)
+    private fun getResourceUri(resources: Resources, appPkg: String, res: Int): Uri {
+        val resPkg: String = resources.getResourcePackageName(res)
+        val type: String = resources.getResourceTypeName(res)
+        val name: String = resources.getResourceEntryName(res)
+        return Util.makeResourceUri(appPkg, resPkg, type, name)
     }
 
-    private static Uri makeResourceUri(String appPkg, String resPkg, String type, String name) {
-        Uri.Builder uriBuilder = new Uri.Builder();
-        uriBuilder.scheme(ContentResolver.SCHEME_ANDROID_RESOURCE);
-        uriBuilder.encodedAuthority(appPkg);
-        uriBuilder.appendEncodedPath(type);
+    private fun makeResourceUri(appPkg: String, resPkg: String, type: String, name: String): Uri {
+        val uriBuilder: Uri.Builder = Builder()
+        uriBuilder.scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+        uriBuilder.encodedAuthority(appPkg)
+        uriBuilder.appendEncodedPath(type)
         if (!appPkg.equals(resPkg)) {
-            uriBuilder.appendEncodedPath(resPkg + ":" + name);
+            uriBuilder.appendEncodedPath("$resPkg:$name")
         } else {
-            uriBuilder.appendEncodedPath(name);
+            uriBuilder.appendEncodedPath(name)
         }
-        return uriBuilder.build();
+        return uriBuilder.build()
     }
 }
