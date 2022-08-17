@@ -13,28 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.quicksearchbox.util
 
 import android.os.Process
+
 import java.util.concurrent.ThreadFactory
 
 /**
  * A thread factory that creates threads with a given thread priority.
+ * @param priority The thread priority of the threads created by this factory. For values, see
+ * [Process].
  */
-class PriorityThreadFactory
-/**
- * Creates a new thread factory.
- *
- * @param priority The thread priority of the threads created by this factory.
- * For values, see [Process].
- */(private val mPriority: Int) : ThreadFactory {
-    fun newThread(r: Runnable?): Thread {
-        return object : Thread(r) {
-            @Override
-            fun run() {
-                Process.setThreadPriority(mPriority)
-                super.run()
-            }
-        }
+class PriorityThreadFactory(private val mPriority: Int) : ThreadFactory {
+  override fun newThread(r: Runnable?): Thread {
+    return object : Thread(r) {
+      @Override
+      override fun run() {
+        Process.setThreadPriority(mPriority)
+        super.run()
+      }
     }
+  }
 }
