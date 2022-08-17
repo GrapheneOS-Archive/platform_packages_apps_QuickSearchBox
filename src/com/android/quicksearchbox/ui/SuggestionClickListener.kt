@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
+
+import com.android.quicksearchbox.ui.SuggestionsAdapter
 
 /**
  * Listener interface for clicks on suggestions.
  */
-public interface SuggestionClickListener {
-
+interface SuggestionClickListener {
     /**
      * Called when a suggestion is clicked.
      *
      * @param adapter Adapter that contains the clicked suggestion.
      * @param suggestionId The ID of the suggestion clicked. If the suggestion list is flat, this
-     *      will be the position within the list.
+     * will be the position within the list.
      */
-    void onSuggestionClicked(SuggestionsAdapter<?> adapter, long suggestionId);
+    fun onSuggestionClicked(adapter: SuggestionsAdapter<*>?, suggestionId: Long)
 
     /**
      * Called when the "query refine" button of a suggestion is clicked.
      *
      * @param adapter Adapter that contains the clicked suggestion.
      * @param suggestionId The ID of the suggestion clicked. If the suggestion list is flat, this
-     *      will be the position within the list.
+     * will be the position within the list.
      */
-    void onSuggestionQueryRefineClicked(SuggestionsAdapter<?> adapter, long suggestionId);
+    fun onSuggestionQueryRefineClicked(adapter: SuggestionsAdapter<*>?, suggestionId: Long)
 }
