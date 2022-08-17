@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
-import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase
 
 /**
  * Abstract helper base class for asynchronous SQLite queries.
  *
- * @param <A> The type of the result of the query.
+ * @param <A> The type of the result of the query. </A>
  */
-public abstract class SQLiteAsyncQuery<A> {
+abstract class SQLiteAsyncQuery<A> {
+  /**
+   * Performs a query and computes some value from the result
+   *
+   * @param db A readable database.
+   * @return The result of the query.
+   */
+  protected abstract fun performQuery(db: SQLiteDatabase?): A
 
-    /**
-     * Performs a query and computes some value from the result
-     *
-     * @param db A readable database.
-     * @return The result of the query.
-     */
-    protected abstract A performQuery(SQLiteDatabase db);
-
-    /**
-     * Runs the query against the database and passes the result to the consumer.
-     */
-    public void run(SQLiteDatabase db, Consumer<A> consumer) {
-        A result = performQuery(db);
-        consumer.consume(result);
-    }
+  /** Runs the query against the database and passes the result to the consumer. */
+  fun run(db: SQLiteDatabase?, consumer: Consumer<A>) {
+    val result = performQuery(db)
+    consumer.consume(result)
+  }
 }
