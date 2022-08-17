@@ -36,6 +36,7 @@ android_app {
       "src/**/quicksearchbox/util/AsyncDataSetObservable.java",
       "src/**/quicksearchbox/util/BarrierConsumer.java",
       "src/**/quicksearchbox/util/BatchingNamedTaskExecutor.java",
+      "src/**/quicksearchbox/util/CachedLater.java",
       "src/**/quicksearchbox/util/Consumer.java",
       "src/**/quicksearchbox/util/Factory.java",
       "src/**/quicksearchbox/util/HttpHelper.java",
