@@ -342,7 +342,7 @@ class QsbApplication(context: Context?) {
     protected fun createHttpHelper(): HttpHelper {
         return JavaNetHttpHelper(
             JavaNetHttpHelper.PassThroughRewriter(),
-            config?.userAgent
+            config!!.userAgent
         )
     }
 
