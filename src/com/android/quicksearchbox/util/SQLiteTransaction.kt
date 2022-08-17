@@ -14,35 +14,32 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
-import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase
 
-/**
- * Abstract helper base class for SQLite write transactions.
- */
-public abstract class SQLiteTransaction {
+/** Abstract helper base class for SQLite write transactions. */
+abstract class SQLiteTransaction {
+  /**
+   * Executes the statements that form the transaction.
+   *
+   * @param db A writable database.
+   * @return `true` if the transaction should be committed.
+   */
+  protected abstract fun performTransaction(db: SQLiteDatabase?): Boolean
 
-    /**
-     * Executes the statements that form the transaction.
-     *
-     * @param db A writable database.
-     * @return {@code true} if the transaction should be committed.
-     */
-    protected abstract boolean performTransaction(SQLiteDatabase db);
-
-    /**
-     * Runs the transaction against the database. The results are committed if
-     * {@link #performTransaction(SQLiteDatabase)} completes normally and returns {@code true}.
-     */
-    public void run(SQLiteDatabase db) {
-        db.beginTransaction();
-        try {
-            if (performTransaction(db)) {
-                db.setTransactionSuccessful();
-            }
-        } finally {
-            db.endTransaction();
-        }
+  /**
+   * Runs the transaction against the database. The results are committed if [.performTransaction]
+   * completes normally and returns `true`.
+   */
+  fun run(db: SQLiteDatabase) {
+    db.beginTransaction()
+    try {
+      if (performTransaction(db)) {
+        db.setTransactionSuccessful()
+      }
+    } finally {
+      db.endTransaction()
     }
+  }
 }

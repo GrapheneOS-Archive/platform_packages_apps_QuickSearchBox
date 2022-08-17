@@ -54,6 +54,7 @@ android_app {
       "src/**/quicksearchbox/util/QuietlyClosable.java",
       "src/**/quicksearchbox/util/SingleThreadNamedTaskExecutor.java",
       "src/**/quicksearchbox/util/SQLiteAsyncQuery.java",
+      "src/**/quicksearchbox/util/SQLiteAsyncTransaction.java",
       "src/**/quicksearchbox/AbstractInternalSource.java",
       "src/**/quicksearchbox/AbstractSource.java",
       "src/**/quicksearchbox/AbstractSuggestionCursorWrapper.java",
