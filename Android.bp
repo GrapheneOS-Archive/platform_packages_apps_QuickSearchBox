@@ -38,6 +38,7 @@ android_app {
       "src/**/quicksearchbox/util/BatchingNamedTaskExecutor.java",
       "src/**/quicksearchbox/util/CachedLater.java",
       "src/**/quicksearchbox/util/Consumer.java",
+      "src/**/quicksearchbox/util/Consumers.java",
       "src/**/quicksearchbox/util/Factory.java",
       "src/**/quicksearchbox/util/HttpHelper.java",
       "src/**/quicksearchbox/util/JavaNetHttpHelper.java",
