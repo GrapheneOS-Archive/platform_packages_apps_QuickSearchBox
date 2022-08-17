@@ -42,6 +42,7 @@ android_app {
       "src/**/quicksearchbox/util/Factory.java",
       "src/**/quicksearchbox/util/HttpHelper.java",
       "src/**/quicksearchbox/util/JavaNetHttpHelper.java",
+      "src/**/quicksearchbox/util/LevenshteinDistance.java",
       "src/**/quicksearchbox/util/NamedTask.java",
       "src/**/quicksearchbox/util/NamedTaskExecutor.java",
       "src/**/quicksearchbox/util/NoOpConsumer.java",
