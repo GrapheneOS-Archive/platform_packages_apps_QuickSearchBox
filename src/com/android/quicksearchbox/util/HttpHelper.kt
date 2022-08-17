@@ -27,13 +27,13 @@ interface HttpHelper {
     operator fun get(request: GetRequest?): String?
 
     @Throws(IOException::class, HttpException::class)
-    operator fun get(url: String?, requestHeaders: Map<String?, String?>?): String?
+    operator fun get(url: String?, requestHeaders: MutableMap<String, String>?): String?
 
     @Throws(IOException::class, HttpException::class)
     fun post(request: PostRequest?): String?
 
     @Throws(IOException::class, HttpException::class)
-    fun post(url: String?, requestHeaders: Map<String?, String?>?, content: String?): String?
+    fun post(url: String?, requestHeaders: MutableMap<String, String>?, content: String?): String?
     fun setConnectTimeout(timeoutMillis: Int)
     fun setReadTimeout(timeoutMillis: Int)
     open class GetRequest {
@@ -50,7 +50,7 @@ interface HttpHelper {
          *
          * @return The response headers. May return `null` if no headers are set.
          */
-        var headers: HashMap<String, String>? = null
+        var headers: MutableMap<String, String>? = null
             private set
 
         /**
@@ -75,7 +75,7 @@ interface HttpHelper {
          */
         fun setHeader(name: String, value: String) {
             if (headers == null) {
-                headers = hashMapOf()
+                headers = mutableMapOf()
             }
             headers?.put(name, value)
         }
@@ -106,6 +106,6 @@ interface HttpHelper {
      * An interface for URL rewriting.
      */
     interface UrlRewriter {
-        fun rewrite(url: String?): String?
+        fun rewrite(url: String): String
     }
 }
