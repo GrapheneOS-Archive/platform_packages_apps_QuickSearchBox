@@ -14,89 +14,103 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.util;
+package com.android.quicksearchbox.util
 
-import android.util.Log;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
+import android.util.Log
 
 /**
  * Executor that uses a single thread and an unbounded work queue.
  */
-public class SingleThreadNamedTaskExecutor implements NamedTaskExecutor {
+class SingleThreadNamedTaskExecutor(threadFactory: ThreadFactory) : NamedTaskExecutor {
+    private val mQueue: LinkedBlockingQueue<NamedTask>
+    private val mWorker: Thread
 
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.SingleThreadNamedTaskExecutor";
-
-    private final LinkedBlockingQueue<NamedTask> mQueue;
-    private final Thread mWorker;
-    private volatile boolean mClosed = false;
-
-    public SingleThreadNamedTaskExecutor(ThreadFactory threadFactory) {
-        mQueue = new LinkedBlockingQueue<NamedTask>();
-        mWorker = threadFactory.newThread(new Worker());
-        mWorker.start();
-    }
-
-    public void cancelPendingTasks() {
-        if (DBG) Log.d(TAG, "Cancelling " + mQueue.size() + " tasks: " + mWorker.getName());
+    @Volatile
+    private var mClosed = false
+    override fun cancelPendingTasks() {
+        if (SingleThreadNamedTaskExecutor.Companion.DBG) Log.d(
+            SingleThreadNamedTaskExecutor.Companion.TAG,
+            "Cancelling " + mQueue.size().toString() + " tasks: " + mWorker.getName()
+        )
         if (mClosed) {
-            throw new IllegalStateException("cancelPendingTasks() after close()");
+            throw IllegalStateException("cancelPendingTasks() after close()")
         }
-        mQueue.clear();
+        mQueue.clear()
     }
 
-    public void close() {
-        mClosed = true;
-        mWorker.interrupt();
-        mQueue.clear();
+    override fun close() {
+        mClosed = true
+        mWorker.interrupt()
+        mQueue.clear()
     }
 
-    public void execute(NamedTask task) {
+    override fun execute(task: NamedTask?) {
         if (mClosed) {
-            throw new IllegalStateException("execute() after close()");
+            throw IllegalStateException("execute() after close()")
         }
-        mQueue.add(task);
+        mQueue.add(task)
     }
 
-    private class Worker implements Runnable {
-        public void run() {
+    private inner class Worker : Runnable {
+        fun run() {
             try {
-                loop();
+                loop()
             } finally {
-                if (!mClosed) Log.w(TAG, "Worker exited before close");
+                if (!mClosed) Log.w(
+                    SingleThreadNamedTaskExecutor.Companion.TAG,
+                    "Worker exited before close"
+                )
             }
         }
 
-        private void loop() {
-            Thread currentThread = Thread.currentThread();
-            String threadName = currentThread.getName();
+        private fun loop() {
+            val currentThread: Thread = Thread.currentThread()
+            val threadName: String = currentThread.getName()
             while (!mClosed) {
-                NamedTask task;
-                try {
-                    task = mQueue.take();
-                } catch (InterruptedException ex) {
-                    continue;
+                var task: NamedTask
+                task = try {
+                    mQueue.take()
+                } catch (ex: InterruptedException) {
+                    continue
                 }
-                currentThread.setName(threadName + " " + task.getName());
+                currentThread.setName(threadName + " " + task.getName())
                 try {
-                    if (DBG) Log.d(TAG, "Running task " + task.getName());
-                    task.run();
-                    if (DBG) Log.d(TAG, "Task " + task.getName() + " complete");
-                } catch (RuntimeException ex) {
-                    Log.e(TAG, "Task " + task.getName() + " failed", ex);
+                    if (SingleThreadNamedTaskExecutor.Companion.DBG) Log.d(
+                        SingleThreadNamedTaskExecutor.Companion.TAG,
+                        "Running task " + task.getName()
+                    )
+                    task.run()
+                    if (SingleThreadNamedTaskExecutor.Companion.DBG) Log.d(
+                        SingleThreadNamedTaskExecutor.Companion.TAG,
+                        "Task " + task.getName() + " complete"
+                    )
+                } catch (ex: RuntimeException) {
+                    Log.e(
+                        SingleThreadNamedTaskExecutor.Companion.TAG,
+                        "Task " + task.getName() + " failed",
+                        ex
+                    )
                 }
             }
         }
     }
 
-    public static Factory<NamedTaskExecutor> factory(final ThreadFactory threadFactory) {
-        return new Factory<NamedTaskExecutor>() {
-            public NamedTaskExecutor create() {
-                return new SingleThreadNamedTaskExecutor(threadFactory);
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.SingleThreadNamedTaskExecutor"
+        @JvmStatic
+        fun factory(threadFactory: ThreadFactory?): Factory<NamedTaskExecutor> {
+            return object : Factory<NamedTaskExecutor?> {
+                override fun create(): NamedTaskExecutor {
+                    return SingleThreadNamedTaskExecutor(threadFactory)
+                }
             }
-        };
+        }
     }
 
+    init {
+        mQueue = LinkedBlockingQueue<NamedTask>()
+        mWorker = threadFactory.newThread(SingleThreadNamedTaskExecutor.Worker())
+        mWorker.start()
+    }
 }
