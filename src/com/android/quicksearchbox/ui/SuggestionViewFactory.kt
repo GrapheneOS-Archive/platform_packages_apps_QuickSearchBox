@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.Suggestion;
-import com.android.quicksearchbox.SuggestionCursor;
-
-import android.view.View;
-import android.view.ViewGroup;
-
-import java.util.Collection;
+import android.view.View
+import android.view.ViewGroup
+import com.android.quicksearchbox.Suggestion
+import com.android.quicksearchbox.SuggestionCursor
+import java.util.Collection
 
 /**
  * Factory interface for suggestion views.
  */
-public interface SuggestionViewFactory {
-
+interface SuggestionViewFactory {
     /**
      * Returns all the view types that are used by this factory. Each view type corresponds to a
      * specific layout that is used to display suggestions. The returned set must have at least one
@@ -36,28 +33,32 @@ public interface SuggestionViewFactory {
      *
      * View types must be unique across all suggestion view factories.
      */
-    Collection<String> getSuggestionViewTypes();
+    val suggestionViewTypes: Collection<String?>?
 
     /**
      * Returns the view type to be used for displaying the given suggestion. This MUST correspond to
-     * one of the view types returned by {@link #getSuggestionViewTypes()}.
+     * one of the view types returned by [.getSuggestionViewTypes].
      */
-    String getViewType(Suggestion suggestion);
+    fun getViewType(suggestion: Suggestion?): String?
 
     /**
      * Gets a view corresponding to the current suggestion in the given cursor.
      *
      * @param convertView The old view to reuse, if possible. Note: You should check that this view
-     *        is non-null and of an appropriate type before using. If it is not possible to convert
-     *        this view to display the correct data, this method can create a new view.
+     * is non-null and of an appropriate type before using. If it is not possible to convert
+     * this view to display the correct data, this method can create a new view.
      * @param parent The parent that this view will eventually be attached to
      * @return A View corresponding to the data within this suggestion.
      */
-    View getView(SuggestionCursor suggestion, String userQuery, View convertView, ViewGroup parent);
+    fun getView(
+        suggestion: SuggestionCursor?,
+        userQuery: String?,
+        convertView: View?,
+        parent: ViewGroup?
+    ): View?
 
     /**
      * Checks whether this factory can create views for the given suggestion.
      */
-    boolean canCreateView(Suggestion suggestion);
-
+    fun canCreateView(suggestion: Suggestion?): Boolean
 }
