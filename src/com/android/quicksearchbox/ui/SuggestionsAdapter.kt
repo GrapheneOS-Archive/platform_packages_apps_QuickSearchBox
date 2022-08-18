@@ -13,74 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.quicksearchbox.ui;
 
-import com.android.quicksearchbox.SuggestionCursor;
-import com.android.quicksearchbox.SuggestionPosition;
-import com.android.quicksearchbox.Suggestions;
+package com.android.quicksearchbox.ui
 
-import android.view.View.OnFocusChangeListener;
-import android.widget.ExpandableListAdapter;
-import android.widget.ListAdapter;
+import android.view.View.OnFocusChangeListener
+import android.widget.ExpandableListAdapter
+import android.widget.ListAdapter
+
+import com.android.quicksearchbox.SuggestionPosition
+import com.android.quicksearchbox.Suggestions
 
 /**
  * Interface for suggestions adapters.
  *
- * @param <A> the adapter class used by the UI, probably either {@link ListAdapter} or
- *      {@link ExpandableListAdapter}.
+ * @param <A> the adapter class used by the UI, probably either [ListAdapter] or
+ * [ExpandableListAdapter].
  */
-public interface SuggestionsAdapter<A> {
-
+interface SuggestionsAdapter<A> {
     /**
      * Sets the listener to be notified of clicks on suggestions.
      */
-    void setSuggestionClickListener(SuggestionClickListener listener);
+    fun setSuggestionClickListener(listener: SuggestionClickListener?)
 
     /**
      * Sets the listener to be notified of focus change events on suggestion views.
      */
-    void setOnFocusChangeListener(OnFocusChangeListener l);
-
-    /**
-     * Sets the current suggestions.
-     */
-    void setSuggestions(Suggestions suggestions);
+    fun setOnFocusChangeListener(l: OnFocusChangeListener?)
 
     /**
      * Indicates if there's any suggestions in this adapter.
      */
-    boolean isEmpty();
-
+    val isEmpty: Boolean
     /**
      * Gets the current suggestions.
      */
-    Suggestions getSuggestions();
+    /**
+     * Sets the current suggestions.
+     */
+    var suggestions: Suggestions?
 
     /**
      * Gets the cursor and position corresponding to the given suggestion ID.
      * @param suggestionId Suggestion ID.
      */
-    SuggestionPosition getSuggestion(long suggestionId);
+    fun getSuggestion(suggestionId: Long): SuggestionPosition?
 
     /**
      * Handles a regular click on a suggestion.
      *
      * @param suggestionId The ID of the suggestion clicked. If the suggestion list is flat, this
-     *      will be the position within the list.
+     * will be the position within the list.
      */
-    void onSuggestionClicked(long suggestionId);
+    fun onSuggestionClicked(suggestionId: Long)
 
     /**
      * Handles a click on the query refinement button.
      *
      * @param suggestionId The ID of the suggestion clicked. If the suggestion list is flat, this
-     *      will be the position within the list.
+     * will be the position within the list.
      */
-    void onSuggestionQueryRefineClicked(long suggestionId);
+    fun onSuggestionQueryRefineClicked(suggestionId: Long)
 
     /**
      * Gets the adapter to be used by the UI view.
      */
-    A getListAdapter();
-
+    val listAdapter: A
 }
