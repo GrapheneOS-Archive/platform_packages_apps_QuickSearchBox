@@ -23,32 +23,30 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Suggestion
 
-/**
- * Base class for suggestion views.
- */
+/** Base class for suggestion views. */
 abstract class BaseSuggestionView : RelativeLayout, SuggestionView {
-  protected var mText1: TextView? = null
-  protected var mText2: TextView? = null
-  protected var mIcon1: ImageView? = null
-  protected var mIcon2: ImageView? = null
+  @JvmField protected var mText1: TextView? = null
+  @JvmField protected var mText2: TextView? = null
+  @JvmField protected var mIcon1: ImageView? = null
+  @JvmField protected var mIcon2: ImageView? = null
   private var mSuggestionId: Long = 0
   private var mAdapter: SuggestionsAdapter<*>? = null
 
-  constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
-    context,
-    attrs,
-    defStyle
-  ) {
-  }
+  constructor(
+    context: Context?,
+    attrs: AttributeSet?,
+    defStyle: Int
+  ) : super(context, attrs, defStyle)
 
-  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
-  constructor(context: Context?) : super(context) {}
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+  constructor(context: Context?) : super(context)
 
   @Override
-  protected open fun onFinishInflate() {
+  protected override fun onFinishInflate() {
     super.onFinishInflate()
     mText1 = findViewById(R.id.text1) as TextView?
     mText2 = findViewById(R.id.text2) as TextView?
@@ -57,36 +55,32 @@ abstract class BaseSuggestionView : RelativeLayout, SuggestionView {
   }
 
   @Override
-  override fun bindAsSuggestion(suggestion: Suggestion, userQuery: String) {
+  override fun bindAsSuggestion(suggestion: Suggestion?, userQuery: String?) {
     setOnClickListener(ClickListener())
   }
 
   @Override
-  override fun bindAdapter(adapter: SuggestionsAdapter<*>?, suggestionId: Long) {
+  override fun bindAdapter(adapter: SuggestionsAdapter<*>?, position: Long) {
     mAdapter = adapter
-    mSuggestionId = suggestionId
+    mSuggestionId = position
   }
 
   protected fun isFromHistory(suggestion: Suggestion): Boolean {
-    return suggestion.isSuggestionShortcut() || suggestion.isHistorySuggestion()
+    return suggestion.isSuggestionShortcut || suggestion.isHistorySuggestion
   }
 
-  /**
-   * Sets the first text line.
-   */
+  /** Sets the first text line. */
   protected fun setText1(text: CharSequence?) {
-    mText1.setText(text)
+    mText1?.setText(text)
   }
 
-  /**
-   * Sets the second text line.
-   */
+  /** Sets the second text line. */
   protected fun setText2(text: CharSequence?) {
-    mText2.setText(text)
+    mText2?.setText(text)
     if (TextUtils.isEmpty(text)) {
-      mText2.setVisibility(GONE)
+      mText2?.setVisibility(GONE)
     } else {
-      mText2.setVisibility(VISIBLE)
+      mText2?.setVisibility(VISIBLE)
     }
   }
 
@@ -104,7 +98,7 @@ abstract class BaseSuggestionView : RelativeLayout, SuggestionView {
 
   private inner class ClickListener : OnClickListener {
     @Override
-    fun onClick(v: View?) {
+    override fun onClick(v: View?) {
       onSuggestionClicked()
     }
   }
