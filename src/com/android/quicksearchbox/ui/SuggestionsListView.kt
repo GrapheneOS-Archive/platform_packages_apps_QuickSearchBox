@@ -14,49 +14,47 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import android.view.View;
-import android.widget.AbsListView;
+import android.view.View
+import android.widget.AbsListView
 
 /**
  * Interface for suggestions list UI views.
  */
-public interface SuggestionsListView<A> {
+interface SuggestionsListView<A> {
+    /**
+     * See [View.setOnKeyListener].
+     */
+    fun setOnKeyListener(l: View.OnKeyListener?)
 
     /**
-     * See {@link View#setOnKeyListener}.
+     * See [AbsListView.setOnScrollListener].
      */
-    void setOnKeyListener(View.OnKeyListener l);
+    fun setOnScrollListener(l: AbsListView.OnScrollListener?)
 
     /**
-     * See {@link AbsListView#setOnScrollListener}.
+     * See [View.setOnFocusChangeListener].
      */
-    void setOnScrollListener(AbsListView.OnScrollListener l);
+    fun setOnFocusChangeListener(l: View.OnFocusChangeListener?)
 
     /**
-     * See {@link View#setOnFocusChangeListener}.
+     * See [View.setVisibility].
      */
-    void setOnFocusChangeListener(View.OnFocusChangeListener l);
+    fun setVisibility(visibility: Int)
 
     /**
-     * See {@link View#setVisibility}.
+     * Sets the adapter for the list. See [AbsListView.setAdapter]
      */
-    void setVisibility(int visibility);
-
-    /**
-     * Sets the adapter for the list. See {@link AbsListView#setAdapter}
-     */
-    void setSuggestionsAdapter(SuggestionsAdapter<A> adapter);
+    fun setSuggestionsAdapter(adapter: SuggestionsAdapter<A>?)
 
     /**
      * Gets the adapter for the list.
      */
-    SuggestionsAdapter<A> getSuggestionsAdapter();
+    fun getSuggestionsAdapter(): SuggestionsAdapter<A>?
 
     /**
      * Gets the ID of the currently selected item.
      */
-    long getSelectedItemId();
-
+    val selectedItemId: Long
 }
