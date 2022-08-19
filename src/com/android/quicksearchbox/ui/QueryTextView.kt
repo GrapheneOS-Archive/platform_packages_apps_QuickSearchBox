@@ -14,92 +14,92 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.inputmethod.CompletionInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
+import android.content.Context
+import android.util.AttributeSet
+import android.util.Log
+import android.view.inputmethod.CompletionInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 
 /**
  * The query text field.
  */
-public class QueryTextView extends EditText {
+class QueryTextView : EditText {
+    private var mCommitCompletionListener: QueryTextView.CommitCompletionListener? = null
 
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.QueryTextView";
-
-    private CommitCompletionListener mCommitCompletionListener;
-
-    public QueryTextView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
+        context,
+        attrs,
+        defStyle
+    ) {
     }
 
-    public QueryTextView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public QueryTextView(Context context) {
-        super(context);
-    }
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?) : super(context) {}
 
     /**
      * Sets the text selection in the query text view.
      *
-     * @param selectAll If {@code true}, selects the entire query.
-     *        If {@false}, no characters are selected, and the cursor is placed
-     *        at the end of the query.
+     * @param selectAll If `true`, selects the entire query.
+     * If {@false}, no characters are selected, and the cursor is placed
+     * at the end of the query.
      */
-    public void setTextSelection(boolean selectAll) {
+    fun setTextSelection(selectAll: Boolean) {
         if (selectAll) {
-            selectAll();
+            selectAll()
         } else {
-            setSelection(length());
+            setSelection(length())
         }
     }
 
-    protected void replaceText(CharSequence text) {
-        clearComposingText();
-        setText(text);
-        setTextSelection(false);
+    protected fun replaceText(text: CharSequence?) {
+        clearComposingText()
+        setText(text)
+        setTextSelection(false)
     }
 
-    public void setCommitCompletionListener(CommitCompletionListener listener) {
-        mCommitCompletionListener = listener;
+    fun setCommitCompletionListener(listener: QueryTextView.CommitCompletionListener?) {
+        mCommitCompletionListener = listener
     }
 
-    private InputMethodManager getInputMethodManager() {
-        return (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-    }
+    private val inputMethodManager: InputMethodManager
+        private get() = getContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
-    public void showInputMethod() {
-        InputMethodManager imm = getInputMethodManager();
+    fun showInputMethod() {
+        val imm: InputMethodManager = inputMethodManager
         if (imm != null) {
-            imm.showSoftInput(this, 0);
+            imm.showSoftInput(this, 0)
         }
     }
 
-    public void hideInputMethod() {
-        InputMethodManager imm = getInputMethodManager();
+    fun hideInputMethod() {
+        val imm: InputMethodManager = inputMethodManager
         if (imm != null) {
-            imm.hideSoftInputFromWindow(getWindowToken(), 0);
+            imm.hideSoftInputFromWindow(getWindowToken(), 0)
         }
     }
 
     @Override
-    public void onCommitCompletion(CompletionInfo completion) {
-        if (DBG) Log.d(TAG, "onCommitCompletion(" + completion + ")");
-        hideInputMethod();
-        replaceText(completion.getText());
+    fun onCommitCompletion(completion: CompletionInfo) {
+        if (QueryTextView.Companion.DBG) Log.d(
+            QueryTextView.Companion.TAG,
+            "onCommitCompletion($completion)"
+        )
+        hideInputMethod()
+        replaceText(completion.getText())
         if (mCommitCompletionListener != null) {
-            mCommitCompletionListener.onCommitCompletion(completion.getPosition());
+            mCommitCompletionListener.onCommitCompletion(completion.getPosition())
         }
     }
 
-    public interface CommitCompletionListener {
-        void onCommitCompletion(int position);
+    interface CommitCompletionListener {
+        fun onCommitCompletion(position: Int)
     }
 
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.QueryTextView"
+    }
 }
