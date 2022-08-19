@@ -60,7 +60,7 @@ abstract class CachedLater<A> : NowOrLater<A> {
                     TAG,
                     "Calling consumer: $consumer"
                 )
-                consumer.consume(value!!)
+                consumer.consume(value)
             }
         }
     }
