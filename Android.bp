@@ -34,6 +34,8 @@ android_app {
       "src/**/quicksearchbox/google/GoogleSuggestionProvider.java",
       "src/**/quicksearchbox/google/SearchBaseUrlHelper.java",
       "src/**/quicksearchbox/ui/BaseSuggestionView.java",
+      "src/**/quicksearchbox/ui/QueryTextView.java",
+      "src/**/quicksearchbox/ui/SearchActivityView.java",
       "src/**/quicksearchbox/ui/SuggestionClickListener.java",
       "src/**/quicksearchbox/ui/SuggestionsAdapter.java",
       "src/**/quicksearchbox/ui/SuggestionsListView.java",
