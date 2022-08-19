@@ -14,103 +14,98 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.R;
-import com.android.quicksearchbox.Suggestion;
-
-import android.content.Context;
-import android.text.TextUtils;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.content.Context
+import android.text.TextUtils
+import android.util.AttributeSet
+import android.view.View
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.TextView
+import com.android.quicksearchbox.R
+import com.android.quicksearchbox.Suggestion
 
 /**
  * Base class for suggestion views.
  */
-public abstract class BaseSuggestionView extends RelativeLayout implements SuggestionView {
+abstract class BaseSuggestionView : RelativeLayout, SuggestionView {
+  protected var mText1: TextView? = null
+  protected var mText2: TextView? = null
+  protected var mIcon1: ImageView? = null
+  protected var mIcon2: ImageView? = null
+  private var mSuggestionId: Long = 0
+  private var mAdapter: SuggestionsAdapter<*>? = null
 
-  protected TextView mText1;
-  protected TextView mText2;
-  protected ImageView mIcon1;
-  protected ImageView mIcon2;
-  private long mSuggestionId;
-  private SuggestionsAdapter<?> mAdapter;
-
-  public BaseSuggestionView(Context context, AttributeSet attrs, int defStyle) {
-    super(context, attrs, defStyle);
+  constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
+    context,
+    attrs,
+    defStyle
+  ) {
   }
 
-  public BaseSuggestionView(Context context, AttributeSet attrs) {
-    super(context, attrs);
-  }
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+  constructor(context: Context?) : super(context) {}
 
-  public BaseSuggestionView(Context context) {
-    super(context);
+  @Override
+  protected open fun onFinishInflate() {
+    super.onFinishInflate()
+    mText1 = findViewById(R.id.text1) as TextView?
+    mText2 = findViewById(R.id.text2) as TextView?
+    mIcon1 = findViewById(R.id.icon1) as ImageView?
+    mIcon2 = findViewById(R.id.icon2) as ImageView?
   }
 
   @Override
-  protected void onFinishInflate() {
-    super.onFinishInflate();
-    mText1 = (TextView) findViewById(R.id.text1);
-    mText2 = (TextView) findViewById(R.id.text2);
-    mIcon1 = (ImageView) findViewById(R.id.icon1);
-    mIcon2 = (ImageView) findViewById(R.id.icon2);
+  override fun bindAsSuggestion(suggestion: Suggestion, userQuery: String) {
+    setOnClickListener(ClickListener())
   }
 
   @Override
-  public void bindAsSuggestion(Suggestion suggestion, String userQuery) {
-    setOnClickListener(new ClickListener());
+  override fun bindAdapter(adapter: SuggestionsAdapter<*>?, suggestionId: Long) {
+    mAdapter = adapter
+    mSuggestionId = suggestionId
   }
 
-  @Override
-  public void bindAdapter(SuggestionsAdapter<?> adapter, long suggestionId) {
-    mAdapter = adapter;
-    mSuggestionId = suggestionId;
-  }
-
-  protected boolean isFromHistory(Suggestion suggestion) {
-    return suggestion.isSuggestionShortcut() || suggestion.isHistorySuggestion();
+  protected fun isFromHistory(suggestion: Suggestion): Boolean {
+    return suggestion.isSuggestionShortcut() || suggestion.isHistorySuggestion()
   }
 
   /**
    * Sets the first text line.
    */
-  protected void setText1(CharSequence text) {
-    mText1.setText(text);
+  protected fun setText1(text: CharSequence?) {
+    mText1.setText(text)
   }
 
   /**
    * Sets the second text line.
    */
-  protected void setText2(CharSequence text) {
-    mText2.setText(text);
+  protected fun setText2(text: CharSequence?) {
+    mText2.setText(text)
     if (TextUtils.isEmpty(text)) {
-      mText2.setVisibility(GONE);
+      mText2.setVisibility(GONE)
     } else {
-      mText2.setVisibility(VISIBLE);
+      mText2.setVisibility(VISIBLE)
     }
   }
 
-  protected void onSuggestionClicked() {
+  protected fun onSuggestionClicked() {
     if (mAdapter != null) {
-      mAdapter.onSuggestionClicked(mSuggestionId);
+      mAdapter!!.onSuggestionClicked(mSuggestionId)
     }
   }
 
-  protected void onSuggestionQueryRefineClicked() {
+  protected fun onSuggestionQueryRefineClicked() {
     if (mAdapter != null) {
-      mAdapter.onSuggestionQueryRefineClicked(mSuggestionId);
+      mAdapter!!.onSuggestionQueryRefineClicked(mSuggestionId)
     }
   }
 
-  private class ClickListener implements OnClickListener {
+  private inner class ClickListener : OnClickListener {
     @Override
-    public void onClick(View v) {
-      onSuggestionClicked();
+    fun onClick(v: View?) {
+      onSuggestionClicked()
     }
   }
-
 }
