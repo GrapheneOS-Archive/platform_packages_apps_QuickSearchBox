@@ -82,10 +82,10 @@ class LevenshteinSuggestionFormatter(spanFactory: TextAppearanceFactory?) : Sugg
         table.calculate()
         val targetLen = target.size
         val result = IntArray(targetLen)
-        val ops: Array<LevenshteinDistance.EditOperation> = table.targetOperations
+        val ops: Array<LevenshteinDistance.EditOperation?> = table.targetOperations
         for (i in 0 until targetLen) {
-            if (ops[i].type == LevenshteinDistance.EDIT_UNCHANGED) {
-                result[i] = ops[i].position
+            if (ops[i]!!.type == LevenshteinDistance.EDIT_UNCHANGED) {
+                result[i] = ops[i]!!.position
             } else {
                 result[i] = -1
             }
