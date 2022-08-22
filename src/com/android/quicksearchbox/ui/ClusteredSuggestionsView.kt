@@ -14,58 +14,54 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import android.widget.ExpandableListAdapter
+import android.widget.ExpandableListView
 
 /**
  * Suggestions view that displays suggestions clustered by corpus type.
  */
-public class ClusteredSuggestionsView extends ExpandableListView
-        implements SuggestionsListView<ExpandableListAdapter> {
-
-    SuggestionsAdapter<ExpandableListAdapter> mSuggestionsAdapter;
-
-    public ClusteredSuggestionsView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+class ClusteredSuggestionsView(context: Context?, attrs: AttributeSet?) :
+    ExpandableListView(context, attrs), SuggestionsListView<ExpandableListAdapter?> {
+    @JvmField
+    var mSuggestionsAdapter: SuggestionsAdapter<ExpandableListAdapter>? = null
+    override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ExpandableListAdapter>?) {
+        mSuggestionsAdapter = adapter
+        super.setAdapter(adapter?.getListAdapter())
     }
 
-    public void setSuggestionsAdapter(SuggestionsAdapter<ExpandableListAdapter> adapter) {
-        mSuggestionsAdapter = adapter;
-        super.setAdapter(adapter == null ? null : adapter.getListAdapter());
+    override fun getSuggestionsAdapter(): SuggestionsAdapter<ExpandableListAdapter>? {
+        return mSuggestionsAdapter
     }
 
-    public SuggestionsAdapter<ExpandableListAdapter> getSuggestionsAdapter() {
-        return mSuggestionsAdapter;
-    }
-
-    public void setLimitSuggestionsToViewHeight(boolean limit) {
+    fun setLimitSuggestionsToViewHeight(limit: Boolean) {
         // not supported
     }
 
     @Override
-    public void onFinishInflate() {
-        super.onFinishInflate();
-        setItemsCanFocus(false);
-        setOnGroupClickListener(new OnGroupClickListener(){
-            public boolean onGroupClick(
-                    ExpandableListView parent, View v, int groupPosition, long id) {
+    fun onFinishInflate() {
+        super.onFinishInflate()
+        setItemsCanFocus(false)
+        setOnGroupClickListener(object : OnGroupClickListener() {
+            fun onGroupClick(
+                parent: ExpandableListView?, v: View?, groupPosition: Int, id: Long
+            ): Boolean {
                 // disable collapsing / expanding
-                return true;
-            }});
+                return true
+            }
+        })
     }
 
-    public void expandAll() {
+    fun expandAll() {
         if (mSuggestionsAdapter != null) {
-            ExpandableListAdapter adapter = mSuggestionsAdapter.getListAdapter();
-            for (int i = 0; i < adapter.getGroupCount(); ++i) {
-                expandGroup(i);
+            val adapter: ExpandableListAdapter = mSuggestionsAdapter.getListAdapter()
+            for (i in 0 until adapter.getGroupCount()) {
+                expandGroup(i)
             }
         }
     }
-
 }
