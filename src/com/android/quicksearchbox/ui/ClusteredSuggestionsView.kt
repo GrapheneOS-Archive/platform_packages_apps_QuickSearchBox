@@ -22,46 +22,56 @@ import android.view.View
 import android.widget.ExpandableListAdapter
 import android.widget.ExpandableListView
 
-/**
- * Suggestions view that displays suggestions clustered by corpus type.
- */
+/** Suggestions view that displays suggestions clustered by corpus type. */
 class ClusteredSuggestionsView(context: Context?, attrs: AttributeSet?) :
-    ExpandableListView(context, attrs), SuggestionsListView<ExpandableListAdapter?> {
-    @JvmField
-    var mSuggestionsAdapter: SuggestionsAdapter<ExpandableListAdapter>? = null
-    override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ExpandableListAdapter>?) {
-        mSuggestionsAdapter = adapter
-        super.setAdapter(adapter?.getListAdapter())
-    }
+  ExpandableListView(context, attrs), SuggestionsListView<ExpandableListAdapter?> {
 
-    override fun getSuggestionsAdapter(): SuggestionsAdapter<ExpandableListAdapter>? {
-        return mSuggestionsAdapter
-    }
+  @JvmField var mSuggestionsAdapter: SuggestionsAdapter<ExpandableListAdapter?>? = null
 
-    fun setLimitSuggestionsToViewHeight(limit: Boolean) {
-        // not supported
-    }
+  override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ExpandableListAdapter?>?) {
+    mSuggestionsAdapter = adapter
+    super.setAdapter(adapter?.listAdapter)
+  }
 
-    @Override
-    fun onFinishInflate() {
-        super.onFinishInflate()
-        setItemsCanFocus(false)
-        setOnGroupClickListener(object : OnGroupClickListener() {
-            fun onGroupClick(
-                parent: ExpandableListView?, v: View?, groupPosition: Int, id: Long
-            ): Boolean {
-                // disable collapsing / expanding
-                return true
-            }
-        })
-    }
+  override fun getSuggestionsAdapter(): SuggestionsAdapter<ExpandableListAdapter?>? {
+    return mSuggestionsAdapter
+  }
 
-    fun expandAll() {
-        if (mSuggestionsAdapter != null) {
-            val adapter: ExpandableListAdapter = mSuggestionsAdapter.getListAdapter()
-            for (i in 0 until adapter.getGroupCount()) {
-                expandGroup(i)
-            }
+  // TODO: this function does not appear to be used currently and remains unimplemented
+  override fun getSelectedItemId(): Long {
+    return 0
+  }
+
+  @Suppress("UNUSED_PARAMETER")
+  fun setLimitSuggestionsToViewHeight(limit: Boolean) {
+    // not supported
+  }
+
+  @Override
+  override fun onFinishInflate() {
+    super.onFinishInflate()
+    setItemsCanFocus(false)
+    setOnGroupClickListener(
+      object : OnGroupClickListener {
+        override fun onGroupClick(
+          parent: ExpandableListView?,
+          v: View?,
+          groupPosition: Int,
+          id: Long
+        ): Boolean {
+          // disable collapsing / expanding
+          return true
         }
+      }
+    )
+  }
+
+  fun expandAll() {
+    if (mSuggestionsAdapter != null) {
+      val adapter: ExpandableListAdapter? = mSuggestionsAdapter?.listAdapter
+      for (i in 0 until adapter!!.getGroupCount()) {
+        expandGroup(i)
+      }
     }
+  }
 }
