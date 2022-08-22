@@ -16,7 +16,6 @@
 
 package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.R
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -25,6 +24,8 @@ import android.widget.Checkable
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+
+import com.android.quicksearchbox.R
 
 /**
  * A corpus in the corpus selection list.
@@ -38,42 +39,44 @@ class CorpusView : RelativeLayout, Checkable {
     constructor(context: Context?) : super(context) {}
 
     @Override
-    protected fun onFinishInflate() {
+    protected override fun onFinishInflate() {
         super.onFinishInflate()
         mIcon = findViewById(R.id.source_icon) as ImageView?
         mLabel = findViewById(R.id.source_label) as TextView?
     }
 
     fun setLabel(label: CharSequence?) {
-        mLabel.setText(label)
+        mLabel?.setText(label)
     }
 
     fun setIcon(icon: Drawable?) {
-        mIcon.setImageDrawable(icon)
+        mIcon?.setImageDrawable(icon)
     }
 
-    @get:ViewDebug.ExportedProperty
-    @get:Override
-    @set:Override
-    var isChecked: Boolean
-        get() = mChecked
-        set(checked) {
-            if (mChecked != checked) {
-                mChecked = checked
-                refreshDrawableState()
-            }
-        }
+    @Override
+    @ViewDebug.ExportedProperty
+    override fun isChecked(): Boolean {
+        return mChecked
+    }
 
     @Override
-    fun toggle() {
+    override fun setChecked(checked: Boolean) {
+        if (mChecked != checked) {
+            mChecked = checked
+            refreshDrawableState()
+        }
+    }
+
+    @Override
+    override fun toggle() {
         isChecked = !mChecked
     }
 
     @Override
-    protected fun onCreateDrawableState(extraSpace: Int): IntArray {
+    protected override fun onCreateDrawableState(extraSpace: Int): IntArray {
         val drawableState: IntArray = super.onCreateDrawableState(extraSpace + 1)
         if (isChecked) {
-            mergeDrawableStates(drawableState, CorpusView.Companion.CHECKED_STATE_SET)
+            mergeDrawableStates(drawableState, CHECKED_STATE_SET)
         }
         return drawableState
     }
