@@ -22,31 +22,31 @@ import android.view.View
 import android.widget.QuickContactBadge
 
 /**
- * A [QuickContactBadge] that allows setting a click listener.
- * The base class may use [View.setOnClickListener] internally,
- * so this class adds a separate click listener field.
+ * A [QuickContactBadge] that allows setting a click listener. The base class may use
+ * [View.setOnClickListener] internally, so this class adds a separate click listener field.
  */
 class ContactBadge : QuickContactBadge {
-    private var mExtraOnClickListener: View.OnClickListener? = null
+  private var mExtraOnClickListener: View.OnClickListener? = null
 
-    constructor(context: Context?) : super(context) {}
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
-    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
-        context,
-        attrs,
-        defStyle
-    ) {
-    }
+  constructor(context: Context?) : super(context)
 
-    @Override
-    fun onClick(v: View?) {
-        super.onClick(v)
-        if (mExtraOnClickListener != null) {
-            mExtraOnClickListener.onClick(v)
-        }
-    }
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 
-    fun setExtraOnClickListener(extraOnClickListener: View.OnClickListener?) {
-        mExtraOnClickListener = extraOnClickListener
+  constructor(
+    context: Context?,
+    attrs: AttributeSet?,
+    defStyle: Int
+  ) : super(context, attrs, defStyle)
+
+  @Override
+  override fun onClick(v: View?) {
+    super.onClick(v)
+    if (mExtraOnClickListener != null) {
+      mExtraOnClickListener?.onClick(v)
     }
+  }
+
+  fun setExtraOnClickListener(extraOnClickListener: View.OnClickListener?) {
+    mExtraOnClickListener = extraOnClickListener
+  }
 }
