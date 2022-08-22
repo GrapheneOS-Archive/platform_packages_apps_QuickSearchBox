@@ -14,44 +14,39 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.QuickContactBadge;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import android.widget.QuickContactBadge
 
 /**
- * A {@link QuickContactBadge} that allows setting a click listener.
- * The base class may use {@link View#setOnClickListener} internally,
+ * A [QuickContactBadge] that allows setting a click listener.
+ * The base class may use [View.setOnClickListener] internally,
  * so this class adds a separate click listener field.
  */
-public class ContactBadge extends QuickContactBadge {
+class ContactBadge : QuickContactBadge {
+    private var mExtraOnClickListener: View.OnClickListener? = null
 
-    private View.OnClickListener mExtraOnClickListener;
-
-    public ContactBadge(Context context) {
-        super(context);
-    }
-
-    public ContactBadge(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public ContactBadge(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
+        context,
+        attrs,
+        defStyle
+    ) {
     }
 
     @Override
-    public void onClick(View v) {
-        super.onClick(v);
+    fun onClick(v: View?) {
+        super.onClick(v)
         if (mExtraOnClickListener != null) {
-            mExtraOnClickListener.onClick(v);
+            mExtraOnClickListener.onClick(v)
         }
     }
 
-    public void setExtraOnClickListener(View.OnClickListener extraOnClickListener) {
-        mExtraOnClickListener = extraOnClickListener;
+    fun setExtraOnClickListener(extraOnClickListener: View.OnClickListener?) {
+        mExtraOnClickListener = extraOnClickListener
     }
-
 }
