@@ -14,82 +14,73 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.R;
-
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.ViewDebug;
-import android.widget.Checkable;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-
+import com.android.quicksearchbox.R
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.ViewDebug
+import android.widget.Checkable
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.TextView
 
 /**
  * A corpus in the corpus selection list.
  */
-public class CorpusView extends RelativeLayout implements Checkable {
+class CorpusView : RelativeLayout, Checkable {
+    private var mIcon: ImageView? = null
+    private var mLabel: TextView? = null
+    private var mChecked = false
 
-    private ImageView mIcon;
-    private TextView mLabel;
-    private boolean mChecked;
-
-    private static final int[] CHECKED_STATE_SET = {
-        android.R.attr.state_checked
-    };
-
-    public CorpusView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public CorpusView(Context context) {
-        super(context);
-    }
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?) : super(context) {}
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        mIcon = (ImageView) findViewById(R.id.source_icon);
-        mLabel = (TextView) findViewById(R.id.source_label);
+    protected fun onFinishInflate() {
+        super.onFinishInflate()
+        mIcon = findViewById(R.id.source_icon) as ImageView?
+        mLabel = findViewById(R.id.source_label) as TextView?
     }
 
-    public void setLabel(CharSequence label) {
-        mLabel.setText(label);
+    fun setLabel(label: CharSequence?) {
+        mLabel.setText(label)
     }
 
-    public void setIcon(Drawable icon) {
-        mIcon.setImageDrawable(icon);
+    fun setIcon(icon: Drawable?) {
+        mIcon.setImageDrawable(icon)
     }
 
-    @Override
-    @ViewDebug.ExportedProperty
-    public boolean isChecked() {
-        return mChecked;
-    }
-
-    @Override
-    public void setChecked(boolean checked) {
-        if (mChecked != checked) {
-            mChecked = checked;
-            refreshDrawableState();
+    @get:ViewDebug.ExportedProperty
+    @get:Override
+    @set:Override
+    var isChecked: Boolean
+        get() = mChecked
+        set(checked) {
+            if (mChecked != checked) {
+                mChecked = checked
+                refreshDrawableState()
+            }
         }
+
+    @Override
+    fun toggle() {
+        isChecked = !mChecked
     }
 
     @Override
-    public void toggle() {
-        setChecked(!mChecked);
-    }
-
-    @Override
-    protected int[] onCreateDrawableState(int extraSpace) {
-        final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
-        if (isChecked()) {
-            mergeDrawableStates(drawableState, CHECKED_STATE_SET);
+    protected fun onCreateDrawableState(extraSpace: Int): IntArray {
+        val drawableState: IntArray = super.onCreateDrawableState(extraSpace + 1)
+        if (isChecked) {
+            mergeDrawableStates(drawableState, CorpusView.Companion.CHECKED_STATE_SET)
         }
-        return drawableState;
+        return drawableState
     }
 
+    companion object {
+        private val CHECKED_STATE_SET = intArrayOf(
+            android.R.attr.state_checked
+        )
+    }
 }
