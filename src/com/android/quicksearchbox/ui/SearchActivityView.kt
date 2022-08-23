@@ -368,7 +368,7 @@ abstract class SearchActivityView : RelativeLayout {
         if (
           onSuggestionKeyDown(
             listView.getSuggestionsAdapter(),
-            listView.selectedItemId,
+            listView.getSelectedItemId(),
             keyCode,
             event
           )
