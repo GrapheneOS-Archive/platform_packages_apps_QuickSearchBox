@@ -65,8 +65,8 @@ abstract class BaseSuggestionView : RelativeLayout, SuggestionView {
     mSuggestionId = position
   }
 
-  protected fun isFromHistory(suggestion: Suggestion): Boolean {
-    return suggestion.isSuggestionShortcut || suggestion.isHistorySuggestion
+  protected fun isFromHistory(suggestion: Suggestion?): Boolean {
+    return suggestion?.isSuggestionShortcut == true || suggestion?.isHistorySuggestion == true
   }
 
   /** Sets the first text line. */
