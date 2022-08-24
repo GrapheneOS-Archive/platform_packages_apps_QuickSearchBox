@@ -14,28 +14,50 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.Suggestion;
-import com.android.quicksearchbox.SuggestionCursor;
-
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import java.util.Collection;
-import java.util.Collections;
+import android.content.Context
+import com.android.quicksearchbox.Suggestion
+import com.android.quicksearchbox.SuggestionCursor
 
 /**
  * Suggestion view factory that inflates views from XML.
  */
-public class SuggestionViewInflater implements SuggestionViewFactory {
+open class SuggestionViewInflater(
+    private val mViewType: String, viewClass: Class<out SuggestionView?>,
+    layoutId: Int, context: Context
+) : SuggestionViewFactory {
+    private val mViewClass: Class<*>
+    private val mLayoutId: Int
+    private val mContext: Context
+    protected val inflater: LayoutInflater
+        protected get() = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    override val suggestionViewTypes: Collection<String>
+        get() = Collections.singletonList(mViewType)
 
-    private final String mViewType;
-    private final Class<?> mViewClass;
-    private final int mLayoutId;
-    private final Context mContext;
+    override fun getView(
+        suggestion: SuggestionCursor, userQuery: String,
+        convertView: View, parent: ViewGroup
+    ): View {
+        var convertView: View = convertView
+        if (convertView == null || !convertView.getClass().equals(mViewClass)) {
+            val layoutId = mLayoutId
+            convertView = inflater.inflate(layoutId, parent, false)
+        }
+        if (convertView !is SuggestionView) {
+            throw IllegalArgumentException("Not a SuggestionView: $convertView")
+        }
+        (convertView as SuggestionView).bindAsSuggestion(suggestion, userQuery)
+        return convertView
+    }
+
+    override fun getViewType(suggestion: Suggestion): String {
+        return mViewType
+    }
+
+    override fun canCreateView(suggestion: Suggestion): Boolean {
+        return true
+    }
 
     /**
      * @param viewType The unique type of views inflated by this factory
@@ -43,41 +65,9 @@ public class SuggestionViewInflater implements SuggestionViewFactory {
      * @param layoutId resource ID of layout to use.
      * @param context Context to use for inflating the views.
      */
-    public SuggestionViewInflater(String viewType, Class<? extends SuggestionView> viewClass,
-            int layoutId, Context context) {
-        mViewType = viewType;
-        mViewClass = viewClass;
-        mLayoutId = layoutId;
-        mContext = context;
+    init {
+        mViewClass = viewClass
+        mLayoutId = layoutId
+        mContext = context
     }
-
-    protected LayoutInflater getInflater() {
-        return (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    }
-
-    public Collection<String> getSuggestionViewTypes() {
-        return Collections.singletonList(mViewType);
-    }
-
-    public View getView(SuggestionCursor suggestion, String userQuery,
-            View convertView, ViewGroup parent) {
-        if (convertView == null || !convertView.getClass().equals(mViewClass)) {
-            int layoutId = mLayoutId;
-            convertView = getInflater().inflate(layoutId, parent, false);
-        }
-        if (!(convertView instanceof SuggestionView)) {
-            throw new IllegalArgumentException("Not a SuggestionView: " + convertView);
-        }
-        ((SuggestionView) convertView).bindAsSuggestion(suggestion, userQuery);
-        return convertView;
-    }
-
-    public String getViewType(Suggestion suggestion) {
-        return mViewType;
-    }
-
-    public boolean canCreateView(Suggestion suggestion) {
-        return true;
-    }
-
 }
