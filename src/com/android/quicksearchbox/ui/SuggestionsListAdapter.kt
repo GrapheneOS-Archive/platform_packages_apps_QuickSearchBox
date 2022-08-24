@@ -14,88 +14,83 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
-
-import com.android.quicksearchbox.SuggestionCursor;
-import com.android.quicksearchbox.SuggestionPosition;
-import com.android.quicksearchbox.Suggestions;
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ListAdapter
+import com.android.quicksearchbox.SuggestionCursor
+import com.android.quicksearchbox.SuggestionPosition
 
 /**
- * Uses a {@link Suggestions} object to back a {@link SuggestionsView}.
+ * Uses a [Suggestions] object to back a [SuggestionsView].
  */
-public class SuggestionsListAdapter extends SuggestionsAdapterBase<ListAdapter> {
+class SuggestionsListAdapter(viewFactory: SuggestionViewFactory?) :
+    SuggestionsAdapterBase<ListAdapter?>(
+        viewFactory!!
+    ) {
+    private val mAdapter: SuggestionsListAdapter.Adapter
 
-    private Adapter mAdapter;
+    @get:Override
+    override val isEmpty: Boolean
+        get() = mAdapter.getCount() == 0
 
-    public SuggestionsListAdapter(SuggestionViewFactory viewFactory) {
-        super(viewFactory);
-        mAdapter = new Adapter();
+    @Override
+    override fun getSuggestion(suggestionId: Long): SuggestionPosition? {
+        return SuggestionPosition(getCurrentSuggestions(), suggestionId.toInt())
+    }
+
+    @get:Override
+    override val listAdapter: BaseAdapter
+        get() = mAdapter
+
+    @Override
+    public override fun notifyDataSetChanged() {
+        mAdapter.notifyDataSetChanged()
     }
 
     @Override
-    public boolean isEmpty() {
-        return mAdapter.getCount() == 0;
+    public override fun notifyDataSetInvalidated() {
+        mAdapter.notifyDataSetInvalidated()
     }
 
-    @Override
-    public SuggestionPosition getSuggestion(long suggestionId) {
-        return new SuggestionPosition(getCurrentSuggestions(), (int) suggestionId);
-    }
-
-    @Override
-    public BaseAdapter getListAdapter() {
-        return mAdapter;
-    }
-
-    @Override
-    public void notifyDataSetChanged() {
-        mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void notifyDataSetInvalidated() {
-        mAdapter.notifyDataSetInvalidated();
-    }
-
-    class Adapter extends BaseAdapter {
-
+    internal inner class Adapter : BaseAdapter() {
         @Override
-        public int getCount() {
-            SuggestionCursor s = getCurrentSuggestions();
-            return s == null ? 0 : s.getCount();
+        fun getCount(): Int {
+            val s: SuggestionCursor = getCurrentSuggestions()
+            return if (s == null) 0 else s.getCount()
         }
 
         @Override
-        public Object getItem(int position) {
-            return getSuggestion(position);
+        fun getItem(position: Int): Object? {
+            return getSuggestion(position)
         }
 
         @Override
-        public long getItemId(int position) {
-            return position;
+        fun getItemId(position: Int): Long {
+            return position.toLong()
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            return SuggestionsListAdapter.this.getView(
-                    getCurrentSuggestions(), position, position, convertView, parent);
+        fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+            return this@SuggestionsListAdapter.getView(
+                getCurrentSuggestions(), position, position.toLong(), convertView, parent
+            )
         }
 
         @Override
-        public int getItemViewType(int position) {
-            return getSuggestionViewType(getCurrentSuggestions(), position);
+        fun getItemViewType(position: Int): Int {
+            return getSuggestionViewType(getCurrentSuggestions(), position)
         }
 
         @Override
-        public int getViewTypeCount() {
-            return getSuggestionViewTypeCount();
+        fun getViewTypeCount(): Int {
+            return getSuggestionViewTypeCount()
         }
-
     }
 
+    init {
+        mAdapter = SuggestionsListAdapter.Adapter()
+    }
 }
