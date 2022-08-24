@@ -21,7 +21,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.android.quicksearchbox.Suggestion
 import com.android.quicksearchbox.SuggestionCursor
-import java.util.HashSet
+
 import java.util.LinkedList
 
 /** Suggestion view factory for Google suggestions. */
@@ -39,22 +39,22 @@ class DefaultSuggestionViewFactory(context: Context?) : SuggestionViewFactory {
   override val suggestionViewTypes: Collection<String>
     get() {
       if (mViewTypes == null) {
-        mViewTypes = HashSet<String>()
-        mViewTypes.addAll(mDefaultFactory.getSuggestionViewTypes())
+        mViewTypes = hashSetOf()
+        mViewTypes?.addAll(mDefaultFactory.suggestionViewTypes)
         for (factory in mFactories) {
-          mViewTypes.addAll(factory.getSuggestionViewTypes())
+          mViewTypes?.addAll(factory.suggestionViewTypes)
         }
       }
-      return mViewTypes
+      return mViewTypes as Collection<String>
     }
 
   @Override
   override fun getView(
-    suggestion: SuggestionCursor,
-    userQuery: String,
-    convertView: View,
-    parent: ViewGroup
-  ): View {
+    suggestion: SuggestionCursor?,
+    userQuery: String?,
+    convertView: View?,
+    parent: ViewGroup?
+  ): View? {
     for (factory in mFactories) {
       if (factory.canCreateView(suggestion)) {
         return factory.getView(suggestion, userQuery, convertView, parent)
@@ -64,7 +64,7 @@ class DefaultSuggestionViewFactory(context: Context?) : SuggestionViewFactory {
   }
 
   @Override
-  override fun getViewType(suggestion: Suggestion): String {
+  override fun getViewType(suggestion: Suggestion?): String {
     for (factory in mFactories) {
       if (factory.canCreateView(suggestion)) {
         return factory.getViewType(suggestion)!!
@@ -74,7 +74,7 @@ class DefaultSuggestionViewFactory(context: Context?) : SuggestionViewFactory {
   }
 
   @Override
-  override fun canCreateView(suggestion: Suggestion): Boolean {
+  override fun canCreateView(suggestion: Suggestion?): Boolean {
     return true
   }
 
