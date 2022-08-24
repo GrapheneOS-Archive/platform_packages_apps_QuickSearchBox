@@ -14,238 +14,222 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.Suggestion;
-import com.android.quicksearchbox.SuggestionCursor;
-import com.android.quicksearchbox.SuggestionPosition;
-import com.android.quicksearchbox.Suggestions;
+import android.database.DataSetObserver
 
-import android.database.DataSetObserver;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnFocusChangeListener;
-import android.view.ViewGroup;
-
-import java.util.HashMap;
+import com.android.quicksearchbox.Suggestion
+import com.android.quicksearchbox.SuggestionCursor
+import com.android.quicksearchbox.SuggestionPosition
+import com.android.quicksearchbox.Suggestions
 
 /**
  * Base class for suggestions adapters. The templated class A is the list adapter class.
  */
-public abstract class SuggestionsAdapterBase<A> implements SuggestionsAdapter<A> {
+abstract class SuggestionsAdapterBase<A> protected constructor(private val mViewFactory: SuggestionViewFactory) :
+    SuggestionsAdapter<A> {
+    private var mDataSetObserver: DataSetObserver? = null
+    var currentSuggestions: SuggestionCursor? = null
+        private set
+    private val mViewTypeMap: HashMap<String, Integer>
+    private var mSuggestions: Suggestions? = null
+    private var mSuggestionClickListener: SuggestionClickListener? = null
+    private var mOnFocusChangeListener: OnFocusChangeListener? = null
+    var isClosed = false
+        private set
 
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.SuggestionsAdapter";
+    @get:Override
+    abstract override val isEmpty: Boolean
+    fun close() {
+        suggestions = null
+        isClosed = true
+    }
 
-    private DataSetObserver mDataSetObserver;
+    @Override
+    override fun setSuggestionClickListener(listener: SuggestionClickListener) {
+        mSuggestionClickListener = listener
+    }
 
-    private SuggestionCursor mCurrentSuggestions;
-    private final HashMap<String, Integer> mViewTypeMap;
-    private final SuggestionViewFactory mViewFactory;
+    @Override
+    override fun setOnFocusChangeListener(l: OnFocusChangeListener) {
+        mOnFocusChangeListener = l
+    }
 
-    private Suggestions mSuggestions;
-
-    private SuggestionClickListener mSuggestionClickListener;
-    private OnFocusChangeListener mOnFocusChangeListener;
-
-    private boolean mClosed = false;
-
-    protected SuggestionsAdapterBase(SuggestionViewFactory viewFactory) {
-        mViewFactory = viewFactory;
-        mViewTypeMap = new HashMap<String, Integer>();
-        for (String viewType : mViewFactory.getSuggestionViewTypes()) {
-            if (!mViewTypeMap.containsKey(viewType)) {
-                mViewTypeMap.put(viewType, mViewTypeMap.size());
+    // TODO: delay the change if there are no suggestions for the currently visible tab.
+    @get:Override
+    @set:Override
+    override var suggestions: Suggestions
+        get() = mSuggestions!!
+        set(suggestions) {
+            if (mSuggestions === suggestions) {
+                return
             }
-        }
-    }
-
-    @Override
-    public abstract boolean isEmpty();
-
-    public boolean isClosed() {
-        return mClosed;
-    }
-
-    public void close() {
-        setSuggestions(null);
-        mClosed = true;
-    }
-
-    @Override
-    public void setSuggestionClickListener(SuggestionClickListener listener) {
-        mSuggestionClickListener = listener;
-    }
-
-    @Override
-    public void setOnFocusChangeListener(OnFocusChangeListener l) {
-        mOnFocusChangeListener = l;
-    }
-
-    @Override
-    public void setSuggestions(Suggestions suggestions) {
-        if (mSuggestions == suggestions) {
-            return;
-        }
-        if (mClosed) {
-            if (suggestions != null) {
-                suggestions.release();
+            if (isClosed) {
+                if (suggestions != null) {
+                    suggestions.release()
+                }
+                return
             }
-            return;
+            if (mDataSetObserver == null) {
+                mDataSetObserver = SuggestionsAdapterBase.MySuggestionsObserver()
+            }
+            // TODO: delay the change if there are no suggestions for the currently visible tab.
+            if (mSuggestions != null) {
+                mSuggestions!!.unregisterDataSetObserver(mDataSetObserver)
+                mSuggestions!!.release()
+            }
+            mSuggestions = suggestions
+            if (mSuggestions != null) {
+                mSuggestions!!.registerDataSetObserver(mDataSetObserver)
+            }
+            onSuggestionsChanged()
         }
-        if (mDataSetObserver == null) {
-            mDataSetObserver = new MySuggestionsObserver();
-        }
-        // TODO: delay the change if there are no suggestions for the currently visible tab.
-        if (mSuggestions != null) {
-            mSuggestions.unregisterDataSetObserver(mDataSetObserver);
-            mSuggestions.release();
-        }
-        mSuggestions = suggestions;
-        if (mSuggestions != null) {
-            mSuggestions.registerDataSetObserver(mDataSetObserver);
-        }
-        onSuggestionsChanged();
-    }
 
     @Override
-    public Suggestions getSuggestions() {
-        return mSuggestions;
+    abstract override fun getSuggestion(suggestionId: Long): SuggestionPosition
+    protected val count: Int
+        protected get() = if (currentSuggestions == null) 0 else currentSuggestions.getCount()
+
+    protected fun getSuggestion(position: Int): SuggestionPosition? {
+        return if (currentSuggestions == null) null else SuggestionPosition(
+            currentSuggestions!!,
+            position
+        )
     }
 
-    @Override
-    public abstract SuggestionPosition getSuggestion(long suggestionId);
+    protected val viewTypeCount: Int
+        protected get() = mViewTypeMap.size()
 
-    protected int getCount() {
-        return mCurrentSuggestions == null ? 0 : mCurrentSuggestions.getCount();
-    }
-
-    protected SuggestionPosition getSuggestion(int position) {
-        if (mCurrentSuggestions == null) return null;
-        return new SuggestionPosition(mCurrentSuggestions, position);
-    }
-
-    protected int getViewTypeCount() {
-        return mViewTypeMap.size();
-    }
-
-    private String suggestionViewType(Suggestion suggestion) {
-        String viewType = mViewFactory.getViewType(suggestion);
+    private fun suggestionViewType(suggestion: Suggestion): String? {
+        val viewType = mViewFactory.getViewType(suggestion)
         if (!mViewTypeMap.containsKey(viewType)) {
-            throw new IllegalStateException("Unknown viewType " + viewType);
+            throw IllegalStateException("Unknown viewType $viewType")
         }
-        return viewType;
+        return viewType
     }
 
-    protected int getSuggestionViewType(SuggestionCursor cursor, int position) {
+    protected fun getSuggestionViewType(cursor: SuggestionCursor?, position: Int): Int {
         if (cursor == null) {
-            return 0;
+            return 0
         }
-        cursor.moveTo(position);
-        return mViewTypeMap.get(suggestionViewType(cursor));
+        cursor.moveTo(position)
+        return mViewTypeMap.get(suggestionViewType(cursor))
     }
 
-    protected int getSuggestionViewTypeCount() {
-        return mViewTypeMap.size();
-    }
+    protected val suggestionViewTypeCount: Int
+        protected get() = mViewTypeMap.size()
 
-    protected View getView(SuggestionCursor suggestions, int position, long suggestionId,
-            View convertView, ViewGroup parent) {
-        suggestions.moveTo(position);
-        View v = mViewFactory.getView(suggestions, suggestions.getUserQuery(), convertView, parent);
-        if (v instanceof SuggestionView) {
-            ((SuggestionView) v).bindAdapter(this, suggestionId);
+    protected fun getView(
+        suggestions: SuggestionCursor, position: Int, suggestionId: Long,
+        convertView: View?, parent: ViewGroup?
+    ): View? {
+        suggestions.moveTo(position)
+        val v: View? =
+            mViewFactory.getView(suggestions, suggestions.getUserQuery(), convertView, parent)
+        if (v is SuggestionView) {
+            (v as SuggestionView?)!!.bindAdapter(this, suggestionId)
         } else {
-            SuggestionViewClickListener l = new SuggestionViewClickListener(suggestionId);
-            v.setOnClickListener(l);
+            val l: SuggestionsAdapterBase.SuggestionViewClickListener =
+                SuggestionsAdapterBase.SuggestionViewClickListener(suggestionId)
+            v.setOnClickListener(l)
         }
-
         if (mOnFocusChangeListener != null) {
-            v.setOnFocusChangeListener(mOnFocusChangeListener);
+            v.setOnFocusChangeListener(mOnFocusChangeListener)
         }
-        return v;
+        return v
     }
 
-    protected void onSuggestionsChanged() {
-        if (DBG) Log.d(TAG, "onSuggestionsChanged(" + mSuggestions + ")");
-        SuggestionCursor cursor = null;
+    protected fun onSuggestionsChanged() {
+        if (SuggestionsAdapterBase.Companion.DBG) Log.d(
+            SuggestionsAdapterBase.Companion.TAG,
+            "onSuggestionsChanged($mSuggestions)"
+        )
+        var cursor: SuggestionCursor? = null
         if (mSuggestions != null) {
-            cursor = mSuggestions.getResult();
+            cursor = mSuggestions!!.getResult()
         }
-        changeSuggestions(cursor);
-    }
-
-    public SuggestionCursor getCurrentSuggestions() {
-        return mCurrentSuggestions;
+        changeSuggestions(cursor)
     }
 
     /**
      * Replace the cursor.
      *
      * This does not close the old cursor. Instead, all the cursors are closed in
-     * {@link #setSuggestions(Suggestions)}.
+     * [.setSuggestions].
      */
-    private void changeSuggestions(SuggestionCursor newCursor) {
-        if (DBG) {
-            Log.d(TAG, "changeCursor(" + newCursor + ") count=" +
-                    (newCursor == null ? 0 : newCursor.getCount()));
+    private fun changeSuggestions(newCursor: SuggestionCursor?) {
+        if (SuggestionsAdapterBase.Companion.DBG) {
+            Log.d(
+                SuggestionsAdapterBase.Companion.TAG, "changeCursor(" + newCursor + ") count=" +
+                        if (newCursor == null) 0 else newCursor.getCount()
+            )
         }
-        if (newCursor == mCurrentSuggestions) {
+        if (newCursor === currentSuggestions) {
             if (newCursor != null) {
                 // Shortcuts may have changed without the cursor changing.
-                notifyDataSetChanged();
+                notifyDataSetChanged()
             }
-            return;
+            return
         }
-        mCurrentSuggestions = newCursor;
-        if (mCurrentSuggestions != null) {
-            notifyDataSetChanged();
+        currentSuggestions = newCursor
+        if (currentSuggestions != null) {
+            notifyDataSetChanged()
         } else {
-            notifyDataSetInvalidated();
+            notifyDataSetInvalidated()
         }
     }
 
     @Override
-    public void onSuggestionClicked(long suggestionId) {
-        if (mClosed) {
-            Log.w(TAG, "onSuggestionClicked after close");
+    override fun onSuggestionClicked(suggestionId: Long) {
+        if (isClosed) {
+            Log.w(SuggestionsAdapterBase.Companion.TAG, "onSuggestionClicked after close")
         } else if (mSuggestionClickListener != null) {
-            mSuggestionClickListener.onSuggestionClicked(this, suggestionId);
+            mSuggestionClickListener!!.onSuggestionClicked(this, suggestionId)
         }
     }
 
     @Override
-    public void onSuggestionQueryRefineClicked(long suggestionId) {
-        if (mClosed) {
-            Log.w(TAG, "onSuggestionQueryRefineClicked after close");
+    override fun onSuggestionQueryRefineClicked(suggestionId: Long) {
+        if (isClosed) {
+            Log.w(
+                SuggestionsAdapterBase.Companion.TAG,
+                "onSuggestionQueryRefineClicked after close"
+            )
         } else if (mSuggestionClickListener != null) {
-            mSuggestionClickListener.onSuggestionQueryRefineClicked(this, suggestionId);
+            mSuggestionClickListener!!.onSuggestionQueryRefineClicked(this, suggestionId)
         }
     }
 
-    @Override
-    public abstract A getListAdapter();
-
-    protected abstract void notifyDataSetInvalidated();
-
-    protected abstract void notifyDataSetChanged();
-
-    private class MySuggestionsObserver extends DataSetObserver {
+    @get:Override
+    abstract override val listAdapter: A
+    protected abstract fun notifyDataSetInvalidated()
+    protected abstract fun notifyDataSetChanged()
+    private inner class MySuggestionsObserver : DataSetObserver() {
         @Override
-        public void onChanged() {
-            onSuggestionsChanged();
+        fun onChanged() {
+            onSuggestionsChanged()
         }
     }
 
-    private class SuggestionViewClickListener implements View.OnClickListener {
-        private final long mSuggestionId;
-        public SuggestionViewClickListener(long suggestionId) {
-            mSuggestionId = suggestionId;
-        }
+    private inner class SuggestionViewClickListener(private val mSuggestionId: Long) :
+        View.OnClickListener {
         @Override
-        public void onClick(View v) {
-            onSuggestionClicked(mSuggestionId);
+        fun onClick(v: View?) {
+            onSuggestionClicked(mSuggestionId)
         }
     }
 
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.SuggestionsAdapter"
+    }
+
+    init {
+        mViewTypeMap = HashMap<String, Integer>()
+        for (viewType in mViewFactory.getSuggestionViewTypes()) {
+            if (!mViewTypeMap.containsKey(viewType)) {
+                mViewTypeMap.put(viewType, mViewTypeMap.size())
+            }
+        }
+    }
 }
