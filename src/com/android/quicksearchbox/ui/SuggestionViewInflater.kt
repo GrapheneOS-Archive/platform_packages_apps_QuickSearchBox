@@ -17,6 +17,10 @@
 package com.android.quicksearchbox.ui
 
 import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+
 import com.android.quicksearchbox.Suggestion
 import com.android.quicksearchbox.SuggestionCursor
 
@@ -25,39 +29,41 @@ open class SuggestionViewInflater(
   private val mViewType: String,
   viewClass: Class<out SuggestionView?>,
   layoutId: Int,
-  context: Context
+  context: Context?
 ) : SuggestionViewFactory {
   private val mViewClass: Class<*>
   private val mLayoutId: Int
-  private val mContext: Context
+  private val mContext: Context?
+
   protected val inflater: LayoutInflater
-    protected get() = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    get() = mContext?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
   override val suggestionViewTypes: Collection<String>
-    get() = Collections.singletonList(mViewType)
+    get() = listOf(mViewType)
 
   override fun getView(
-    suggestion: SuggestionCursor,
-    userQuery: String,
-    convertView: View,
-    parent: ViewGroup
-  ): View {
-    var convertView: View = convertView
-    if (convertView == null || !convertView.getClass().equals(mViewClass)) {
+    suggestion: SuggestionCursor?,
+    userQuery: String?,
+    convertView: View?,
+    parent: ViewGroup?
+  ): View? {
+    var mConvertView: View? = convertView
+    if (mConvertView == null || !mConvertView::class.equals(mViewClass)) {
       val layoutId = mLayoutId
-      convertView = inflater.inflate(layoutId, parent, false)
+      mConvertView = inflater.inflate(layoutId, parent, false)
     }
-    if (convertView !is SuggestionView) {
-      throw IllegalArgumentException("Not a SuggestionView: $convertView")
+    if (mConvertView !is SuggestionView) {
+      throw IllegalArgumentException("Not a SuggestionView: $mConvertView")
     }
-    (convertView as SuggestionView).bindAsSuggestion(suggestion, userQuery)
-    return convertView
+    (mConvertView as SuggestionView).bindAsSuggestion(suggestion, userQuery)
+    return mConvertView
   }
 
-  override fun getViewType(suggestion: Suggestion): String {
+  override fun getViewType(suggestion: Suggestion?): String {
     return mViewType
   }
 
-  override fun canCreateView(suggestion: Suggestion): Boolean {
+  override fun canCreateView(suggestion: Suggestion?): Boolean {
     return true
   }
 
