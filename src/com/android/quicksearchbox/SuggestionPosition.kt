@@ -20,16 +20,16 @@ package com.android.quicksearchbox
  *
  */
 class SuggestionPosition @JvmOverloads constructor(
-    val cursor: SuggestionCursor,
-    val position: Int = cursor.position
+    val cursor: SuggestionCursor?,
+    val position: Int = cursor!!.position
 ) : AbstractSuggestionWrapper() {
 
     /**
      * Gets the suggestion cursor, moved to point to the right suggestion.
      */
     @Override
-    override fun current(): Suggestion {
-        cursor.moveTo(position)
+    override fun current(): Suggestion? {
+        cursor?.moveTo(position)
         return cursor
     }
 

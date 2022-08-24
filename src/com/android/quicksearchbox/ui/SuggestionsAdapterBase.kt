@@ -118,14 +118,14 @@ protected constructor(private val mViewFactory: SuggestionViewFactory) : Suggest
     get() = mViewTypeMap.size
 
   protected fun getView(
-    suggestions: SuggestionCursor,
+    suggestions: SuggestionCursor?,
     position: Int,
     suggestionId: Long,
     convertView: View?,
     parent: ViewGroup?
   ): View? {
-    suggestions.moveTo(position)
-    val v: View? = mViewFactory.getView(suggestions, suggestions.userQuery, convertView, parent)
+    suggestions?.moveTo(position)
+    val v: View? = mViewFactory.getView(suggestions, suggestions?.userQuery, convertView, parent)
     if (v is SuggestionView) {
       (v as SuggestionView?)!!.bindAdapter(this, suggestionId)
     } else {

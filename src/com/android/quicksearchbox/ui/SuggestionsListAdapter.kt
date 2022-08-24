@@ -20,6 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ListAdapter
+
 import com.android.quicksearchbox.SuggestionCursor
 import com.android.quicksearchbox.SuggestionPosition
 
@@ -33,8 +34,8 @@ class SuggestionsListAdapter(viewFactory: SuggestionViewFactory?) :
     get() = mAdapter.getCount() == 0
 
   @Override
-  override fun getSuggestion(suggestionId: Long): SuggestionPosition? {
-    return SuggestionPosition(getCurrentSuggestions(), suggestionId.toInt())
+  override fun getSuggestion(suggestionId: Long): SuggestionPosition {
+    return SuggestionPosition(currentSuggestions, suggestionId.toInt())
   }
 
   @get:Override
@@ -53,25 +54,25 @@ class SuggestionsListAdapter(viewFactory: SuggestionViewFactory?) :
 
   internal inner class Adapter : BaseAdapter() {
     @Override
-    fun getCount(): Int {
-      val s: SuggestionCursor = getCurrentSuggestions()
-      return if (s == null) 0 else s.getCount()
+    override fun getCount(): Int {
+      val s: SuggestionCursor? = currentSuggestions
+      return s?.count ?: 0
     }
 
     @Override
-    fun getItem(position: Int): Object? {
+    override fun getItem(position: Int): Any? {
       return getSuggestion(position)
     }
 
     @Override
-    fun getItemId(position: Int): Long {
+    override fun getItemId(position: Int): Long {
       return position.toLong()
     }
 
     @Override
-    fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
       return this@SuggestionsListAdapter.getView(
-        getCurrentSuggestions(),
+        currentSuggestions,
         position,
         position.toLong(),
         convertView,
@@ -80,17 +81,17 @@ class SuggestionsListAdapter(viewFactory: SuggestionViewFactory?) :
     }
 
     @Override
-    fun getItemViewType(position: Int): Int {
-      return getSuggestionViewType(getCurrentSuggestions(), position)
+    override fun getItemViewType(position: Int): Int {
+      return getSuggestionViewType(currentSuggestions, position)
     }
 
     @Override
-    fun getViewTypeCount(): Int {
-      return getSuggestionViewTypeCount()
+    override fun getViewTypeCount(): Int {
+      return suggestionViewTypeCount
     }
   }
 
   init {
-    mAdapter = SuggestionsListAdapter.Adapter()
+    mAdapter = Adapter()
   }
 }
