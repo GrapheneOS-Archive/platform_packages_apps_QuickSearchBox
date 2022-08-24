@@ -56,5 +56,5 @@ interface SuggestionsListView<A> {
     /**
      * Gets the ID of the currently selected item.
      */
-    val selectedItemId: Long
+    fun  getSelectedItemId(): Long
 }
