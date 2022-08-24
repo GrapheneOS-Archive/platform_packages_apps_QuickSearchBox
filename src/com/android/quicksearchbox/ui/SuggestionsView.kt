@@ -14,63 +14,55 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-
-import com.android.quicksearchbox.SuggestionPosition;
+import android.content.Context
+import android.util.AttributeSet
+import android.widget.ListAdapter
+import android.widget.ListView
+import com.android.quicksearchbox.SuggestionPosition
 
 /**
  * Holds a list of suggestions.
  */
-public class SuggestionsView extends ListView implements SuggestionsListView<ListAdapter> {
-
-    private static final boolean DBG = false;
-    private static final String TAG = "QSB.SuggestionsView";
-
-    private SuggestionsAdapter<ListAdapter> mSuggestionsAdapter;
-
-    public SuggestionsView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+class SuggestionsView(context: Context?, attrs: AttributeSet?) : ListView(context, attrs),
+    SuggestionsListView<ListAdapter?> {
+    private var mSuggestionsAdapter: SuggestionsAdapter<ListAdapter?>? = null
+    @Override
+    override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ListAdapter?>?) {
+        super.setAdapter(adapter?.getListAdapter())
+        mSuggestionsAdapter = adapter
     }
 
     @Override
-    public void setSuggestionsAdapter(SuggestionsAdapter<ListAdapter> adapter) {
-        super.setAdapter(adapter == null ? null : adapter.getListAdapter());
-        mSuggestionsAdapter = adapter;
+    override fun getSuggestionsAdapter(): SuggestionsAdapter<ListAdapter?>? {
+        return mSuggestionsAdapter
     }
 
     @Override
-    public SuggestionsAdapter<ListAdapter> getSuggestionsAdapter() {
-        return mSuggestionsAdapter;
-    }
-
-    @Override
-    public void onFinishInflate() {
-        super.onFinishInflate();
-        setItemsCanFocus(true);
+    fun onFinishInflate() {
+        super.onFinishInflate()
+        setItemsCanFocus(true)
     }
 
     /**
      * Gets the position of the selected suggestion.
      *
-     * @return A 0-based index, or {@code -1} if no suggestion is selected.
+     * @return A 0-based index, or `-1` if no suggestion is selected.
      */
-    public int getSelectedPosition() {
-        return getSelectedItemPosition();
-    }
+    val selectedPosition: Int
+        get() = getSelectedItemPosition()
 
     /**
      * Gets the selected suggestion.
      *
-     * @return {@code null} if no suggestion is selected.
+     * @return `null` if no suggestion is selected.
      */
-    public SuggestionPosition getSelectedSuggestion() {
-        return (SuggestionPosition) getSelectedItem();
+    val selectedSuggestion: SuggestionPosition
+        get() = getSelectedItem() as SuggestionPosition
+
+    companion object {
+        private const val DBG = false
+        private const val TAG = "QSB.SuggestionsView"
     }
-
-
 }
