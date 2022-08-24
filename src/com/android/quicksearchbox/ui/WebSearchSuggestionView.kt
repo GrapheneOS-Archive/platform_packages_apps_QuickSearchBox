@@ -16,6 +16,11 @@
 
 package com.android.quicksearchbox.ui
 
+import android.content.Context
+import android.util.AttributeSet
+import android.view.KeyEvent
+import android.view.View
+
 import com.android.quicksearchbox.QsbApplication
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Suggestion
@@ -24,46 +29,47 @@ import com.android.quicksearchbox.SuggestionFormatter
 /** View for web search suggestions. */
 class WebSearchSuggestionView(context: Context?, attrs: AttributeSet?) :
   BaseSuggestionView(context, attrs) {
-  private val mSuggestionFormatter: SuggestionFormatter
+  private val mSuggestionFormatter: SuggestionFormatter?
+
   @Override
   override fun onFinishInflate() {
     super.onFinishInflate()
-    val keyListener: WebSearchSuggestionView.KeyListener = WebSearchSuggestionView.KeyListener()
+    val keyListener: WebSearchSuggestionView.KeyListener = KeyListener()
     setOnKeyListener(keyListener)
-    mIcon2.setOnKeyListener(keyListener)
-    mIcon2.setOnClickListener(
-      object : OnClickListener() {
-        fun onClick(v: View?) {
+    mIcon2?.setOnKeyListener(keyListener)
+    mIcon2?.setOnClickListener(
+      object : OnClickListener {
+        override fun onClick(v: View?) {
           onSuggestionQueryRefineClicked()
         }
       }
     )
-    mIcon2.setFocusable(true)
+    mIcon2?.setFocusable(true)
   }
 
   @Override
-  override fun bindAsSuggestion(suggestion: Suggestion, userQuery: String?) {
+  override fun bindAsSuggestion(suggestion: Suggestion?, userQuery: String?) {
     super.bindAsSuggestion(suggestion, userQuery)
-    val text1 = mSuggestionFormatter.formatSuggestion(userQuery, suggestion.getSuggestionText1())
+    val text1 = mSuggestionFormatter?.formatSuggestion(userQuery, suggestion?.suggestionText1)
     setText1(text1)
-    setIsHistorySuggestion(suggestion.isHistorySuggestion())
+    setIsHistorySuggestion(suggestion?.isHistorySuggestion)
   }
 
-  private fun setIsHistorySuggestion(isHistory: Boolean) {
-    if (isHistory) {
-      mIcon1.setImageResource(R.drawable.ic_history_suggestion)
-      mIcon1.setVisibility(VISIBLE)
+  private fun setIsHistorySuggestion(isHistory: Boolean?) {
+    if (isHistory == true) {
+      mIcon1?.setImageResource(R.drawable.ic_history_suggestion)
+      mIcon1?.setVisibility(VISIBLE)
     } else {
-      mIcon1.setVisibility(INVISIBLE)
+      mIcon1?.setVisibility(INVISIBLE)
     }
   }
 
   private inner class KeyListener : View.OnKeyListener {
-    fun onKey(v: View, keyCode: Int, event: KeyEvent): Boolean {
+    override fun onKey(v: View, keyCode: Int, event: KeyEvent): Boolean {
       var consumed = false
-      if (event.getAction() === KeyEvent.ACTION_DOWN) {
+      if (event.getAction() == KeyEvent.ACTION_DOWN) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v !== mIcon2) {
-          consumed = mIcon2.requestFocus()
+          consumed = mIcon2!!.requestFocus()
         } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && v === mIcon2) {
           consumed = requestFocus()
         }
@@ -74,14 +80,14 @@ class WebSearchSuggestionView(context: Context?, attrs: AttributeSet?) :
 
   class Factory(context: Context?) :
     SuggestionViewInflater(
-      WebSearchSuggestionView.Companion.VIEW_ID,
+      VIEW_ID,
       WebSearchSuggestionView::class.java,
       R.layout.web_search_suggestion,
       context
     ) {
     @Override
     override fun canCreateView(suggestion: Suggestion?): Boolean {
-      return suggestion!!.isWebSearchSuggestion()
+      return suggestion!!.isWebSearchSuggestion
     }
   }
 
@@ -90,6 +96,6 @@ class WebSearchSuggestionView(context: Context?, attrs: AttributeSet?) :
   }
 
   init {
-    mSuggestionFormatter = QsbApplication[context].getSuggestionFormatter()
+    mSuggestionFormatter = QsbApplication[context].suggestionFormatter
   }
 }

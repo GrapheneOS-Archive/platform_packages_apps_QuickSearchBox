@@ -52,6 +52,7 @@ android_app {
       "src/**/quicksearchbox/ui/SuggestionView.java",
       "src/**/quicksearchbox/ui/SuggestionViewFactory.java",
       "src/**/quicksearchbox/ui/SuggestionViewInflater.java",
+      "src/**/quicksearchbox/ui/WebSearchSuggestionView.java",
       "src/**/quicksearchbox/util/AsyncDataSetObservable.java",
       "src/**/quicksearchbox/util/BarrierConsumer.java",
       "src/**/quicksearchbox/util/BatchingNamedTaskExecutor.java",
