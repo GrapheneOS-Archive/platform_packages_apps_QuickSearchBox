@@ -48,6 +48,7 @@ android_app {
       "src/**/quicksearchbox/ui/SuggestionsAdapterBase.java",
       "src/**/quicksearchbox/ui/SuggestionsListAdapter.java",
       "src/**/quicksearchbox/ui/SuggestionsListView.java",
+      "src/**/quicksearchbox/ui/SuggestionsView.java",
       "src/**/quicksearchbox/ui/SuggestionView.java",
       "src/**/quicksearchbox/ui/SuggestionViewFactory.java",
       "src/**/quicksearchbox/util/AsyncDataSetObservable.java",

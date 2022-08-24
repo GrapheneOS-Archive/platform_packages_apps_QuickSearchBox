@@ -20,15 +20,17 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.ListAdapter
 import android.widget.ListView
+
 import com.android.quicksearchbox.SuggestionPosition
 
 /** Holds a list of suggestions. */
 class SuggestionsView(context: Context?, attrs: AttributeSet?) :
   ListView(context, attrs), SuggestionsListView<ListAdapter?> {
   private var mSuggestionsAdapter: SuggestionsAdapter<ListAdapter?>? = null
+
   @Override
   override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ListAdapter?>?) {
-    super.setAdapter(adapter?.getListAdapter())
+    super.setAdapter(adapter?.listAdapter)
     mSuggestionsAdapter = adapter
   }
 
@@ -38,7 +40,7 @@ class SuggestionsView(context: Context?, attrs: AttributeSet?) :
   }
 
   @Override
-  fun onFinishInflate() {
+  override fun onFinishInflate() {
     super.onFinishInflate()
     setItemsCanFocus(true)
   }
