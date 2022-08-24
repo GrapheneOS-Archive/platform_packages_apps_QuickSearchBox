@@ -14,46 +14,39 @@
  * limitations under the License.
  */
 
-package com.android.quicksearchbox.ui;
+package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.R;
-import com.android.quicksearchbox.Source;
-
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.ImageButton;
+import com.android.quicksearchbox.R
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.View
+import android.widget.ImageButton
 
 /**
  * Finishes the containing activity on BACK, even if input method is showing.
  */
-public class SearchActivityViewSinglePane extends SearchActivityView {
-
-    public SearchActivityViewSinglePane(Context context) {
-        super(context);
-    }
-
-    public SearchActivityViewSinglePane(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public SearchActivityViewSinglePane(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
+class SearchActivityViewSinglePane : SearchActivityView {
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
+        context,
+        attrs,
+        defStyle
+    ) {
     }
 
     @Override
-    public void onResume() {
-        focusQueryTextView();
+    override fun onResume() {
+        focusQueryTextView()
     }
 
     @Override
-    public void considerHidingInputMethod() {
-        mQueryTextView.hideInputMethod();
+    override fun considerHidingInputMethod() {
+        mQueryTextView!!.hideInputMethod()
     }
 
     @Override
-    public void onStop() {
+    override fun onStop() {
     }
-
 }
