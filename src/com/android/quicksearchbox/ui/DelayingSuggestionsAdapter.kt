@@ -17,151 +17,150 @@
 package com.android.quicksearchbox.ui
 
 import android.database.DataSetObserver
-
 import com.android.quicksearchbox.SuggestionCursor
 import com.android.quicksearchbox.SuggestionPosition
 import com.android.quicksearchbox.Suggestions
 
 /**
- * A [SuggestionsListAdapter] that doesn't expose the new suggestions
- * until there are some results to show.
+ * A [SuggestionsListAdapter] that doesn't expose the new suggestions until there are some results
+ * to show.
  */
 class DelayingSuggestionsAdapter<A>(private val mDelayedAdapter: SuggestionsAdapterBase<A>) :
-    SuggestionsAdapter<A> {
-    private var mPendingDataSetObserver: DataSetObserver? = null
-    private var mPendingSuggestions: Suggestions? = null
-    fun close() {
+  SuggestionsAdapter<A> {
+  private var mPendingDataSetObserver: DataSetObserver? = null
+  private var mPendingSuggestions: Suggestions? = null
+  fun close() {
+    setPendingSuggestions(null)
+    mDelayedAdapter.close()
+  }
+
+  /** Gets whether the given suggestions are non-empty for the selected source. */
+  private fun shouldPublish(suggestions: Suggestions?): Boolean {
+    if (suggestions!!.isDone()) return true
+    val cursor: SuggestionCursor? = suggestions.getResult()
+    return if (cursor != null && cursor.getCount() > 0) {
+      true
+    } else false
+  }
+
+  private fun setPendingSuggestions(suggestions: Suggestions?) {
+    if (mPendingSuggestions === suggestions) {
+      return
+    }
+    if (mDelayedAdapter.isClosed) {
+      suggestions?.release()
+      return
+    }
+    if (mPendingDataSetObserver == null) {
+      mPendingDataSetObserver = DelayingSuggestionsAdapter.PendingSuggestionsObserver()
+    }
+    if (mPendingSuggestions != null) {
+      mPendingSuggestions!!.unregisterDataSetObserver(mPendingDataSetObserver)
+      // Close old suggestions, but only if they are not also the current
+      // suggestions.
+      if (mPendingSuggestions !== suggestions) {
+        mPendingSuggestions!!.release()
+      }
+    }
+    mPendingSuggestions = suggestions
+    if (mPendingSuggestions != null) {
+      mPendingSuggestions!!.registerDataSetObserver(mPendingDataSetObserver)
+    }
+  }
+
+  protected fun onPendingSuggestionsChanged() {
+    if (DelayingSuggestionsAdapter.Companion.DBG) {
+      Log.d(
+        DelayingSuggestionsAdapter.Companion.TAG,
+        "onPendingSuggestionsChanged(), mPendingSuggestions=" + mPendingSuggestions
+      )
+    }
+    if (shouldPublish(mPendingSuggestions)) {
+      if (DelayingSuggestionsAdapter.Companion.DBG)
+        Log.d(
+          DelayingSuggestionsAdapter.Companion.TAG,
+          "Suggestions now available, publishing: $mPendingSuggestions"
+        )
+      mDelayedAdapter.suggestions = mPendingSuggestions
+      // The suggestions are no longer pending.
+      setPendingSuggestions(null)
+    }
+  }
+
+  private inner class PendingSuggestionsObserver : DataSetObserver() {
+    @Override
+    fun onChanged() {
+      onPendingSuggestionsChanged()
+    }
+  }
+
+  @get:Override
+  override val listAdapter: A
+    get() = mDelayedAdapter.listAdapter
+  val currentPromotedSuggestions: SuggestionCursor
+    get() = mDelayedAdapter.currentSuggestions
+
+  // Clear any old pending suggestions.
+  @get:Override
+  @set:Override
+  override var suggestions: Suggestions
+    get() = mDelayedAdapter.suggestions
+    set(suggestions) {
+      if (suggestions == null) {
+        mDelayedAdapter.suggestions = null
         setPendingSuggestions(null)
-        mDelayedAdapter.close()
+        return
+      }
+      if (shouldPublish(suggestions)) {
+        if (DelayingSuggestionsAdapter.Companion.DBG)
+          Log.d(
+            DelayingSuggestionsAdapter.Companion.TAG,
+            "Publishing suggestions immediately: $suggestions"
+          )
+        mDelayedAdapter.suggestions = suggestions
+        // Clear any old pending suggestions.
+        setPendingSuggestions(null)
+      } else {
+        if (DelayingSuggestionsAdapter.Companion.DBG)
+          Log.d(
+            DelayingSuggestionsAdapter.Companion.TAG,
+            "Delaying suggestions publishing: $suggestions"
+          )
+        setPendingSuggestions(suggestions)
+      }
     }
 
-    /**
-     * Gets whether the given suggestions are non-empty for the selected source.
-     */
-    private fun shouldPublish(suggestions: Suggestions?): Boolean {
-        if (suggestions!!.isDone()) return true
-        val cursor: SuggestionCursor? = suggestions.getResult()
-        return if (cursor != null && cursor.getCount() > 0) {
-            true
-        } else false
-    }
+  @Override
+  override fun getSuggestion(suggestionId: Long): SuggestionPosition? {
+    return mDelayedAdapter.getSuggestion(suggestionId)
+  }
 
-    private fun setPendingSuggestions(suggestions: Suggestions?) {
-        if (mPendingSuggestions === suggestions) {
-            return
-        }
-        if (mDelayedAdapter.isClosed) {
-            suggestions?.release()
-            return
-        }
-        if (mPendingDataSetObserver == null) {
-            mPendingDataSetObserver = DelayingSuggestionsAdapter.PendingSuggestionsObserver()
-        }
-        if (mPendingSuggestions != null) {
-            mPendingSuggestions!!.unregisterDataSetObserver(mPendingDataSetObserver)
-            // Close old suggestions, but only if they are not also the current
-            // suggestions.
-            if (mPendingSuggestions !== suggestions) {
-                mPendingSuggestions!!.release()
-            }
-        }
-        mPendingSuggestions = suggestions
-        if (mPendingSuggestions != null) {
-            mPendingSuggestions!!.registerDataSetObserver(mPendingDataSetObserver)
-        }
-    }
+  @Override
+  override fun onSuggestionClicked(suggestionId: Long) {
+    mDelayedAdapter.onSuggestionClicked(suggestionId)
+  }
 
-    protected fun onPendingSuggestionsChanged() {
-        if (DelayingSuggestionsAdapter.Companion.DBG) {
-            Log.d(
-                DelayingSuggestionsAdapter.Companion.TAG,
-                "onPendingSuggestionsChanged(), mPendingSuggestions="
-                        + mPendingSuggestions
-            )
-        }
-        if (shouldPublish(mPendingSuggestions)) {
-            if (DelayingSuggestionsAdapter.Companion.DBG) Log.d(
-                DelayingSuggestionsAdapter.Companion.TAG,
-                "Suggestions now available, publishing: $mPendingSuggestions"
-            )
-            mDelayedAdapter.suggestions = mPendingSuggestions
-            // The suggestions are no longer pending.
-            setPendingSuggestions(null)
-        }
-    }
+  @Override
+  override fun onSuggestionQueryRefineClicked(suggestionId: Long) {
+    mDelayedAdapter.onSuggestionQueryRefineClicked(suggestionId)
+  }
 
-    private inner class PendingSuggestionsObserver : DataSetObserver() {
-        @Override
-        fun onChanged() {
-            onPendingSuggestionsChanged()
-        }
-    }
+  @Override
+  override fun setOnFocusChangeListener(l: OnFocusChangeListener?) {
+    mDelayedAdapter.setOnFocusChangeListener(l)
+  }
 
-    @get:Override
-    override val listAdapter: A
-        get() = mDelayedAdapter.listAdapter
-    val currentPromotedSuggestions: SuggestionCursor
-        get() = mDelayedAdapter.currentSuggestions
+  @Override
+  override fun setSuggestionClickListener(listener: SuggestionClickListener?) {
+    mDelayedAdapter.setSuggestionClickListener(listener)
+  }
 
-    // Clear any old pending suggestions.
-    @get:Override
-    @set:Override
-    override var suggestions: Suggestions
-        get() = mDelayedAdapter.suggestions
-        set(suggestions) {
-            if (suggestions == null) {
-                mDelayedAdapter.suggestions = null
-                setPendingSuggestions(null)
-                return
-            }
-            if (shouldPublish(suggestions)) {
-                if (DelayingSuggestionsAdapter.Companion.DBG) Log.d(
-                    DelayingSuggestionsAdapter.Companion.TAG,
-                    "Publishing suggestions immediately: $suggestions"
-                )
-                mDelayedAdapter.suggestions = suggestions
-                // Clear any old pending suggestions.
-                setPendingSuggestions(null)
-            } else {
-                if (DelayingSuggestionsAdapter.Companion.DBG) Log.d(
-                    DelayingSuggestionsAdapter.Companion.TAG,
-                    "Delaying suggestions publishing: $suggestions"
-                )
-                setPendingSuggestions(suggestions)
-            }
-        }
+  @get:Override
+  override val isEmpty: Boolean
+    get() = mDelayedAdapter.isEmpty
 
-    @Override
-    override fun getSuggestion(suggestionId: Long): SuggestionPosition? {
-        return mDelayedAdapter.getSuggestion(suggestionId)
-    }
-
-    @Override
-    override fun onSuggestionClicked(suggestionId: Long) {
-        mDelayedAdapter.onSuggestionClicked(suggestionId)
-    }
-
-    @Override
-    override fun onSuggestionQueryRefineClicked(suggestionId: Long) {
-        mDelayedAdapter.onSuggestionQueryRefineClicked(suggestionId)
-    }
-
-    @Override
-    override fun setOnFocusChangeListener(l: OnFocusChangeListener?) {
-        mDelayedAdapter.setOnFocusChangeListener(l)
-    }
-
-    @Override
-    override fun setSuggestionClickListener(listener: SuggestionClickListener?) {
-        mDelayedAdapter.setSuggestionClickListener(listener)
-    }
-
-    @get:Override
-    override val isEmpty: Boolean
-        get() = mDelayedAdapter.isEmpty
-
-    companion object {
-        private const val DBG = false
-        private const val TAG = "QSB.DelayingSuggestionsAdapter"
-    }
+  companion object {
+    private const val DBG = false
+    private const val TAG = "QSB.DelayingSuggestionsAdapter"
+  }
 }
