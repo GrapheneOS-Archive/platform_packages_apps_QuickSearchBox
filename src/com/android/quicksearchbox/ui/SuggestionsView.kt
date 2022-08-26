@@ -22,47 +22,45 @@ import android.widget.ListAdapter
 import android.widget.ListView
 import com.android.quicksearchbox.SuggestionPosition
 
-/**
- * Holds a list of suggestions.
- */
-class SuggestionsView(context: Context?, attrs: AttributeSet?) : ListView(context, attrs),
-    SuggestionsListView<ListAdapter?> {
-    private var mSuggestionsAdapter: SuggestionsAdapter<ListAdapter?>? = null
-    @Override
-    override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ListAdapter?>?) {
-        super.setAdapter(adapter?.getListAdapter())
-        mSuggestionsAdapter = adapter
-    }
+/** Holds a list of suggestions. */
+class SuggestionsView(context: Context?, attrs: AttributeSet?) :
+  ListView(context, attrs), SuggestionsListView<ListAdapter?> {
+  private var mSuggestionsAdapter: SuggestionsAdapter<ListAdapter?>? = null
+  @Override
+  override fun setSuggestionsAdapter(adapter: SuggestionsAdapter<ListAdapter?>?) {
+    super.setAdapter(adapter?.getListAdapter())
+    mSuggestionsAdapter = adapter
+  }
 
-    @Override
-    override fun getSuggestionsAdapter(): SuggestionsAdapter<ListAdapter?>? {
-        return mSuggestionsAdapter
-    }
+  @Override
+  override fun getSuggestionsAdapter(): SuggestionsAdapter<ListAdapter?>? {
+    return mSuggestionsAdapter
+  }
 
-    @Override
-    fun onFinishInflate() {
-        super.onFinishInflate()
-        setItemsCanFocus(true)
-    }
+  @Override
+  fun onFinishInflate() {
+    super.onFinishInflate()
+    setItemsCanFocus(true)
+  }
 
-    /**
-     * Gets the position of the selected suggestion.
-     *
-     * @return A 0-based index, or `-1` if no suggestion is selected.
-     */
-    val selectedPosition: Int
-        get() = getSelectedItemPosition()
+  /**
+   * Gets the position of the selected suggestion.
+   *
+   * @return A 0-based index, or `-1` if no suggestion is selected.
+   */
+  val selectedPosition: Int
+    get() = getSelectedItemPosition()
 
-    /**
-     * Gets the selected suggestion.
-     *
-     * @return `null` if no suggestion is selected.
-     */
-    val selectedSuggestion: SuggestionPosition
-        get() = getSelectedItem() as SuggestionPosition
+  /**
+   * Gets the selected suggestion.
+   *
+   * @return `null` if no suggestion is selected.
+   */
+  val selectedSuggestion: SuggestionPosition
+    get() = getSelectedItem() as SuggestionPosition
 
-    companion object {
-        private const val DBG = false
-        private const val TAG = "QSB.SuggestionsView"
-    }
+  companion object {
+    private const val DBG = false
+    private const val TAG = "QSB.SuggestionsView"
+  }
 }
