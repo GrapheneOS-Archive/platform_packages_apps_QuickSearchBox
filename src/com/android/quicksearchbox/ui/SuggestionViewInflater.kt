@@ -20,54 +20,56 @@ import android.content.Context
 import com.android.quicksearchbox.Suggestion
 import com.android.quicksearchbox.SuggestionCursor
 
-/**
- * Suggestion view factory that inflates views from XML.
- */
+/** Suggestion view factory that inflates views from XML. */
 open class SuggestionViewInflater(
-    private val mViewType: String, viewClass: Class<out SuggestionView?>,
-    layoutId: Int, context: Context
+  private val mViewType: String,
+  viewClass: Class<out SuggestionView?>,
+  layoutId: Int,
+  context: Context
 ) : SuggestionViewFactory {
-    private val mViewClass: Class<*>
-    private val mLayoutId: Int
-    private val mContext: Context
-    protected val inflater: LayoutInflater
-        protected get() = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-    override val suggestionViewTypes: Collection<String>
-        get() = Collections.singletonList(mViewType)
+  private val mViewClass: Class<*>
+  private val mLayoutId: Int
+  private val mContext: Context
+  protected val inflater: LayoutInflater
+    protected get() = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+  override val suggestionViewTypes: Collection<String>
+    get() = Collections.singletonList(mViewType)
 
-    override fun getView(
-        suggestion: SuggestionCursor, userQuery: String,
-        convertView: View, parent: ViewGroup
-    ): View {
-        var convertView: View = convertView
-        if (convertView == null || !convertView.getClass().equals(mViewClass)) {
-            val layoutId = mLayoutId
-            convertView = inflater.inflate(layoutId, parent, false)
-        }
-        if (convertView !is SuggestionView) {
-            throw IllegalArgumentException("Not a SuggestionView: $convertView")
-        }
-        (convertView as SuggestionView).bindAsSuggestion(suggestion, userQuery)
-        return convertView
+  override fun getView(
+    suggestion: SuggestionCursor,
+    userQuery: String,
+    convertView: View,
+    parent: ViewGroup
+  ): View {
+    var convertView: View = convertView
+    if (convertView == null || !convertView.getClass().equals(mViewClass)) {
+      val layoutId = mLayoutId
+      convertView = inflater.inflate(layoutId, parent, false)
     }
+    if (convertView !is SuggestionView) {
+      throw IllegalArgumentException("Not a SuggestionView: $convertView")
+    }
+    (convertView as SuggestionView).bindAsSuggestion(suggestion, userQuery)
+    return convertView
+  }
 
-    override fun getViewType(suggestion: Suggestion): String {
-        return mViewType
-    }
+  override fun getViewType(suggestion: Suggestion): String {
+    return mViewType
+  }
 
-    override fun canCreateView(suggestion: Suggestion): Boolean {
-        return true
-    }
+  override fun canCreateView(suggestion: Suggestion): Boolean {
+    return true
+  }
 
-    /**
-     * @param viewType The unique type of views inflated by this factory
-     * @param viewClass The expected type of view classes.
-     * @param layoutId resource ID of layout to use.
-     * @param context Context to use for inflating the views.
-     */
-    init {
-        mViewClass = viewClass
-        mLayoutId = layoutId
-        mContext = context
-    }
+  /**
+   * @param viewType The unique type of views inflated by this factory
+   * @param viewClass The expected type of view classes.
+   * @param layoutId resource ID of layout to use.
+   * @param context Context to use for inflating the views.
+   */
+  init {
+    mViewClass = viewClass
+    mLayoutId = layoutId
+    mContext = context
+  }
 }
