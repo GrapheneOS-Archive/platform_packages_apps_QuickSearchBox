@@ -23,74 +23,74 @@ import android.widget.ListAdapter
 import com.android.quicksearchbox.SuggestionCursor
 import com.android.quicksearchbox.SuggestionPosition
 
-/**
- * Uses a [Suggestions] object to back a [SuggestionsView].
- */
+/** Uses a [Suggestions] object to back a [SuggestionsView]. */
 class SuggestionsListAdapter(viewFactory: SuggestionViewFactory?) :
-    SuggestionsAdapterBase<ListAdapter?>(
-        viewFactory!!
-    ) {
-    private val mAdapter: SuggestionsListAdapter.Adapter
+  SuggestionsAdapterBase<ListAdapter?>(viewFactory!!) {
+  private val mAdapter: SuggestionsListAdapter.Adapter
 
-    @get:Override
-    override val isEmpty: Boolean
-        get() = mAdapter.getCount() == 0
+  @get:Override
+  override val isEmpty: Boolean
+    get() = mAdapter.getCount() == 0
+
+  @Override
+  override fun getSuggestion(suggestionId: Long): SuggestionPosition? {
+    return SuggestionPosition(getCurrentSuggestions(), suggestionId.toInt())
+  }
+
+  @get:Override
+  override val listAdapter: BaseAdapter
+    get() = mAdapter
+
+  @Override
+  public override fun notifyDataSetChanged() {
+    mAdapter.notifyDataSetChanged()
+  }
+
+  @Override
+  public override fun notifyDataSetInvalidated() {
+    mAdapter.notifyDataSetInvalidated()
+  }
+
+  internal inner class Adapter : BaseAdapter() {
+    @Override
+    fun getCount(): Int {
+      val s: SuggestionCursor = getCurrentSuggestions()
+      return if (s == null) 0 else s.getCount()
+    }
 
     @Override
-    override fun getSuggestion(suggestionId: Long): SuggestionPosition? {
-        return SuggestionPosition(getCurrentSuggestions(), suggestionId.toInt())
-    }
-
-    @get:Override
-    override val listAdapter: BaseAdapter
-        get() = mAdapter
-
-    @Override
-    public override fun notifyDataSetChanged() {
-        mAdapter.notifyDataSetChanged()
+    fun getItem(position: Int): Object? {
+      return getSuggestion(position)
     }
 
     @Override
-    public override fun notifyDataSetInvalidated() {
-        mAdapter.notifyDataSetInvalidated()
+    fun getItemId(position: Int): Long {
+      return position.toLong()
     }
 
-    internal inner class Adapter : BaseAdapter() {
-        @Override
-        fun getCount(): Int {
-            val s: SuggestionCursor = getCurrentSuggestions()
-            return if (s == null) 0 else s.getCount()
-        }
-
-        @Override
-        fun getItem(position: Int): Object? {
-            return getSuggestion(position)
-        }
-
-        @Override
-        fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        @Override
-        fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
-            return this@SuggestionsListAdapter.getView(
-                getCurrentSuggestions(), position, position.toLong(), convertView, parent
-            )
-        }
-
-        @Override
-        fun getItemViewType(position: Int): Int {
-            return getSuggestionViewType(getCurrentSuggestions(), position)
-        }
-
-        @Override
-        fun getViewTypeCount(): Int {
-            return getSuggestionViewTypeCount()
-        }
+    @Override
+    fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+      return this@SuggestionsListAdapter.getView(
+        getCurrentSuggestions(),
+        position,
+        position.toLong(),
+        convertView,
+        parent
+      )
     }
 
-    init {
-        mAdapter = SuggestionsListAdapter.Adapter()
+    @Override
+    fun getItemViewType(position: Int): Int {
+      return getSuggestionViewType(getCurrentSuggestions(), position)
     }
+
+    @Override
+    fun getViewTypeCount(): Int {
+      return getSuggestionViewTypeCount()
+    }
+  }
+
+  init {
+    mAdapter = SuggestionsListAdapter.Adapter()
+  }
 }
