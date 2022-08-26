@@ -21,77 +21,75 @@ import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Suggestion
 import com.android.quicksearchbox.SuggestionFormatter
 
-/**
- * View for web search suggestions.
- */
+/** View for web search suggestions. */
 class WebSearchSuggestionView(context: Context?, attrs: AttributeSet?) :
-    BaseSuggestionView(context, attrs) {
-    private val mSuggestionFormatter: SuggestionFormatter
-    @Override
-    override fun onFinishInflate() {
-        super.onFinishInflate()
-        val keyListener: WebSearchSuggestionView.KeyListener = WebSearchSuggestionView.KeyListener()
-        setOnKeyListener(keyListener)
-        mIcon2.setOnKeyListener(keyListener)
-        mIcon2.setOnClickListener(object : OnClickListener() {
-            fun onClick(v: View?) {
-                onSuggestionQueryRefineClicked()
-            }
-        })
-        mIcon2.setFocusable(true)
-    }
-
-    @Override
-    override fun bindAsSuggestion(suggestion: Suggestion, userQuery: String?) {
-        super.bindAsSuggestion(suggestion, userQuery)
-        val text1 = mSuggestionFormatter.formatSuggestion(
-            userQuery,
-            suggestion.getSuggestionText1()
-        )
-        setText1(text1)
-        setIsHistorySuggestion(suggestion.isHistorySuggestion())
-    }
-
-    private fun setIsHistorySuggestion(isHistory: Boolean) {
-        if (isHistory) {
-            mIcon1.setImageResource(R.drawable.ic_history_suggestion)
-            mIcon1.setVisibility(VISIBLE)
-        } else {
-            mIcon1.setVisibility(INVISIBLE)
+  BaseSuggestionView(context, attrs) {
+  private val mSuggestionFormatter: SuggestionFormatter
+  @Override
+  override fun onFinishInflate() {
+    super.onFinishInflate()
+    val keyListener: WebSearchSuggestionView.KeyListener = WebSearchSuggestionView.KeyListener()
+    setOnKeyListener(keyListener)
+    mIcon2.setOnKeyListener(keyListener)
+    mIcon2.setOnClickListener(
+      object : OnClickListener() {
+        fun onClick(v: View?) {
+          onSuggestionQueryRefineClicked()
         }
-    }
+      }
+    )
+    mIcon2.setFocusable(true)
+  }
 
-    private inner class KeyListener : View.OnKeyListener {
-        fun onKey(v: View, keyCode: Int, event: KeyEvent): Boolean {
-            var consumed = false
-            if (event.getAction() === KeyEvent.ACTION_DOWN) {
-                if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v !== mIcon2) {
-                    consumed = mIcon2.requestFocus()
-                } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && v === mIcon2) {
-                    consumed = requestFocus()
-                }
-            }
-            return consumed
+  @Override
+  override fun bindAsSuggestion(suggestion: Suggestion, userQuery: String?) {
+    super.bindAsSuggestion(suggestion, userQuery)
+    val text1 = mSuggestionFormatter.formatSuggestion(userQuery, suggestion.getSuggestionText1())
+    setText1(text1)
+    setIsHistorySuggestion(suggestion.isHistorySuggestion())
+  }
+
+  private fun setIsHistorySuggestion(isHistory: Boolean) {
+    if (isHistory) {
+      mIcon1.setImageResource(R.drawable.ic_history_suggestion)
+      mIcon1.setVisibility(VISIBLE)
+    } else {
+      mIcon1.setVisibility(INVISIBLE)
+    }
+  }
+
+  private inner class KeyListener : View.OnKeyListener {
+    fun onKey(v: View, keyCode: Int, event: KeyEvent): Boolean {
+      var consumed = false
+      if (event.getAction() === KeyEvent.ACTION_DOWN) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v !== mIcon2) {
+          consumed = mIcon2.requestFocus()
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && v === mIcon2) {
+          consumed = requestFocus()
         }
+      }
+      return consumed
     }
+  }
 
-    class Factory(context: Context?) : SuggestionViewInflater(
-        WebSearchSuggestionView.Companion.VIEW_ID,
-        WebSearchSuggestionView::class.java,
-        R.layout.web_search_suggestion,
-        context
+  class Factory(context: Context?) :
+    SuggestionViewInflater(
+      WebSearchSuggestionView.Companion.VIEW_ID,
+      WebSearchSuggestionView::class.java,
+      R.layout.web_search_suggestion,
+      context
     ) {
-        @Override
-        override fun canCreateView(suggestion: Suggestion?): Boolean {
-            return suggestion!!.isWebSearchSuggestion()
-        }
+    @Override
+    override fun canCreateView(suggestion: Suggestion?): Boolean {
+      return suggestion!!.isWebSearchSuggestion()
     }
+  }
 
-    companion object {
-        private const val VIEW_ID = "web_search"
-    }
+  companion object {
+    private const val VIEW_ID = "web_search"
+  }
 
-    init {
-        mSuggestionFormatter = QsbApplication[context].getSuggestionFormatter()
-    }
+  init {
+    mSuggestionFormatter = QsbApplication[context].getSuggestionFormatter()
+  }
 }
