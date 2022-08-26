@@ -31,7 +31,7 @@ interface SuggestionViewFactory {
    *
    * View types must be unique across all suggestion view factories.
    */
-  val suggestionViewTypes: Collection<String?>?
+  val suggestionViewTypes: Collection<String>
 
   /**
    * Returns the view type to be used for displaying the given suggestion. This MUST correspond to
