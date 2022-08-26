@@ -59,7 +59,7 @@ class DelayingSuggestionsAdapter<A>(private val mDelayedAdapter: SuggestionsAdap
       mPendingSuggestions!!.unregisterDataSetObserver(mPendingDataSetObserver)
       // Close old suggestions, but only if they are not also the current
       // suggestions.
-      if (mPendingSuggestions !== suggestions) {
+      if (mPendingSuggestions !== this.suggestions) {
         mPendingSuggestions!!.release()
       }
     }
