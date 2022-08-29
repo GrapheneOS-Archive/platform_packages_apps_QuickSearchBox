@@ -24,43 +24,43 @@ abstract class AbstractSuggestionWrapper : Suggestion {
     /**
      * Gets the current suggestion.
      */
-    protected abstract fun current(): Suggestion
+    protected abstract fun current(): Suggestion?
     override val shortcutId: String?
-        get() = current().shortcutId
+        get() = current()?.shortcutId
     override val suggestionFormat: String?
-        get() = current().suggestionFormat
+        get() = current()?.suggestionFormat
     override val suggestionIcon1: String?
-        get() = current().suggestionIcon1
+        get() = current()?.suggestionIcon1
     override val suggestionIcon2: String?
-        get() = current().suggestionIcon2
+        get() = current()?.suggestionIcon2
     override val suggestionIntentAction: String?
-        get() = current().suggestionIntentAction
+        get() = current()?.suggestionIntentAction
     override val suggestionIntentComponent: ComponentName?
-        get() = current().suggestionIntentComponent
+        get() = current()?.suggestionIntentComponent
     override val suggestionIntentDataString: String?
-        get() = current().suggestionIntentDataString
+        get() = current()?.suggestionIntentDataString
     override val suggestionIntentExtraData: String?
-        get() = current().suggestionIntentExtraData
+        get() = current()?.suggestionIntentExtraData
     override val suggestionLogType: String?
-        get() = current().suggestionLogType
+        get() = current()?.suggestionLogType
     override val suggestionQuery: String?
-        get() = current().suggestionQuery
+        get() = current()?.suggestionQuery
     override val suggestionSource: Source?
-        get() = current().suggestionSource
+        get() = current()?.suggestionSource
     override val suggestionText1: String?
-        get() = current().suggestionText1
+        get() = current()?.suggestionText1
     override val suggestionText2: String?
-        get() = current().suggestionText2
+        get() = current()?.suggestionText2
     override val suggestionText2Url: String?
-        get() = current().suggestionText2Url
+        get() = current()?.suggestionText2Url
     override val isSpinnerWhileRefreshing: Boolean
-        get() = current().isSpinnerWhileRefreshing
+        get() = current()?.isSpinnerWhileRefreshing == true
     override val isSuggestionShortcut: Boolean
-        get() = current().isSuggestionShortcut
+        get() = current()?.isSuggestionShortcut == true
     override val isWebSearchSuggestion: Boolean
-        get() = current().isWebSearchSuggestion
+        get() = current()?.isWebSearchSuggestion == true
     override val isHistorySuggestion: Boolean
-        get() = current().isHistorySuggestion
+        get() = current()?.isHistorySuggestion == true
     override val extras: SuggestionExtras?
-        get() = current().extras
+        get() = current()?.extras
 }

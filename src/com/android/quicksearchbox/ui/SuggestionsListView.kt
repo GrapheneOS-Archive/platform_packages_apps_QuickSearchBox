@@ -46,12 +46,12 @@ interface SuggestionsListView<A> {
     /**
      * Sets the adapter for the list. See [AbsListView.setAdapter]
      */
-    fun setSuggestionsAdapter(adapter: SuggestionsAdapter<A>?)
+    fun setSuggestionsAdapter(adapter: SuggestionsAdapter<A?>?)
 
     /**
      * Gets the adapter for the list.
      */
-    fun getSuggestionsAdapter(): SuggestionsAdapter<A>?
+    fun getSuggestionsAdapter(): SuggestionsAdapter<A?>?
 
     /**
      * Gets the ID of the currently selected item.
