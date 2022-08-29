@@ -382,8 +382,8 @@ class SearchActivity : Activity() {
     return true
   }
 
-  protected fun launchSuggestion(suggestions: SuggestionCursor, position: Int) {
-    suggestions.moveTo(position)
+  protected fun launchSuggestion(suggestions: SuggestionCursor?, position: Int) {
+    suggestions?.moveTo(position)
     val intent: Intent = SuggestionUtils.getSuggestionIntent(suggestions, mAppSearchData)
     launchIntent(intent)
   }
