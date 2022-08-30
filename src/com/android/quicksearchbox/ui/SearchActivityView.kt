@@ -34,13 +34,10 @@ import android.widget.ListAdapter
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
-
 import com.android.quicksearchbox.*
 import com.android.quicksearchbox.R
-
-import kotlin.collections.ArrayList
-
 import java.util.Arrays
+import kotlin.collections.ArrayList
 
 abstract class SearchActivityView : RelativeLayout {
   @JvmField protected var mQueryTextView: QueryTextView? = null
@@ -49,8 +46,8 @@ abstract class SearchActivityView : RelativeLayout {
   @JvmField protected var mQueryWasEmpty = true
   @JvmField protected var mQueryTextEmptyBg: Drawable? = null
   protected var mQueryTextNotEmptyBg: Drawable? = null
-  @JvmField protected var mSuggestionsView: SuggestionsListView<ListAdapter>? = null
-  @JvmField protected var mSuggestionsAdapter: SuggestionsAdapter<ListAdapter>? = null
+  @JvmField protected var mSuggestionsView: SuggestionsListView<ListAdapter?>? = null
+  @JvmField protected var mSuggestionsAdapter: SuggestionsAdapter<ListAdapter?>? = null
   @JvmField protected var mSearchGoButton: ImageButton? = null
   @JvmField protected var mVoiceSearchButton: ImageButton? = null
   @JvmField protected var mButtonsKeyListener: ButtonsKeyListener? = null
@@ -60,14 +57,14 @@ abstract class SearchActivityView : RelativeLayout {
   @JvmField protected var mExitClickListener: View.OnClickListener? = null
 
   constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+  constructor(
     context: Context?,
     attrs: AttributeSet?,
     defStyle: Int
   ) : super(context, attrs, defStyle)
 
-    @Override
+  @Override
   protected override fun onFinishInflate() {
     mQueryTextView = findViewById(R.id.search_src_text) as QueryTextView?
     mSuggestionsView = findViewById(R.id.suggestions) as SuggestionsView?
@@ -116,7 +113,7 @@ abstract class SearchActivityView : RelativeLayout {
   protected val voiceSearch: VoiceSearch?
     get() = qsbApplication.voiceSearch
 
-  protected fun createSuggestionsAdapter(): SuggestionsAdapter<ListAdapter> {
+  protected fun createSuggestionsAdapter(): SuggestionsAdapter<ListAdapter?> {
     return DelayingSuggestionsAdapter(SuggestionsListAdapter(qsbApplication.suggestionViewFactory))
   }
 
