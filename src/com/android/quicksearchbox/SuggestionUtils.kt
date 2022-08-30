@@ -29,12 +29,12 @@ import kotlin.text.StringBuilder
  */
 object SuggestionUtils {
     @JvmStatic
-    fun getSuggestionIntent(suggestion: SuggestionCursor, appSearchData: Bundle?): Intent {
-        val action: String? = suggestion.suggestionIntentAction
-        val data: String? = suggestion.suggestionIntentDataString
-        val query: String? = suggestion.suggestionQuery
-        val userQuery: String? = suggestion.userQuery
-        val extraData: String? = suggestion.suggestionIntentExtraData
+    fun getSuggestionIntent(suggestion: SuggestionCursor?, appSearchData: Bundle?): Intent {
+        val action: String? = suggestion?.suggestionIntentAction
+        val data: String? = suggestion?.suggestionIntentDataString
+        val query: String? = suggestion?.suggestionQuery
+        val userQuery: String? = suggestion?.userQuery
+        val extraData: String? = suggestion?.suggestionIntentExtraData
 
         // Now build the Intent
         val intent = Intent(action)
@@ -55,7 +55,7 @@ object SuggestionUtils {
         if (appSearchData != null) {
             intent.putExtra(SearchManager.APP_DATA, appSearchData)
         }
-        intent.setComponent(suggestion.suggestionIntentComponent)
+        intent.setComponent(suggestion?.suggestionIntentComponent)
         return intent
     }
 
