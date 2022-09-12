@@ -24,66 +24,61 @@ import android.widget.Checkable
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-
 import com.android.quicksearchbox.R
 
-/**
- * A corpus in the corpus selection list.
- */
+/** A corpus in the corpus selection list. */
 class CorpusView : RelativeLayout, Checkable {
-    private var mIcon: ImageView? = null
-    private var mLabel: TextView? = null
-    private var mChecked = false
+  private var mIcon: ImageView? = null
+  private var mLabel: TextView? = null
+  private var mChecked = false
 
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
-    constructor(context: Context?) : super(context) {}
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+  constructor(context: Context?) : super(context) {}
 
-    @Override
-    protected override fun onFinishInflate() {
-        super.onFinishInflate()
-        mIcon = findViewById(R.id.source_icon) as ImageView?
-        mLabel = findViewById(R.id.source_label) as TextView?
+  @Override
+  protected override fun onFinishInflate() {
+    super.onFinishInflate()
+    mIcon = findViewById(R.id.source_icon) as ImageView?
+    mLabel = findViewById(R.id.source_label) as TextView?
+  }
+
+  fun setLabel(label: CharSequence?) {
+    mLabel?.setText(label)
+  }
+
+  fun setIcon(icon: Drawable?) {
+    mIcon?.setImageDrawable(icon)
+  }
+
+  @Override
+  @ViewDebug.ExportedProperty
+  override fun isChecked(): Boolean {
+    return mChecked
+  }
+
+  @Override
+  override fun setChecked(checked: Boolean) {
+    if (mChecked != checked) {
+      mChecked = checked
+      refreshDrawableState()
     }
+  }
 
-    fun setLabel(label: CharSequence?) {
-        mLabel?.setText(label)
-    }
+  @Override
+  override fun toggle() {
+    isChecked = !mChecked
+  }
 
-    fun setIcon(icon: Drawable?) {
-        mIcon?.setImageDrawable(icon)
+  @Override
+  protected override fun onCreateDrawableState(extraSpace: Int): IntArray {
+    val drawableState: IntArray = super.onCreateDrawableState(extraSpace + 1)
+    if (isChecked) {
+      mergeDrawableStates(drawableState, CHECKED_STATE_SET)
     }
+    return drawableState
+  }
 
-    @Override
-    @ViewDebug.ExportedProperty
-    override fun isChecked(): Boolean {
-        return mChecked
-    }
-
-    @Override
-    override fun setChecked(checked: Boolean) {
-        if (mChecked != checked) {
-            mChecked = checked
-            refreshDrawableState()
-        }
-    }
-
-    @Override
-    override fun toggle() {
-        isChecked = !mChecked
-    }
-
-    @Override
-    protected override fun onCreateDrawableState(extraSpace: Int): IntArray {
-        val drawableState: IntArray = super.onCreateDrawableState(extraSpace + 1)
-        if (isChecked) {
-            mergeDrawableStates(drawableState, CHECKED_STATE_SET)
-        }
-        return drawableState
-    }
-
-    companion object {
-        private val CHECKED_STATE_SET = intArrayOf(
-            android.R.attr.state_checked
-        )
-    }
+  companion object {
+    private val CHECKED_STATE_SET = intArrayOf(android.R.attr.state_checked)
+  }
 }

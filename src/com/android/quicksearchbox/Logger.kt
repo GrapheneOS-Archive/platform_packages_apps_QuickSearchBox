@@ -15,60 +15,56 @@
  */
 package com.android.quicksearchbox
 
-/**
- * Interface for logging implementations.
- */
+/** Interface for logging implementations. */
 interface Logger {
-    /**
-     * Called when QSB has started.
-     *
-     * @param latency User-visible start-up latency in milliseconds.
-     */
-    fun logStart(onCreateLatency: Int, latency: Int, intentSource: String?)
+  /**
+   * Called when QSB has started.
+   *
+   * @param latency User-visible start-up latency in milliseconds.
+   */
+  fun logStart(onCreateLatency: Int, latency: Int, intentSource: String?)
 
-    /**
-     * Called when a suggestion is clicked.
-     *
-     * @param suggestionId Suggestion ID; 0-based position of the suggestion in the UI if the list
-     * is flat.
-     * @param suggestionCursor all the suggestions shown in the UI.
-     * @param clickType One of the SUGGESTION_CLICK_TYPE constants.
-     */
-    fun logSuggestionClick(suggestionId: Long, suggestionCursor: SuggestionCursor?, clickType: Int)
+  /**
+   * Called when a suggestion is clicked.
+   *
+   * @param suggestionId Suggestion ID; 0-based position of the suggestion in the UI if the list is
+   * flat.
+   * @param suggestionCursor all the suggestions shown in the UI.
+   * @param clickType One of the SUGGESTION_CLICK_TYPE constants.
+   */
+  fun logSuggestionClick(suggestionId: Long, suggestionCursor: SuggestionCursor?, clickType: Int)
 
-    /**
-     * The user launched a search.
-     *
-     * @param startMethod One of [.SEARCH_METHOD_BUTTON] or [.SEARCH_METHOD_KEYBOARD].
-     * @param numChars The number of characters in the query.
-     */
-    fun logSearch(startMethod: Int, numChars: Int)
+  /**
+   * The user launched a search.
+   *
+   * @param startMethod One of [.SEARCH_METHOD_BUTTON] or [.SEARCH_METHOD_KEYBOARD].
+   * @param numChars The number of characters in the query.
+   */
+  fun logSearch(startMethod: Int, numChars: Int)
 
-    /**
-     * The user launched a voice search.
-     */
-    fun logVoiceSearch()
+  /** The user launched a voice search. */
+  fun logVoiceSearch()
 
-    /**
-     * The user left QSB without performing any action (click suggestions, search or voice search).
-     *
-     * @param suggestionCursor all the suggestions shown in the UI when the user left
-     * @param numChars The number of characters in the query typed when the user left.
-     */
-    fun logExit(suggestionCursor: SuggestionCursor?, numChars: Int)
+  /**
+   * The user left QSB without performing any action (click suggestions, search or voice search).
+   *
+   * @param suggestionCursor all the suggestions shown in the UI when the user left
+   * @param numChars The number of characters in the query typed when the user left.
+   */
+  fun logExit(suggestionCursor: SuggestionCursor?, numChars: Int)
 
-    /**
-     * Logs the latency of a suggestion query to a specific source.
-     *
-     * @param result The result of the query.
-     */
-    fun logLatency(result: SourceResult?)
+  /**
+   * Logs the latency of a suggestion query to a specific source.
+   *
+   * @param result The result of the query.
+   */
+  fun logLatency(result: SourceResult?)
 
-    companion object {
-        const val SEARCH_METHOD_BUTTON = 0
-        const val SEARCH_METHOD_KEYBOARD = 1
-        const val SUGGESTION_CLICK_TYPE_LAUNCH = 0
-        const val SUGGESTION_CLICK_TYPE_REFINE = 1
-        const val SUGGESTION_CLICK_TYPE_QUICK_CONTACT = 2
-    }
+  companion object {
+    const val SEARCH_METHOD_BUTTON = 0
+    const val SEARCH_METHOD_KEYBOARD = 1
+    const val SUGGESTION_CLICK_TYPE_LAUNCH = 0
+    const val SUGGESTION_CLICK_TYPE_REFINE = 1
+    const val SUGGESTION_CLICK_TYPE_QUICK_CONTACT = 2
+  }
 }

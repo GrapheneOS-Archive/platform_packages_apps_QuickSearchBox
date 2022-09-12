@@ -16,12 +16,10 @@
 
 package com.android.quicksearchbox.util
 
-/**
- * A Consumer that does nothing with the objects it receives.
- */
+/** A Consumer that does nothing with the objects it receives. */
 class NoOpConsumer<A> : Consumer<A> {
-    override fun consume(value: A): Boolean {
-        // Tell the caller that we haven't taken ownership of this result.
-        return false
-    }
+  override fun consume(value: A): Boolean {
+    // Tell the caller that we haven't taken ownership of this result.
+    return false
+  }
 }

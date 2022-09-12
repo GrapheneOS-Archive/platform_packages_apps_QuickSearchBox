@@ -15,11 +15,7 @@
  */
 package com.android.quicksearchbox
 
-import com.android.quicksearchbox.Source
-
-/**
- * The result of getting suggestions from a single source.
- */
+/** The result of getting suggestions from a single source. */
 interface SourceResult : SuggestionCursor {
-    val source: Source?
+  val source: Source?
 }
