@@ -23,36 +23,36 @@ import kotlin.collections.HashMap
  * @param executorFactory Used to run the commands.
  */
 class PerNameExecutor(private val mExecutorFactory: Factory<NamedTaskExecutor>) :
-    NamedTaskExecutor {
-    private var mExecutors: HashMap<String, NamedTaskExecutor>? = null
+  NamedTaskExecutor {
+  private var mExecutors: HashMap<String, NamedTaskExecutor>? = null
 
-    @Synchronized
-    override fun cancelPendingTasks() {
-        if (mExecutors == null) return
-        for (executor in mExecutors!!.values) {
-            executor.cancelPendingTasks()
-        }
+  @Synchronized
+  override fun cancelPendingTasks() {
+    if (mExecutors == null) return
+    for (executor in mExecutors!!.values) {
+      executor.cancelPendingTasks()
     }
+  }
 
-    @Synchronized
-    override fun close() {
-        if (mExecutors == null) return
-        for (executor in mExecutors!!.values) {
-            executor.close()
-        }
+  @Synchronized
+  override fun close() {
+    if (mExecutors == null) return
+    for (executor in mExecutors!!.values) {
+      executor.close()
     }
+  }
 
-    @Synchronized
-    override fun execute(task: NamedTask?) {
-        if (mExecutors == null) {
-            mExecutors = HashMap<String, NamedTaskExecutor>()
-        }
-        val name: String? = task?.name
-        var executor: NamedTaskExecutor? = mExecutors?.get(name)
-        if (executor == null) {
-            executor = mExecutorFactory.create()
-            mExecutors?.put(name!!, executor)
-        }
-        executor.execute(task)
+  @Synchronized
+  override fun execute(task: NamedTask?) {
+    if (mExecutors == null) {
+      mExecutors = HashMap<String, NamedTaskExecutor>()
     }
+    val name: String? = task?.name
+    var executor: NamedTaskExecutor? = mExecutors?.get(name)
+    if (executor == null) {
+      executor = mExecutorFactory.create()
+      mExecutors?.put(name!!, executor)
+    }
+    executor.execute(task)
+  }
 }

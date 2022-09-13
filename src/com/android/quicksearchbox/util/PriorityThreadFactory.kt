@@ -17,7 +17,6 @@
 package com.android.quicksearchbox.util
 
 import android.os.Process
-
 import java.util.concurrent.ThreadFactory
 
 /**

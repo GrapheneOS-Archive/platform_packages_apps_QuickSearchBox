@@ -18,36 +18,28 @@ package com.android.quicksearchbox
 import android.os.SystemClock
 
 /**
- * Tracks latency in wall-clock time. Since [.getLatency] returns an `int`,
- * latencies over 2^31 ms (~ 25 days) cannot be measured.
- * This class uses [SystemClock.uptimeMillis] which does not advance during deep sleep.
+ * Tracks latency in wall-clock time. Since [.getLatency] returns an `int`, latencies over 2^31 ms
+ * (~ 25 days) cannot be measured. This class uses [SystemClock.uptimeMillis] which does not advance
+ * during deep sleep.
  */
 class LatencyTracker {
-    /**
-     * Start time, in milliseconds as returned by [SystemClock.uptimeMillis].
-     */
-    private var mStartTime: Long
+  /** Start time, in milliseconds as returned by [SystemClock.uptimeMillis]. */
+  private var mStartTime: Long
 
-    /**
-     * Resets the start time.
-     */
-    fun reset() {
-        mStartTime = SystemClock.uptimeMillis()
+  /** Resets the start time. */
+  fun reset() {
+    mStartTime = SystemClock.uptimeMillis()
+  }
+
+  /** Gets the number of milliseconds since the object was created, or [.reset] was called. */
+  val latency: Int
+    get() {
+      val now: Long = SystemClock.uptimeMillis()
+      return (now - mStartTime).toInt()
     }
 
-    /**
-     * Gets the number of milliseconds since the object was created, or [.reset] was called.
-     */
-    val latency: Int
-        get() {
-            val now: Long = SystemClock.uptimeMillis()
-            return (now - mStartTime).toInt()
-        }
-
-    /**
-     * Creates a new latency tracker and sets the start time.
-     */
-    init {
-        mStartTime = SystemClock.uptimeMillis()
-    }
+  /** Creates a new latency tracker and sets the start time. */
+  init {
+    mStartTime = SystemClock.uptimeMillis()
+  }
 }
