@@ -15,9 +15,7 @@
  */
 package com.android.quicksearchbox.util
 
-/**
- * A task that has a name.
- */
+/** A task that has a name. */
 interface NamedTask : Runnable {
-    val name: String?
+  val name: String?
 }

@@ -19,7 +19,6 @@ package com.android.quicksearchbox.ui
 import android.database.DataSetObserver
 import android.util.Log
 import android.view.View.OnFocusChangeListener
-
 import com.android.quicksearchbox.SuggestionCursor
 import com.android.quicksearchbox.SuggestionPosition
 import com.android.quicksearchbox.Suggestions
@@ -104,20 +103,12 @@ class DelayingSuggestionsAdapter<A>(private val mDelayedAdapter: SuggestionsAdap
         return
       }
       if (shouldPublish(suggestions)) {
-        if (DBG)
-          Log.d(
-            TAG,
-            "Publishing suggestions immediately: $suggestions"
-          )
+        if (DBG) Log.d(TAG, "Publishing suggestions immediately: $suggestions")
         mDelayedAdapter.suggestions = suggestions
         // Clear any old pending suggestions.
         setPendingSuggestions(null)
       } else {
-        if (DBG)
-          Log.d(
-            TAG,
-            "Delaying suggestions publishing: $suggestions"
-          )
+        if (DBG) Log.d(TAG, "Delaying suggestions publishing: $suggestions")
         setPendingSuggestions(suggestions)
       }
     }

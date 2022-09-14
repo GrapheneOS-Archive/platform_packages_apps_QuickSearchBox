@@ -21,69 +21,69 @@ import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
 /**
- * A consumer that consumes a fixed number of values. When the expected number of values
- * has been consumed, further values are rejected.
+ * A consumer that consumes a fixed number of values. When the expected number of values has been
+ * consumed, further values are rejected.
  */
 class BarrierConsumer<A>(private val mExpectedCount: Int) : Consumer<A> {
-    private val mLock: Lock = ReentrantLock()
-    private val mNotFull: Condition = mLock.newCondition()
+  private val mLock: Lock = ReentrantLock()
+  private val mNotFull: Condition = mLock.newCondition()
 
-    // Set to null when getValues() returns.
-    private var mValues: ArrayList<A>?
+  // Set to null when getValues() returns.
+  private var mValues: ArrayList<A>?
 
-    /**
-     * Blocks until the expected number of results is available, or until the thread is
-     * interrupted. This method should not be called multiple times.
-     *
-     * @return A list of values, never `null`.
-     */
-    val values: ArrayList<A>?
-        get() {
-            mLock.lock()
-            return try {
-                try {
-                    while (!isFull) {
-                        mNotFull.await()
-                    }
-                } catch (ex: InterruptedException) {
-                    // Return the values that we've gotten so far
-                }
-                val values = mValues
-                mValues = null // mark that getValues() has returned
-                values
-            } finally {
-                mLock.unlock()
-            }
+  /**
+   * Blocks until the expected number of results is available, or until the thread is interrupted.
+   * This method should not be called multiple times.
+   *
+   * @return A list of values, never `null`.
+   */
+  val values: ArrayList<A>?
+    get() {
+      mLock.lock()
+      return try {
+        try {
+          while (!isFull) {
+            mNotFull.await()
+          }
+        } catch (ex: InterruptedException) {
+          // Return the values that we've gotten so far
         }
-
-    override fun consume(value: A): Boolean {
-        mLock.lock()
-        return try {
-            // Do nothing if getValues() has already returned,
-            // or enough values have already been consumed
-            if (mValues == null || isFull) {
-                return false
-            }
-            mValues?.add(value)
-            if (isFull) {
-                // Wake up any thread waiting in getValues()
-                mNotFull.signal()
-            }
-            true
-        } finally {
-            mLock.unlock()
-        }
+        val values = mValues
+        mValues = null // mark that getValues() has returned
+        values
+      } finally {
+        mLock.unlock()
+      }
     }
 
-    private val isFull: Boolean
-        get() = mValues!!.size == mExpectedCount
-
-    /**
-     * Constructs a new BarrierConsumer.
-     *
-     * @param expectedCount The number of values to consume.
-     */
-    init {
-        mValues = ArrayList<A>(mExpectedCount)
+  override fun consume(value: A): Boolean {
+    mLock.lock()
+    return try {
+      // Do nothing if getValues() has already returned,
+      // or enough values have already been consumed
+      if (mValues == null || isFull) {
+        return false
+      }
+      mValues?.add(value)
+      if (isFull) {
+        // Wake up any thread waiting in getValues()
+        mNotFull.signal()
+      }
+      true
+    } finally {
+      mLock.unlock()
     }
+  }
+
+  private val isFull: Boolean
+    get() = mValues!!.size == mExpectedCount
+
+  /**
+   * Constructs a new BarrierConsumer.
+   *
+   * @param expectedCount The number of values to consume.
+   */
+  init {
+    mValues = ArrayList<A>(mExpectedCount)
+  }
 }

@@ -21,7 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.android.quicksearchbox.Suggestion
 import com.android.quicksearchbox.SuggestionCursor
-
 import java.util.LinkedList
 
 /** Suggestion view factory for Google suggestions. */

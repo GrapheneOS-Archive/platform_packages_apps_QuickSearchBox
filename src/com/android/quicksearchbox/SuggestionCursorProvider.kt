@@ -15,22 +15,20 @@
  */
 package com.android.quicksearchbox
 
-/**
- * Interface for objects that can produce a SuggestionCursor given a query.
- */
+/** Interface for objects that can produce a SuggestionCursor given a query. */
 interface SuggestionCursorProvider<C : SuggestionCursor?> {
-    /**
-     * Gets the name of the provider. This is used for logging and
-     * to execute tasks on the queue for the provider.
-     */
-    val name: String?
+  /**
+   * Gets the name of the provider. This is used for logging and to execute tasks on the queue for
+   * the provider.
+   */
+  val name: String?
 
-    /**
-     * Gets suggestions from the provider.
-     *
-     * @param query The user query.
-     * @param queryLimit An advisory maximum number of results that the source should return.
-     * @return The suggestion results. Must not be `null`.
-     */
-    fun getSuggestions(query: String?, queryLimit: Int): C?
+  /**
+   * Gets suggestions from the provider.
+   *
+   * @param query The user query.
+   * @param queryLimit An advisory maximum number of results that the source should return.
+   * @return The suggestion results. Must not be `null`.
+   */
+  fun getSuggestions(query: String?, queryLimit: Int): C?
 }

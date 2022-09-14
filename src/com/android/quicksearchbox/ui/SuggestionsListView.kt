@@ -19,42 +19,26 @@ package com.android.quicksearchbox.ui
 import android.view.View
 import android.widget.AbsListView
 
-/**
- * Interface for suggestions list UI views.
- */
+/** Interface for suggestions list UI views. */
 interface SuggestionsListView<A> {
-    /**
-     * See [View.setOnKeyListener].
-     */
-    fun setOnKeyListener(l: View.OnKeyListener?)
+  /** See [View.setOnKeyListener]. */
+  fun setOnKeyListener(l: View.OnKeyListener?)
 
-    /**
-     * See [AbsListView.setOnScrollListener].
-     */
-    fun setOnScrollListener(l: AbsListView.OnScrollListener?)
+  /** See [AbsListView.setOnScrollListener]. */
+  fun setOnScrollListener(l: AbsListView.OnScrollListener?)
 
-    /**
-     * See [View.setOnFocusChangeListener].
-     */
-    fun setOnFocusChangeListener(l: View.OnFocusChangeListener?)
+  /** See [View.setOnFocusChangeListener]. */
+  fun setOnFocusChangeListener(l: View.OnFocusChangeListener?)
 
-    /**
-     * See [View.setVisibility].
-     */
-    fun setVisibility(visibility: Int)
+  /** See [View.setVisibility]. */
+  fun setVisibility(visibility: Int)
 
-    /**
-     * Sets the adapter for the list. See [AbsListView.setAdapter]
-     */
-    fun setSuggestionsAdapter(adapter: SuggestionsAdapter<A?>?)
+  /** Sets the adapter for the list. See [AbsListView.setAdapter] */
+  fun setSuggestionsAdapter(adapter: SuggestionsAdapter<A?>?)
 
-    /**
-     * Gets the adapter for the list.
-     */
-    fun getSuggestionsAdapter(): SuggestionsAdapter<A?>?
+  /** Gets the adapter for the list. */
+  fun getSuggestionsAdapter(): SuggestionsAdapter<A?>?
 
-    /**
-     * Gets the ID of the currently selected item.
-     */
-    fun  getSelectedItemId(): Long
+  /** Gets the ID of the currently selected item. */
+  fun getSelectedItemId(): Long
 }

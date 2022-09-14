@@ -20,7 +20,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.View
-
 import com.android.quicksearchbox.QsbApplication
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Suggestion
