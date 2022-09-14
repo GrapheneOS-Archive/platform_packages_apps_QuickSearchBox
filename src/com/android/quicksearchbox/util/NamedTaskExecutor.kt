@@ -15,27 +15,21 @@
  */
 package com.android.quicksearchbox.util
 
-/**
- * Runs tasks that have a name tag.
- */
+/** Runs tasks that have a name tag. */
 interface NamedTaskExecutor {
-    /**
-     * Schedules a task for execution. Implementations should not throw
-     * [java.util.concurrent.RejectedExecutionException] if the task
-     * cannot be run. They should drop it silently instead.
-     */
-    fun execute(task: NamedTask?)
+  /**
+   * Schedules a task for execution. Implementations should not throw
+   * [java.util.concurrent.RejectedExecutionException] if the task cannot be run. They should drop
+   * it silently instead.
+   */
+  fun execute(task: NamedTask?)
 
-    /**
-     * Stops any unstarted tasks from running. Implementations of this method must be
-     * idempotent.
-     */
-    fun cancelPendingTasks()
+  /** Stops any unstarted tasks from running. Implementations of this method must be idempotent. */
+  fun cancelPendingTasks()
 
-    /**
-     * Shuts down this executor, freeing any resources that it owns. The executor
-     * may not be used after calling this method. Implementations of this method must be
-     * idempotent.
-     */
-    fun close()
+  /**
+   * Shuts down this executor, freeing any resources that it owns. The executor may not be used
+   * after calling this method. Implementations of this method must be idempotent.
+   */
+  fun close()
 }

@@ -16,17 +16,15 @@
 
 package com.android.quicksearchbox.ui
 
-import com.android.quicksearchbox.Suggestion
-import com.android.quicksearchbox.SuggestionCursor
-import com.android.quicksearchbox.SuggestionPosition
-import com.android.quicksearchbox.Suggestions
-
 import android.database.DataSetObserver
 import android.util.Log
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
-
+import com.android.quicksearchbox.Suggestion
+import com.android.quicksearchbox.SuggestionCursor
+import com.android.quicksearchbox.SuggestionPosition
+import com.android.quicksearchbox.Suggestions
 import kotlin.collections.HashMap
 
 /** Base class for suggestions adapters. The templated class A is the list adapter class. */

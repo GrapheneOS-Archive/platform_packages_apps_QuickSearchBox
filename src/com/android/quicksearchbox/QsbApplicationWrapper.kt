@@ -19,28 +19,28 @@ import android.app.Application
 
 class QsbApplicationWrapper : Application() {
 
-    private var mApp: QsbApplication? = null
+  private var mApp: QsbApplication? = null
 
-    @Override
-    override fun onTerminate() {
-        synchronized(this) {
-            if (mApp != null) {
-                mApp!!.close()
-            }
-        }
-        super.onTerminate()
+  @Override
+  override fun onTerminate() {
+    synchronized(this) {
+      if (mApp != null) {
+        mApp!!.close()
+      }
+    }
+    super.onTerminate()
+  }
+
+  @get:Synchronized
+  val app: QsbApplication
+    get() {
+      if (mApp == null) {
+        mApp = createQsbApplication()
+      }
+      return mApp!!
     }
 
-    @get:Synchronized
-    val app: QsbApplication
-        get() {
-            if (mApp == null) {
-                mApp = createQsbApplication()
-            }
-            return mApp!!
-        }
-
-    protected fun createQsbApplication(): QsbApplication {
-        return QsbApplication(this)
-    }
+  protected fun createQsbApplication(): QsbApplication {
+    return QsbApplication(this)
+  }
 }

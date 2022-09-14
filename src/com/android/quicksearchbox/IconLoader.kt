@@ -15,39 +15,30 @@
  */
 package com.android.quicksearchbox
 
-import com.android.quicksearchbox.util.NowOrLater
-
 import android.content.ContentResolver
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import com.android.quicksearchbox.util.NowOrLater
 
-/**
- * Interface for icon loaders.
- *
- */
+/** Interface for icon loaders. */
 interface IconLoader {
-    /**
-     * Gets a drawable given an ID.
-     *
-     * The ID could be just the string value of a resource id
-     * (e.g., "2130837524"), in which case we will try to retrieve a drawable from
-     * the provider's resources. If the ID is not an integer, it is
-     * treated as a Uri and opened with
-     * [ContentResolver.openOutputStream].
-     *
-     * All resources and URIs are read using the suggestion provider's context.
-     *
-     * @return a [NowOrLater] for retrieving the icon. If the ID is not formatted as expected,
-     * or no drawable can be found for the provided value, the value from this will be null.
-     *
-     * @param drawableId a string like "2130837524",
-     * "android.resource://com.android.alarmclock/2130837524",
-     * or "content://contacts/photos/253".
-     */
-    fun getIcon(drawableId: String?): NowOrLater<Drawable?>?
+  /**
+   * Gets a drawable given an ID.
+   *
+   * The ID could be just the string value of a resource id (e.g., "2130837524"), in which case we
+   * will try to retrieve a drawable from the provider's resources. If the ID is not an integer, it
+   * is treated as a Uri and opened with [ContentResolver.openOutputStream].
+   *
+   * All resources and URIs are read using the suggestion provider's context.
+   *
+   * @return a [NowOrLater] for retrieving the icon. If the ID is not formatted as expected, or no
+   * drawable can be found for the provided value, the value from this will be null.
+   *
+   * @param drawableId a string like "2130837524",
+   * "android.resource://com.android.alarmclock/2130837524", or "content://contacts/photos/253".
+   */
+  fun getIcon(drawableId: String?): NowOrLater<Drawable?>?
 
-    /**
-     * Converts a drawable ID to a Uri that can be used from other packages.
-     */
-    fun getIconUri(drawableId: String?): Uri?
+  /** Converts a drawable ID to a Uri that can be used from other packages. */
+  fun getIconUri(drawableId: String?): Uri?
 }

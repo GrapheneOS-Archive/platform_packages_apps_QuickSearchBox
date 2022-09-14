@@ -21,21 +21,19 @@ package com.android.quicksearchbox.util
  * be sent to a [Consumer] later.
  */
 interface NowOrLater<C> {
-    /**
-     * Indicates if the object is ready (or constructible synchronously).
-     */
-    fun haveNow(): Boolean
+  /** Indicates if the object is ready (or constructible synchronously). */
+  fun haveNow(): Boolean
 
-    /**
-     * Gets the object now. Should only be called if [.haveNow] returns `true`,
-     * otherwise an [IllegalStateException] will be thrown.
-     */
-    val now: C
+  /**
+   * Gets the object now. Should only be called if [.haveNow] returns `true`, otherwise an
+   * [IllegalStateException] will be thrown.
+   */
+  val now: C
 
-    /**
-     * Request the object asynchronously. This can be called even if the object is ready now, in
-     * which case the callback may be made in context. The thread on which the consumer is called
-     * back depends on the implementation.
-     */
-    fun getLater(consumer: Consumer<in C>?)
+  /**
+   * Request the object asynchronously. This can be called even if the object is ready now, in which
+   * case the callback may be made in context. The thread on which the consumer is called back
+   * depends on the implementation.
+   */
+  fun getLater(consumer: Consumer<in C>?)
 }

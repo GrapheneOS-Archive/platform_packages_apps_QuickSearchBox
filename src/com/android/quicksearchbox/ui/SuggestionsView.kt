@@ -20,7 +20,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.ListAdapter
 import android.widget.ListView
-
 import com.android.quicksearchbox.SuggestionPosition
 
 /** Holds a list of suggestions. */

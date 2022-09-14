@@ -22,40 +22,36 @@ import android.view.Window
 import android.widget.FrameLayout
 import android.widget.TextView
 
-/**
- * Activity that looks like a dialog window.
- */
+/** Activity that looks like a dialog window. */
 abstract class DialogActivity : Activity() {
-    @JvmField
-    protected var mTitleView: TextView? = null
+  @JvmField protected var mTitleView: TextView? = null
 
-    @JvmField
-    protected var mContentFrame: FrameLayout? = null
+  @JvmField protected var mContentFrame: FrameLayout? = null
 
-    @Override
-    protected override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE)
-        setContentView(R.layout.dialog_activity)
-        mTitleView = findViewById(R.id.alertTitle) as TextView?
-        mContentFrame = findViewById(R.id.content) as FrameLayout?
-    }
+  @Override
+  protected override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    getWindow().requestFeature(Window.FEATURE_NO_TITLE)
+    setContentView(R.layout.dialog_activity)
+    mTitleView = findViewById(R.id.alertTitle) as TextView?
+    mContentFrame = findViewById(R.id.content) as FrameLayout?
+  }
 
-    fun setHeading(titleRes: Int) {
-        mTitleView?.setText(titleRes)
-    }
+  fun setHeading(titleRes: Int) {
+    mTitleView?.setText(titleRes)
+  }
 
-    fun setHeading(title: CharSequence?) {
-        mTitleView?.setText(title)
-    }
+  fun setHeading(title: CharSequence?) {
+    mTitleView?.setText(title)
+  }
 
-    fun setDialogContent(layoutRes: Int) {
-        mContentFrame?.removeAllViews()
-        getLayoutInflater().inflate(layoutRes, mContentFrame)
-    }
+  fun setDialogContent(layoutRes: Int) {
+    mContentFrame?.removeAllViews()
+    getLayoutInflater().inflate(layoutRes, mContentFrame)
+  }
 
-    fun setDialogContent(content: View?) {
-        mContentFrame?.removeAllViews()
-        mContentFrame?.addView(content)
-    }
+  fun setDialogContent(content: View?) {
+    mContentFrame?.removeAllViews()
+    mContentFrame?.addView(content)
+  }
 }

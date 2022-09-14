@@ -16,29 +16,29 @@
 
 package com.android.quicksearchbox.util
 
-/**
- * [NowOrLater] class that converts from one type to another.
- */
+/** [NowOrLater] class that converts from one type to another. */
 abstract class NowOrLaterWrapper<A, B>(private val mWrapped: NowOrLater<A>) : NowOrLater<B> {
-    override fun getLater(consumer: Consumer<in B>?) {
-        mWrapped.getLater(object : Consumer<A> {
-            override fun consume(value: A): Boolean {
-                return consumer!!.consume(get(value))
-            }
-        })
-    }
+  override fun getLater(consumer: Consumer<in B>?) {
+    mWrapped.getLater(
+      object : Consumer<A> {
+        override fun consume(value: A): Boolean {
+          return consumer!!.consume(get(value))
+        }
+      }
+    )
+  }
 
-    override val now: B
-        get() = get(mWrapped.now)
+  override val now: B
+    get() = get(mWrapped.now)
 
-    override fun haveNow(): Boolean {
-        return mWrapped.haveNow()
-    }
+  override fun haveNow(): Boolean {
+    return mWrapped.haveNow()
+  }
 
-    /**
-     * Perform the appropriate conversion. This will be called once for every call to
-     * [.getLater] or [.getNow]. The thread that it's called on will depend
-     * on the behaviour of the wrapped object and the caller.
-     */
-    abstract operator fun get(value: A): B
+  /**
+   * Perform the appropriate conversion. This will be called once for every call to [.getLater] or
+   * [.getNow]. The thread that it's called on will depend on the behaviour of the wrapped object
+   * and the caller.
+   */
+  abstract operator fun get(value: A): B
 }

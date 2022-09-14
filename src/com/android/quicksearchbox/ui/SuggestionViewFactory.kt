@@ -18,7 +18,6 @@ package com.android.quicksearchbox.ui
 
 import android.view.View
 import android.view.ViewGroup
-
 import com.android.quicksearchbox.Suggestion
 import com.android.quicksearchbox.SuggestionCursor
 
