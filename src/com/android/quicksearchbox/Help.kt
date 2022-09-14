@@ -22,36 +22,34 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 
-/**
- * Handles app help.
- */
+/** Handles app help. */
 class Help(context: Context?, config: Config) {
-    private val mContext: Context?
-    private val mConfig: Config
-    fun addHelpMenuItem(menu: Menu, activityName: String?) {
-        addHelpMenuItem(menu, activityName, false)
-    }
+  private val mContext: Context?
+  private val mConfig: Config
+  fun addHelpMenuItem(menu: Menu, activityName: String?) {
+    addHelpMenuItem(menu, activityName, false)
+  }
 
-    fun addHelpMenuItem(menu: Menu, activityName: String?, showAsAction: Boolean) {
-        val helpIntent: Intent? = getHelpIntent(activityName)
-        if (helpIntent != null) {
-            val inflater = MenuInflater(mContext)
-            inflater.inflate(R.menu.help, menu)
-            val item: MenuItem = menu.findItem(R.id.menu_help)
-            item.setIntent(helpIntent)
-            if (showAsAction) {
-                item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-            }
-        }
+  fun addHelpMenuItem(menu: Menu, activityName: String?, showAsAction: Boolean) {
+    val helpIntent: Intent? = getHelpIntent(activityName)
+    if (helpIntent != null) {
+      val inflater = MenuInflater(mContext)
+      inflater.inflate(R.menu.help, menu)
+      val item: MenuItem = menu.findItem(R.id.menu_help)
+      item.setIntent(helpIntent)
+      if (showAsAction) {
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+      }
     }
+  }
 
-    private fun getHelpIntent(activityName: String?): Intent? {
-        val helpUrl: Uri = mConfig.getHelpUrl(activityName) ?: return null
-        return Intent(Intent.ACTION_VIEW, helpUrl)
-    }
+  private fun getHelpIntent(activityName: String?): Intent? {
+    val helpUrl: Uri = mConfig.getHelpUrl(activityName) ?: return null
+    return Intent(Intent.ACTION_VIEW, helpUrl)
+  }
 
-    init {
-        mContext = context
-        mConfig = config
-    }
+  init {
+    mContext = context
+    mConfig = config
+  }
 }

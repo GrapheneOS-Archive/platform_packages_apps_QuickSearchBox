@@ -15,26 +15,21 @@
  */
 package com.android.quicksearchbox
 
-/**
- * A pointer to a suggestion in a [SuggestionCursor].
- *
- */
-class SuggestionPosition @JvmOverloads constructor(
-    val cursor: SuggestionCursor?,
-    val position: Int = cursor!!.position
-) : AbstractSuggestionWrapper() {
+/** A pointer to a suggestion in a [SuggestionCursor]. */
+class SuggestionPosition
+@JvmOverloads
+constructor(val cursor: SuggestionCursor?, val position: Int = cursor!!.position) :
+  AbstractSuggestionWrapper() {
 
-    /**
-     * Gets the suggestion cursor, moved to point to the right suggestion.
-     */
-    @Override
-    override fun current(): Suggestion? {
-        cursor?.moveTo(position)
-        return cursor
-    }
+  /** Gets the suggestion cursor, moved to point to the right suggestion. */
+  @Override
+  override fun current(): Suggestion? {
+    cursor?.moveTo(position)
+    return cursor
+  }
 
-    @Override
-    override fun toString(): String {
-        return cursor.toString() + ":" + position
-    }
+  @Override
+  override fun toString(): String {
+    return cursor.toString() + ":" + position
+  }
 }

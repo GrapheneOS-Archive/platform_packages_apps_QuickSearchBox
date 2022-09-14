@@ -23,7 +23,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Suggestion
 

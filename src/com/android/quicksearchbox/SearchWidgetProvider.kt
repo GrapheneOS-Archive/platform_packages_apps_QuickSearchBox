@@ -28,166 +28,127 @@ import android.view.View
 import android.widget.RemoteViews
 import com.android.common.Search
 
-/**
- * Search widget provider.
- *
- */
+/** Search widget provider. */
 class SearchWidgetProvider : BroadcastReceiver() {
-    @Override
-    override fun onReceive(context: Context?, intent: Intent) {
-        if (DBG) Log.d(
-            TAG,
-            "onReceive(" + intent.toUri(0).toString() + ")"
-        )
-        val action: String? = intent.getAction()
-        if (AppWidgetManager.ACTION_APPWIDGET_ENABLED.equals(action)) {
-            // nothing needs doing
-        } else if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(action)) {
-            updateSearchWidgets(context)
-        } else {
-            if (DBG) Log.d(
-                TAG,
-                "Unhandled intent action=$action"
-            )
-        }
+  @Override
+  override fun onReceive(context: Context?, intent: Intent) {
+    if (DBG) Log.d(TAG, "onReceive(" + intent.toUri(0).toString() + ")")
+    val action: String? = intent.getAction()
+    if (AppWidgetManager.ACTION_APPWIDGET_ENABLED.equals(action)) {
+      // nothing needs doing
+    } else if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(action)) {
+      updateSearchWidgets(context)
+    } else {
+      if (DBG) Log.d(TAG, "Unhandled intent action=$action")
+    }
+  }
+
+  private class SearchWidgetState(private val mAppWidgetId: Int) {
+    private var mQueryTextViewIntent: Intent? = null
+    private var mVoiceSearchIntent: Intent? = null
+    fun setQueryTextViewIntent(queryTextViewIntent: Intent?) {
+      mQueryTextViewIntent = queryTextViewIntent
     }
 
-    private class SearchWidgetState(private val mAppWidgetId: Int) {
-        private var mQueryTextViewIntent: Intent? = null
-        private var mVoiceSearchIntent: Intent? = null
-        fun setQueryTextViewIntent(queryTextViewIntent: Intent?) {
-            mQueryTextViewIntent = queryTextViewIntent
-        }
-
-        fun setVoiceSearchIntent(voiceSearchIntent: Intent?) {
-            mVoiceSearchIntent = voiceSearchIntent
-        }
-
-        fun updateWidget(context: Context?, appWidgetMgr: AppWidgetManager) {
-            if (DBG) Log.d(
-                TAG,
-                "Updating appwidget $mAppWidgetId"
-            )
-            val views = RemoteViews(context!!.getPackageName(), R.layout.search_widget)
-            setOnClickActivityIntent(
-                context, views, R.id.search_widget_text,
-                mQueryTextViewIntent
-            )
-            // Voice Search button
-            if (mVoiceSearchIntent != null) {
-                setOnClickActivityIntent(
-                    context, views, R.id.search_widget_voice_btn,
-                    mVoiceSearchIntent
-                )
-                views.setViewVisibility(R.id.search_widget_voice_btn, View.VISIBLE)
-            } else {
-                views.setViewVisibility(R.id.search_widget_voice_btn, View.GONE)
-            }
-            appWidgetMgr.updateAppWidget(mAppWidgetId, views)
-        }
-
-        private fun setOnClickActivityIntent(
-            context: Context?, views: RemoteViews, viewId: Int,
-            intent: Intent?
-        ) {
-            intent?.setPackage(context?.getPackageName())
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-            views.setOnClickPendingIntent(viewId, pendingIntent)
-        }
+    fun setVoiceSearchIntent(voiceSearchIntent: Intent?) {
+      mVoiceSearchIntent = voiceSearchIntent
     }
 
-    companion object {
-        private const val DBG = false
-        private const val TAG = "QSB.SearchWidgetProvider"
-
-        /**
-         * The [Search.SOURCE] value used when starting searches from the search widget.
-         */
-        private const val WIDGET_SEARCH_SOURCE = "launcher-widget"
-        private fun getSearchWidgetStates(context: Context?): Array<SearchWidgetState?> {
-            val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
-            val appWidgetIds: IntArray = appWidgetManager.getAppWidgetIds(
-                myComponentName(context)
-            )
-            val states: Array<SearchWidgetState?> =
-                arrayOfNulls(appWidgetIds.size)
-            for (i in appWidgetIds.indices) {
-                states[i] = getSearchWidgetState(context, appWidgetIds[i])
-            }
-            return states
-        }
-
-        /**
-         * Updates all search widgets.
-         */
-        @JvmStatic
-        fun updateSearchWidgets(context: Context?) {
-            if (DBG) Log.d(
-                TAG,
-                "updateSearchWidgets"
-            )
-            val states: Array<SearchWidgetState?> = getSearchWidgetStates(context)
-            for (state in states) {
-                state?.updateWidget(context, AppWidgetManager.getInstance(context))
-            }
-        }
-
-        /**
-         * Gets the component name of this search widget provider.
-         */
-        private fun myComponentName(context: Context?): ComponentName {
-            val pkg: String = context!!.getPackageName()
-            val cls = "$pkg.SearchWidgetProvider"
-            return ComponentName(pkg, cls)
-        }
-
-        private fun createQsbActivityIntent(
-            context: Context?, action: String,
-            widgetAppData: Bundle
-        ): Intent {
-            val qsbIntent = Intent(action)
-            qsbIntent.setPackage(context?.getPackageName())
-            qsbIntent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK
-                        or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-            )
-            qsbIntent.putExtra(SearchManager.APP_DATA, widgetAppData)
-            return qsbIntent
-        }
-
-        private fun getSearchWidgetState(
-            context: Context?,
-            appWidgetId: Int
-        ): SearchWidgetState {
-            if (DBG) Log.d(
-                TAG,
-                "Creating appwidget state $appWidgetId"
-            )
-            val state: SearchWidgetState = SearchWidgetState(appWidgetId)
-            val widgetAppData = Bundle()
-            widgetAppData.putString(
-                Search.SOURCE,
-                WIDGET_SEARCH_SOURCE
-            )
-
-            // Text field click
-            val qsbIntent: Intent = createQsbActivityIntent(
-                context,
-                SearchManager.INTENT_ACTION_GLOBAL_SEARCH,
-                widgetAppData
-            )
-            state.setQueryTextViewIntent(qsbIntent)
-
-            // Voice search button
-            val voiceSearchIntent: Intent? = getVoiceSearchIntent(context, widgetAppData)
-            state.setVoiceSearchIntent(voiceSearchIntent)
-            return state
-        }
-
-        private fun getVoiceSearchIntent(context: Context?, widgetAppData: Bundle): Intent? {
-            val voiceSearch: VoiceSearch? = QsbApplication[context].voiceSearch
-            return voiceSearch?.createVoiceWebSearchIntent(widgetAppData)
-        }
+    fun updateWidget(context: Context?, appWidgetMgr: AppWidgetManager) {
+      if (DBG) Log.d(TAG, "Updating appwidget $mAppWidgetId")
+      val views = RemoteViews(context!!.getPackageName(), R.layout.search_widget)
+      setOnClickActivityIntent(context, views, R.id.search_widget_text, mQueryTextViewIntent)
+      // Voice Search button
+      if (mVoiceSearchIntent != null) {
+        setOnClickActivityIntent(context, views, R.id.search_widget_voice_btn, mVoiceSearchIntent)
+        views.setViewVisibility(R.id.search_widget_voice_btn, View.VISIBLE)
+      } else {
+        views.setViewVisibility(R.id.search_widget_voice_btn, View.GONE)
+      }
+      appWidgetMgr.updateAppWidget(mAppWidgetId, views)
     }
+
+    private fun setOnClickActivityIntent(
+      context: Context?,
+      views: RemoteViews,
+      viewId: Int,
+      intent: Intent?
+    ) {
+      intent?.setPackage(context?.getPackageName())
+      val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+      views.setOnClickPendingIntent(viewId, pendingIntent)
+    }
+  }
+
+  companion object {
+    private const val DBG = false
+    private const val TAG = "QSB.SearchWidgetProvider"
+
+    /** The [Search.SOURCE] value used when starting searches from the search widget. */
+    private const val WIDGET_SEARCH_SOURCE = "launcher-widget"
+    private fun getSearchWidgetStates(context: Context?): Array<SearchWidgetState?> {
+      val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
+      val appWidgetIds: IntArray = appWidgetManager.getAppWidgetIds(myComponentName(context))
+      val states: Array<SearchWidgetState?> = arrayOfNulls(appWidgetIds.size)
+      for (i in appWidgetIds.indices) {
+        states[i] = getSearchWidgetState(context, appWidgetIds[i])
+      }
+      return states
+    }
+
+    /** Updates all search widgets. */
+    @JvmStatic
+    fun updateSearchWidgets(context: Context?) {
+      if (DBG) Log.d(TAG, "updateSearchWidgets")
+      val states: Array<SearchWidgetState?> = getSearchWidgetStates(context)
+      for (state in states) {
+        state?.updateWidget(context, AppWidgetManager.getInstance(context))
+      }
+    }
+
+    /** Gets the component name of this search widget provider. */
+    private fun myComponentName(context: Context?): ComponentName {
+      val pkg: String = context!!.getPackageName()
+      val cls = "$pkg.SearchWidgetProvider"
+      return ComponentName(pkg, cls)
+    }
+
+    private fun createQsbActivityIntent(
+      context: Context?,
+      action: String,
+      widgetAppData: Bundle
+    ): Intent {
+      val qsbIntent = Intent(action)
+      qsbIntent.setPackage(context?.getPackageName())
+      qsbIntent.setFlags(
+        Intent.FLAG_ACTIVITY_NEW_TASK or
+          Intent.FLAG_ACTIVITY_CLEAR_TOP or
+          Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+      )
+      qsbIntent.putExtra(SearchManager.APP_DATA, widgetAppData)
+      return qsbIntent
+    }
+
+    private fun getSearchWidgetState(context: Context?, appWidgetId: Int): SearchWidgetState {
+      if (DBG) Log.d(TAG, "Creating appwidget state $appWidgetId")
+      val state: SearchWidgetState = SearchWidgetState(appWidgetId)
+      val widgetAppData = Bundle()
+      widgetAppData.putString(Search.SOURCE, WIDGET_SEARCH_SOURCE)
+
+      // Text field click
+      val qsbIntent: Intent =
+        createQsbActivityIntent(context, SearchManager.INTENT_ACTION_GLOBAL_SEARCH, widgetAppData)
+      state.setQueryTextViewIntent(qsbIntent)
+
+      // Voice search button
+      val voiceSearchIntent: Intent? = getVoiceSearchIntent(context, widgetAppData)
+      state.setVoiceSearchIntent(voiceSearchIntent)
+      return state
+    }
+
+    private fun getVoiceSearchIntent(context: Context?, widgetAppData: Bundle): Intent? {
+      val voiceSearch: VoiceSearch? = QsbApplication[context].voiceSearch
+      return voiceSearch?.createVoiceWebSearchIntent(widgetAppData)
+    }
+  }
 }

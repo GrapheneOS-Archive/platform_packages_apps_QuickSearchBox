@@ -16,96 +16,76 @@
 package com.android.quicksearchbox.util
 
 import java.io.IOException
-import kotlin.collections.HashMap
 
-/**
- * An interface that can issue HTTP GET / POST requests
- * with timeouts.
- */
+/** An interface that can issue HTTP GET / POST requests with timeouts. */
 interface HttpHelper {
-    @Throws(IOException::class, HttpException::class)
-    operator fun get(request: GetRequest?): String?
+  @Throws(IOException::class, HttpException::class) operator fun get(request: GetRequest?): String?
 
-    @Throws(IOException::class, HttpException::class)
-    operator fun get(url: String?, requestHeaders: MutableMap<String, String>?): String?
+  @Throws(IOException::class, HttpException::class)
+  operator fun get(url: String?, requestHeaders: MutableMap<String, String>?): String?
 
-    @Throws(IOException::class, HttpException::class)
-    fun post(request: PostRequest?): String?
+  @Throws(IOException::class, HttpException::class) fun post(request: PostRequest?): String?
 
-    @Throws(IOException::class, HttpException::class)
-    fun post(url: String?, requestHeaders: MutableMap<String, String>?, content: String?): String?
-    fun setConnectTimeout(timeoutMillis: Int)
-    fun setReadTimeout(timeoutMillis: Int)
-    open class GetRequest {
-        /**
-         * Gets the request URI.
-         */
-        /**
-         * Sets the request URI.
-         */
-        var url: String? = null
+  @Throws(IOException::class, HttpException::class)
+  fun post(url: String?, requestHeaders: MutableMap<String, String>?, content: String?): String?
+  fun setConnectTimeout(timeoutMillis: Int)
+  fun setReadTimeout(timeoutMillis: Int)
+  open class GetRequest {
+    /** Gets the request URI. */
+    /** Sets the request URI. */
+    var url: String? = null
 
-        /**
-         * Gets the request headers.
-         *
-         * @return The response headers. May return `null` if no headers are set.
-         */
-        var headers: MutableMap<String, String>? = null
-            private set
+    /**
+     * Gets the request headers.
+     *
+     * @return The response headers. May return `null` if no headers are set.
+     */
+    var headers: MutableMap<String, String>? = null
+      private set
 
-        /**
-         * Creates a new request.
-         */
-        constructor()
+    /** Creates a new request. */
+    constructor()
 
-        /**
-         * Creates a new request.
-         *
-         * @param url Request URI.
-         */
-        constructor(url: String?) {
-            this.url = url
-        }
-
-        /**
-         * Sets a request header.
-         *
-         * @param name Header name.
-         * @param value Header value.
-         */
-        fun setHeader(name: String, value: String) {
-            if (headers == null) {
-                headers = mutableMapOf()
-            }
-            headers?.put(name, value)
-        }
-    }
-
-    class PostRequest : GetRequest {
-        var content: String? = null
-
-        constructor()
-        constructor(url: String?) : super(url)
+    /**
+     * Creates a new request.
+     *
+     * @param url Request URI.
+     */
+    constructor(url: String?) {
+      this.url = url
     }
 
     /**
-     * A HTTP exception.
+     * Sets a request header.
+     *
+     * @param name Header name.
+     * @param value Header value.
      */
-    class HttpException(
-        /**
-         * Gets the HTTP response status code.
-         */
-        val statusCode: Int,
-        /**
-         * Gets the HTTP response reason phrase.
-         */
-        val reasonPhrase: String
-    ) : IOException("$statusCode $reasonPhrase")
-
-    /**
-     * An interface for URL rewriting.
-     */
-    interface UrlRewriter {
-        fun rewrite(url: String): String
+    fun setHeader(name: String, value: String) {
+      if (headers == null) {
+        headers = mutableMapOf()
+      }
+      headers?.put(name, value)
     }
+  }
+
+  class PostRequest : GetRequest {
+    var content: String? = null
+
+    constructor()
+    constructor(url: String?) : super(url)
+  }
+
+  /** A HTTP exception. */
+  class HttpException(
+    /** Gets the HTTP response status code. */
+    val statusCode: Int,
+    /** Gets the HTTP response reason phrase. */
+    val reasonPhrase: String
+  ) : IOException("$statusCode $reasonPhrase")
+
+  /** An interface for URL rewriting. */
+  interface UrlRewriter {
+    fun rewrite(url: String): String
+  }
 }

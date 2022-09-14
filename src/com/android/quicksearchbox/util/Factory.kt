@@ -16,5 +16,5 @@
 package com.android.quicksearchbox.util
 
 interface Factory<A> {
-    fun create(): A
+  fun create(): A
 }
