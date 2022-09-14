@@ -15,8 +15,6 @@
  */
 package com.android.quicksearchbox
 
-/**
- * A SuggestionCursor that delegates all calls to other suggestions.
- */
+/** A SuggestionCursor that delegates all calls to other suggestions. */
 abstract class AbstractSuggestionCursorWrapper(override val userQuery: String) :
-    AbstractSuggestionWrapper(), SuggestionCursor
+  AbstractSuggestionWrapper(), SuggestionCursor

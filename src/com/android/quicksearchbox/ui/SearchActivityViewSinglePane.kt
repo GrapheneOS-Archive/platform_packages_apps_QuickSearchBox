@@ -22,8 +22,8 @@ import android.util.AttributeSet
 /** Finishes the containing activity on BACK, even if input method is showing. */
 class SearchActivityViewSinglePane : SearchActivityView {
   constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(
+  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+  constructor(
     context: Context?,
     attrs: AttributeSet?,
     defStyle: Int
