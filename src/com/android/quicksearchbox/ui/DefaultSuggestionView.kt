@@ -30,7 +30,6 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-
 import com.android.quicksearchbox.R
 import com.android.quicksearchbox.Source
 import com.android.quicksearchbox.Suggestion

@@ -19,19 +19,13 @@ import com.android.quicksearchbox.Source
 import com.android.quicksearchbox.SourceResult
 import com.android.quicksearchbox.SuggestionCursor
 
-/**
- * Special source interface for Google suggestions.
- */
+/** Special source interface for Google suggestions. */
 interface GoogleSource : Source {
-    fun refreshShortcut(shortcutId: String?, extraData: String?): SuggestionCursor?
+  fun refreshShortcut(shortcutId: String?, extraData: String?): SuggestionCursor?
 
-    /**
-     * Called by QSB to get web suggestions for a query.
-     */
-    fun queryInternal(query: String?): SourceResult?
+  /** Called by QSB to get web suggestions for a query. */
+  fun queryInternal(query: String?): SourceResult?
 
-    /**
-     * Called by external apps to get web suggestions for a query.
-     */
-    fun queryExternal(query: String?): SourceResult?
+  /** Called by external apps to get web suggestions for a query. */
+  fun queryExternal(query: String?): SourceResult?
 }

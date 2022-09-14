@@ -15,11 +15,9 @@
  */
 package com.android.quicksearchbox
 
-/**
- * [SuggestionFilter] that accepts only results (not web suggestions).
- */
+/** [SuggestionFilter] that accepts only results (not web suggestions). */
 class ResultFilter : SuggestionFilter {
-    override fun accept(s: Suggestion?): Boolean {
-        return !s!!.isWebSearchSuggestion
-    }
+  override fun accept(s: Suggestion?): Boolean {
+    return !s!!.isWebSearchSuggestion
+  }
 }

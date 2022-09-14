@@ -15,15 +15,13 @@
  */
 package com.android.quicksearchbox
 
-/**
- * Interface for choosing which suggestions to include in a promoted list.
- */
+/** Interface for choosing which suggestions to include in a promoted list. */
 interface SuggestionFilter {
-    /**
-     * Determines if a suggestion should be added to the promoted suggestion list.
-     *
-     * @param s The suggestion in question
-     * @return true to include it in the results
-     */
-    fun accept(s: Suggestion?): Boolean
+  /**
+   * Determines if a suggestion should be added to the promoted suggestion list.
+   *
+   * @param s The suggestion in question
+   * @return true to include it in the results
+   */
+  fun accept(s: Suggestion?): Boolean
 }

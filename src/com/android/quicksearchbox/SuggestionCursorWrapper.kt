@@ -17,50 +17,47 @@ package com.android.quicksearchbox
 
 import android.database.DataSetObserver
 
-/**
- * A suggestion cursor that delegates all methods to another SuggestionCursor.
- */
+/** A suggestion cursor that delegates all methods to another SuggestionCursor. */
 open class SuggestionCursorWrapper(userQuery: String?, private val mCursor: SuggestionCursor?) :
-    AbstractSuggestionCursorWrapper(userQuery!!) {
-    override fun close() {
-        if (mCursor != null) {
-            mCursor.close()
-        }
+  AbstractSuggestionCursorWrapper(userQuery!!) {
+  override fun close() {
+    if (mCursor != null) {
+      mCursor.close()
     }
+  }
 
-    override val count: Int
-        get() = if (mCursor == null) 0 else mCursor.count
-    override val position: Int
-        get() = if (mCursor == null) 0 else mCursor.position
+  override val count: Int
+    get() = if (mCursor == null) 0 else mCursor.count
+  override val position: Int
+    get() = if (mCursor == null) 0 else mCursor.position
 
-    override fun moveTo(pos: Int) {
-        if (mCursor != null) {
-            mCursor.moveTo(pos)
-        }
+  override fun moveTo(pos: Int) {
+    if (mCursor != null) {
+      mCursor.moveTo(pos)
     }
+  }
 
-    override fun moveToNext(): Boolean {
-        return mCursor?.moveToNext() ?: false
+  override fun moveToNext(): Boolean {
+    return mCursor?.moveToNext() ?: false
+  }
+
+  override fun registerDataSetObserver(observer: DataSetObserver?) {
+    if (mCursor != null) {
+      mCursor.registerDataSetObserver(observer)
     }
+  }
 
-    override fun registerDataSetObserver(observer: DataSetObserver?) {
-        if (mCursor != null) {
-            mCursor.registerDataSetObserver(observer)
-        }
+  override fun unregisterDataSetObserver(observer: DataSetObserver?) {
+    if (mCursor != null) {
+      mCursor.unregisterDataSetObserver(observer)
     }
+  }
 
-    override fun unregisterDataSetObserver(observer: DataSetObserver?) {
-        if (mCursor != null) {
-            mCursor.unregisterDataSetObserver(observer)
-        }
-    }
+  @Override
+  override fun current(): SuggestionCursor {
+    return mCursor!!
+  }
 
-    @Override
-    override fun current(): SuggestionCursor {
-        return mCursor!!
-    }
-
-    override val extraColumns: Collection<String>?
-        get() = mCursor?.extraColumns
-
+  override val extraColumns: Collection<String>?
+    get() = mCursor?.extraColumns
 }

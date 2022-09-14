@@ -18,14 +18,14 @@ package com.android.quicksearchbox.util
 /**
  * Interface for data consumers.
  *
- * @param <A> The type of data to consume.
-</A> */
+ * @param <A> The type of data to consume. </A>
+ */
 interface Consumer<A> {
-    /**
-     * Consumes a value.
-     *
-     * @param value The value to consume.
-     * @return `true` if the value was accepted, `false` otherwise.
-     */
-    fun consume(value: A): Boolean
+  /**
+   * Consumes a value.
+   *
+   * @param value The value to consume.
+   * @return `true` if the value was accepted, `false` otherwise.
+   */
+  fun consume(value: A): Boolean
 }
