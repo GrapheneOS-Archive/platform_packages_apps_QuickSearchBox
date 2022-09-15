@@ -18,27 +18,24 @@ package com.android.quicksearchbox
 /**
  * Interface for search settings.
  *
- * NOTE: Currently, this is not used very widely, in most instances
- * implementers of this interface are passed around by class name.
- * Should this be deprecated ?
+ * NOTE: Currently, this is not used very widely, in most instances implementers of this interface
+ * are passed around by class name. Should this be deprecated ?
  */
 interface SearchSettings {
-    fun upgradeSettingsIfNeeded()
+  fun upgradeSettingsIfNeeded()
 
-    /**
-     * Informs our listeners about the updated settings data.
-     */
-    fun broadcastSettingsChanged()
-    fun getNextVoiceSearchHintIndex(size: Int): Int
-    fun resetVoiceSearchHintFirstSeenTime()
-    fun haveVoiceSearchHintsExpired(currentVoiceSearchVersion: Int): Boolean
+  /** Informs our listeners about the updated settings data. */
+  fun broadcastSettingsChanged()
+  fun getNextVoiceSearchHintIndex(size: Int): Int
+  fun resetVoiceSearchHintFirstSeenTime()
+  fun haveVoiceSearchHintsExpired(currentVoiceSearchVersion: Int): Boolean
 
-    /**
-     * Determines whether google.com should be used as the base path
-     * for all searches (as opposed to using its country specific variants).
-     */
-    fun shouldUseGoogleCom(): Boolean
-    fun setUseGoogleCom(useGoogleCom: Boolean)
-    val searchBaseDomainApplyTime: Long
-    var searchBaseDomain: String?
+  /**
+   * Determines whether google.com should be used as the base path for all searches (as opposed to
+   * using its country specific variants).
+   */
+  fun shouldUseGoogleCom(): Boolean
+  fun setUseGoogleCom(useGoogleCom: Boolean)
+  val searchBaseDomainApplyTime: Long
+  var searchBaseDomain: String?
 }

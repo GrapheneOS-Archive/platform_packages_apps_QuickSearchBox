@@ -18,24 +18,18 @@ package com.android.quicksearchbox
 import android.content.Context
 import android.text.style.TextAppearanceSpan
 
-/**
- * Factory class for text appearances.
- */
+/** Factory class for text appearances. */
 open class TextAppearanceFactory(context: Context?) {
-    private val mContext: Context?
-    open fun createSuggestionQueryTextAppearance(): Array<Any> {
-        return arrayOf(
-            TextAppearanceSpan(mContext, R.style.SuggestionText1_Query)
-        )
-    }
+  private val mContext: Context?
+  open fun createSuggestionQueryTextAppearance(): Array<Any> {
+    return arrayOf(TextAppearanceSpan(mContext, R.style.SuggestionText1_Query))
+  }
 
-    open fun createSuggestionSuggestedTextAppearance(): Array<Any> {
-        return arrayOf(
-            TextAppearanceSpan(mContext, R.style.SuggestionText1_Suggested)
-        )
-    }
+  open fun createSuggestionSuggestedTextAppearance(): Array<Any> {
+    return arrayOf(TextAppearanceSpan(mContext, R.style.SuggestionText1_Suggested))
+  }
 
-    init {
-        mContext = context
-    }
+  init {
+    mContext = context
+  }
 }

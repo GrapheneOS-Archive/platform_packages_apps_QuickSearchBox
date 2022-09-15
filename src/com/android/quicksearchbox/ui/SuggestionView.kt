@@ -18,20 +18,16 @@ package com.android.quicksearchbox.ui
 
 import com.android.quicksearchbox.Suggestion
 
-/**
- * Interface to be implemented by any view appearing in the list of suggestions.
- */
+/** Interface to be implemented by any view appearing in the list of suggestions. */
 interface SuggestionView {
-    /**
-     * Set the view's contents based on the given suggestion.
-     */
-    fun bindAsSuggestion(suggestion: Suggestion?, userQuery: String?)
+  /** Set the view's contents based on the given suggestion. */
+  fun bindAsSuggestion(suggestion: Suggestion?, userQuery: String?)
 
-    /**
-     * Binds this view to a list adapter.
-     *
-     * @param adapter The adapter of the list which the view is appearing in
-     * @param position The position of this view with the list.
-     */
-    fun bindAdapter(adapter: SuggestionsAdapter<*>?, position: Long)
+  /**
+   * Binds this view to a list adapter.
+   *
+   * @param adapter The adapter of the list which the view is appearing in
+   * @param position The position of this view with the list.
+   */
+  fun bindAdapter(adapter: SuggestionsAdapter<*>?, position: Long)
 }

@@ -15,14 +15,11 @@
  */
 package com.android.quicksearchbox
 
-/**
- * Basic SuggestionFormatter that does no formatting.
- */
-class SuggestionNonFormatter(spanFactory: TextAppearanceFactory?) : SuggestionFormatter(
-    spanFactory!!
-) {
-    @Override
-    override fun formatSuggestion(query: String?, suggestion: String?): CharSequence? {
-        return suggestion
-    }
+/** Basic SuggestionFormatter that does no formatting. */
+class SuggestionNonFormatter(spanFactory: TextAppearanceFactory?) :
+  SuggestionFormatter(spanFactory!!) {
+  @Override
+  override fun formatSuggestion(query: String?, suggestion: String?): CharSequence? {
+    return suggestion
+  }
 }

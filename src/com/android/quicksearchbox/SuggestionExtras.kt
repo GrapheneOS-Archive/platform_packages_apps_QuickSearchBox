@@ -17,23 +17,14 @@ package com.android.quicksearchbox
 
 import org.json.JSONException
 
-/**
- * Extra data that can be attached to a suggestion.
- */
+/** Extra data that can be attached to a suggestion. */
 interface SuggestionExtras {
-    /**
-     * Return the names of custom columns present in these extras.
-     */
-    val extraColumnNames: Collection<String>
+  /** Return the names of custom columns present in these extras. */
+  val extraColumnNames: Collection<String>
 
-    /**
-     * @param columnName The column to get a value from.
-     */
-    fun getExtra(columnName: String?): String?
+  /** @param columnName The column to get a value from. */
+  fun getExtra(columnName: String?): String?
 
-    /**
-     * Flatten these extras as a JSON object.
-     */
-    @Throws(JSONException::class)
-    fun toJsonString(): String?
+  /** Flatten these extras as a JSON object. */
+  @Throws(JSONException::class) fun toJsonString(): String?
 }

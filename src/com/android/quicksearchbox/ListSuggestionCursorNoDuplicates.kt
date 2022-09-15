@@ -18,32 +18,29 @@ package com.android.quicksearchbox
 import android.util.Log
 
 /**
- * A SuggestionCursor that is backed by a list of SuggestionPosition objects
- * and doesn't allow duplicate suggestions.
+ * A SuggestionCursor that is backed by a list of SuggestionPosition objects and doesn't allow
+ * duplicate suggestions.
  */
 class ListSuggestionCursorNoDuplicates(userQuery: String?) : ListSuggestionCursor(userQuery) {
-    private val mSuggestionKeys: HashSet<String>
+  private val mSuggestionKeys: HashSet<String>
 
-    @Override
-    override fun add(suggestion: Suggestion): Boolean {
-        val key = SuggestionUtils.getSuggestionKey(suggestion)
-        return if (mSuggestionKeys.add(key)) {
-            super.add(suggestion)
-        } else {
-            if (DBG) Log.d(
-                TAG,
-                "Rejecting duplicate $key"
-            )
-            false
-        }
+  @Override
+  override fun add(suggestion: Suggestion): Boolean {
+    val key = SuggestionUtils.getSuggestionKey(suggestion)
+    return if (mSuggestionKeys.add(key)) {
+      super.add(suggestion)
+    } else {
+      if (DBG) Log.d(TAG, "Rejecting duplicate $key")
+      false
     }
+  }
 
-    companion object {
-        private const val DBG = false
-        private const val TAG = "QSB.ListSuggestionCursorNoDuplicates"
-    }
+  companion object {
+    private const val DBG = false
+    private const val TAG = "QSB.ListSuggestionCursorNoDuplicates"
+  }
 
-    init {
-        mSuggestionKeys = HashSet<String>()
-    }
+  init {
+    mSuggestionKeys = HashSet<String>()
+  }
 }
