@@ -15,54 +15,52 @@
  */
 package com.android.quicksearchbox
 
-import com.android.quicksearchbox.util.NamedTaskExecutor
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Handler
+import com.android.quicksearchbox.util.NamedTaskExecutor
 
-/**
- * Abstract implementation of a source that is not backed by a searchable activity.
- */
+/** Abstract implementation of a source that is not backed by a searchable activity. */
 abstract class AbstractInternalSource(
-    context: Context?,
-    uiThread: Handler?,
-    iconLoader: NamedTaskExecutor
+  context: Context?,
+  uiThread: Handler?,
+  iconLoader: NamedTaskExecutor
 ) : AbstractSource(context, uiThread, iconLoader) {
-    @get:Override
-    override val suggestUri: String?
-        get() = null
+  @get:Override
+  override val suggestUri: String?
+    get() = null
 
-    @Override
-    override fun canRead(): Boolean {
-        return true
-    }
+  @Override
+  override fun canRead(): Boolean {
+    return true
+  }
 
-    override val defaultIntentData: String?
-        get() = null
+  override val defaultIntentData: String?
+    get() = null
 
-    @get:Override
-    override val iconPackage: String
-        get() = context!!.getPackageName()
+  @get:Override
+  override val iconPackage: String
+    get() = context!!.getPackageName()
 
-    @get:Override
-    override val queryThreshold: Int
-        get() = 0
+  @get:Override
+  override val queryThreshold: Int
+    get() = 0
 
-    @get:Override
-    override val sourceIcon: Drawable
-        get() = context?.getResources()!!.getDrawable(sourceIconResource, null)
+  @get:Override
+  override val sourceIcon: Drawable
+    get() = context?.getResources()!!.getDrawable(sourceIconResource, null)
 
-    @get:Override
-    override val sourceIconUri: Uri
-        get() = Uri.parse(
-            "android.resource://" + context!!.getPackageName()
-                .toString() + "/" + sourceIconResource
-        )
-    protected abstract val sourceIconResource: Int
+  @get:Override
+  override val sourceIconUri: Uri
+    get() =
+      Uri.parse(
+        "android.resource://" + context!!.getPackageName().toString() + "/" + sourceIconResource
+      )
+  protected abstract val sourceIconResource: Int
 
-    @Override
-    override fun queryAfterZeroResults(): Boolean {
-        return true
-    }
+  @Override
+  override fun queryAfterZeroResults(): Boolean {
+    return true
+  }
 }

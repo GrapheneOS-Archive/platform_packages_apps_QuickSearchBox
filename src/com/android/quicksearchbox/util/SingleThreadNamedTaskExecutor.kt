@@ -17,7 +17,6 @@
 package com.android.quicksearchbox.util
 
 import android.util.Log
-
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadFactory
 

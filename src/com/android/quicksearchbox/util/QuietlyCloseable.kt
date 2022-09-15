@@ -17,9 +17,7 @@ package com.android.quicksearchbox.util
 
 import java.io.Closeable
 
-/**
- * Interface for closeable objects whose close method doesn't throw IOExceptions.
- */
+/** Interface for closeable objects whose close method doesn't throw IOExceptions. */
 interface QuietlyCloseable : Closeable {
-    override fun close()
+  override fun close()
 }
