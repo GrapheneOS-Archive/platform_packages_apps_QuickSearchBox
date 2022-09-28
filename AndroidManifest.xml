@@ -57,20 +57,6 @@
             <meta-data android:name="com.android.launcher.toolbar_icon" android:resource="@drawable/ic_google_logo_normal" />
         </activity>
 
-        <activity android:name=".google.GoogleSearch"
-                android:label="@string/google_search_label"
-                android:icon="@mipmap/google_icon"
-                android:theme="@android:style/Theme.NoDisplay"
-                android:exported="true"
-                android:excludeFromRecents="true">
-            <intent-filter>
-                <action android:name="android.intent.action.WEB_SEARCH" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <meta-data android:name="android.app.searchable"
-                android:resource="@xml/google_searchable" />
-        </activity>
-
         <provider android:name=".google.GoogleSuggestionProvider"
             android:label="@string/google_search_label"
             android:authorities="com.android.quicksearchbox.google"
