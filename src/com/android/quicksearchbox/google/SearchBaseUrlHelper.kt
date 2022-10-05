@@ -136,7 +136,7 @@ class SearchBaseUrlHelper(
   }
 
   @Override
-  override fun onSharedPreferenceChanged(pref: SharedPreferences?, key: String) {
+  override fun onSharedPreferenceChanged(pref: SharedPreferences?, key: String?) {
     // Listen for changes only to the SEARCH_BASE_URL preference.
     if (DBG) Log.d(TAG, "Handling changed preference : $key")
     if (SearchSettingsImpl.USE_GOOGLE_COM_PREF.equals(key)) {
