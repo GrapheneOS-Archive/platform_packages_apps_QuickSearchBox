@@ -1,5 +1,5 @@
 load("@rules_android//rules:rules.bzl", "android_binary")
-load("//build/make/tools:event_log_tags.bzl", "event_log_tags")
+load("//build/bazel/rules/java:event_log_tags.bzl", "event_log_tags")
 
 event_log_tags(
     name = "genlogtags",
